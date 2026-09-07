@@ -2,7 +2,7 @@
 
 /**
  * This script is used to reset the project to a blank state.
- * It deletes or moves the /src and /scripts directories to /example based on user input and creates a new /src/app directory with an index.tsx and _layout.tsx file.
+ * It preserves src/assets and deletes or moves application code and /scripts to /example based on user input and creates a new /src/routes/expo directory with an index.tsx and _layout.tsx file.
  * You can remove the `reset-project` script from package.json and safely delete this file after running it.
  */
 
@@ -11,9 +11,9 @@ const path = require("path");
 const readline = require("readline");
 
 const root = process.cwd();
-const oldDirs = ["src", "scripts"];
+const oldDirs = ["src/app", "src/routes", "src/features", "src/components", "src/api", "src/hooks", "src/types", "src/utils", "src/constants", "src/layouts", "src/App.tsx", "scripts"];
 const exampleDir = "example";
-const newAppDir = "src/app";
+const newAppDir = "src/routes/expo";
 const exampleDirPath = path.join(root, exampleDir);
 
 const indexContent = `import { Text, View, StyleSheet } from "react-native";
@@ -21,7 +21,7 @@ const indexContent = `import { Text, View, StyleSheet } from "react-native";
 export default function Index() {
   return (
     <View style={styles.container}>
-      <Text>Edit src/app/index.tsx to edit this screen.</Text>
+      <Text>Edit src/routes/expo/index.tsx to edit this screen.</Text>
     </View>
   );
 }
@@ -61,6 +61,7 @@ const moveDirectories = async (userInput) => {
       if (fs.existsSync(oldDirPath)) {
         if (userInput === "y") {
           const newDirPath = path.join(root, exampleDir, dir);
+          await fs.promises.mkdir(path.dirname(newDirPath), { recursive: true });
           await fs.promises.rename(oldDirPath, newDirPath);
           console.log(`➡️ /${dir} moved to /${exampleDir}/${dir}.`);
         } else {
@@ -72,24 +73,24 @@ const moveDirectories = async (userInput) => {
       }
     }
 
-    // Create new /src/app directory
+    // Create new /src/routes/expo directory
     const newAppDirPath = path.join(root, newAppDir);
     await fs.promises.mkdir(newAppDirPath, { recursive: true });
-    console.log("\n📁 New /src/app directory created.");
+    console.log("\n📁 New /src/routes/expo directory created.");
 
     // Create index.tsx
     const indexPath = path.join(newAppDirPath, "index.tsx");
     await fs.promises.writeFile(indexPath, indexContent);
-    console.log("📄 src/app/index.tsx created.");
+    console.log("📄 src/routes/expo/index.tsx created.");
 
     // Create _layout.tsx
     const layoutPath = path.join(newAppDirPath, "_layout.tsx");
     await fs.promises.writeFile(layoutPath, layoutContent);
-    console.log("📄 src/app/_layout.tsx created.");
+    console.log("📄 src/routes/expo/_layout.tsx created.");
 
     console.log("\n✅ Project reset complete. Next steps:");
     console.log(
-      `1. Run \`npx expo start\` to start a development server.\n2. Edit src/app/index.tsx to edit the main screen.\n3. Put all your application code in /src, only screens and layout files should be in /src/app.${
+      `1. Run \`npx expo start\` to start a development server.\n2. Edit src/routes/expo/index.tsx to edit the main screen.\n3. Put all your application code in /src, only screens and layout files should be in /src/routes/expo.${
         userInput === "y"
           ? `\n4. Delete the /${exampleDir} directory when you're done referencing it.`
           : ""
