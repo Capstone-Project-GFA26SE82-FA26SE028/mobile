@@ -1,5 +1,6 @@
 import type { Command, DiningTable, Dish, WaiterState } from './types';
 import { hasWaiterSession } from '../auth/session';
+import { inHoldWindow, reservationTableError } from '../reservations/rules';
 export const money = (n: number) =>
   new Intl.NumberFormat('vi-VN', {
     style: 'currency',
@@ -40,8 +41,7 @@ export const heldReservation = (
     (r) =>
       r.status === 'confirmed' &&
       r.tableId === tableId &&
-      now >= r.time - 30 * 60000 &&
-      now <= r.time + 15 * 60000,
+      inHoldWindow(r, now),
   );
 export function tableStatus(
   state: WaiterState,
@@ -135,8 +135,10 @@ export function applyCommand(
       const r = state.reservations.find((r) => r.id === c.reservationId);
       if (!r || r.status !== 'confirmed' || r.tableId !== table.id)
         return 'Đặt bàn không còn hợp lệ.';
-      if (c.now < r.time - 30 * 60000 || c.now > r.time + 15 * 60000)
+      if (!inHoldWindow(r, c.now))
         return 'Chỉ nhận khách trong khoảng giữ chỗ của đặt bàn.';
+      if (c.guests !== r.guests)
+        return 'Số khách nhận bàn phải khớp với yêu cầu đặt bàn.';
       r.status = 'arrived';
     }
     table.sessionId = c.id;
@@ -318,31 +320,15 @@ export function applyCommand(
     if (!reservation || reservation.status !== 'pending')
       return 'Yêu cầu đặt bàn đã được xử lý.';
     if (c.decision === 'confirmed') {
-      const table = state.tables.find((t) => t.id === c.tableId);
-      if (
-        !table ||
-        !table.active ||
-        table.needsCleaning ||
-        table.capacity < reservation.guests ||
-        (table.sessionId && reservation.time < c.now + 90 * 60000)
-      )
-        return 'Bàn chưa phù hợp hoặc chưa trống cho khung giờ này.';
-      if (reservation.time < c.now)
-        return 'Giờ hẹn đã qua. Cần liên hệ khách trước khi duyệt.';
-      if (
-        state.reservations.some(
-          (r) =>
-            r.id !== reservation.id &&
-            r.status === 'confirmed' &&
-            r.tableId === table.id &&
-            Math.abs(r.time - reservation.time) < 120 * 60000,
-        )
-      )
-        return 'Bàn đã có lịch đặt trong khung giờ này.';
+      const error = reservationTableError(state, reservation, c.tableId || '', c.now);
+      if (error) return error;
+      const table = state.tables.find((t) => t.id === c.tableId)!;
       reservation.tableId = table.id;
+      reservation.customerMessage = `Đã xác nhận đặt ${table.name} cho ${reservation.guests} khách, ${time(reservation.time)}–${time(reservation.endTime)} ngày ${new Date(reservation.time).toLocaleDateString('vi-VN')}.`;
     } else {
       if (!c.reason?.trim()) return 'Vui lòng nhập lý do từ chối.';
       reservation.reason = c.reason.trim();
+      reservation.customerMessage = `Yêu cầu đặt bàn của bạn chưa được xác nhận. Lý do: ${reservation.reason}`;
     }
     reservation.status = c.decision;
     state.logs.unshift({

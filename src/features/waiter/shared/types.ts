@@ -57,10 +57,12 @@ export type Reservation = {
   phone: string;
   guests: number;
   time: number;
+  endTime: number;
   note: string;
   status: 'pending' | 'confirmed' | 'rejected' | 'arrived';
   tableId?: string;
   reason?: string;
+  customerMessage?: string;
 };
 export type WaiterState = {
   signedIn: boolean;

@@ -287,3 +287,82 @@ test('request table follows its session after a move and completion does not col
   assert.equal(s.sessions.find(x => x.id === 'S6').payment, 'unpaid');
   assert.equal(s.sessions.find(x => x.id === 'S6').cashReceived, undefined);
 });
+
+const { reservationTableError, inHoldWindow } = require('../src/features/waiter/reservations/rules.ts');
+const approve = (s, data = {}) => applyCommand(s, {
+  type:'reservation', id:'reservation-test', now, reservationId:'B1', decision:'confirmed', tableId:'T1', ...data,
+}, menu);
+
+test('reservations require an actually empty table even for distant future slots', () => {
+  const s = fresh();
+  s.reservations[0].time = now + 4 * 3600000;
+  s.reservations[0].endTime = now + 5 * 3600000;
+  const before = structuredClone(s);
+  assert.ok(approve(s, {tableId:'T2'}));
+  assert.deepEqual(s, before);
+});
+
+test('approval uses explicit slots and checks overlap including the 30 minute hold', () => {
+  const s = fresh();
+  const existing = s.reservations.find(r => r.id === 'B3');
+  s.reservations[0].time = existing.endTime + 20 * 60000;
+  s.reservations[0].endTime = s.reservations[0].time + 40 * 60000;
+  assert.ok(approve(s, {tableId:'T10'}));
+  s.reservations[0].time = existing.endTime + 30 * 60000;
+  s.reservations[0].endTime = s.reservations[0].time + 40 * 60000;
+  assert.equal(reservationTableError(s, s.reservations[0], 'T10', now), null);
+  assert.equal(approve(s, {tableId:'T10'}), null);
+});
+
+test('hold starts 30 minutes early and lasts through the booked slot, without a 15 minute cutoff', () => {
+  const s = fresh();
+  const r = s.reservations.find(r => r.id === 'B3');
+  assert.equal(inHoldWindow(r, r.time - 30 * 60000 - 1), false);
+  assert.equal(inHoldWindow(r, r.time - 30 * 60000), true);
+  assert.equal(inHoldWindow(r, r.time + 20 * 60000), true);
+  assert.equal(inHoldWindow(r, r.endTime), false);
+  assert.equal(applyCommand(s, {type:'open',id:'late-arrival',now:r.time + 20 * 60000,tableId:'T10',guests:r.guests,reservationId:r.id}, menu), null);
+  assert.equal(r.status, 'arrived');
+});
+
+test('invalid slots, insufficient seats and dirty or inactive tables reject approvals atomically', () => {
+  for (const scenario of ['slot','capacity','cleaning','inactive','area','past']) {
+    const s = fresh();
+    if (scenario === 'slot') s.reservations[0].endTime = s.reservations[0].time;
+    if (scenario === 'capacity') s.tables[0].capacity = 1;
+    if (scenario === 'cleaning') s.tables[0].needsCleaning = true;
+    if (scenario === 'inactive') s.tables[0].active = false;
+    if (scenario === 'area') s.tables[0].area = '';
+    if (scenario === 'past') s.reservations[0].time = now - 1;
+    const before = structuredClone(s);
+    assert.ok(approve(s));
+    assert.deepEqual(s, before);
+  }
+});
+
+test('approval reserves the table, blocks walk-ins and opens the matching reservation only', () => {
+  const s = fresh();
+  assert.equal(approve(s), null);
+  assert.equal(tableStatus(s, s.tables[0], now), 'Giữ chỗ');
+  assert.ok(s.reservations[0].customerMessage.includes('Bàn 01'));
+  const before = structuredClone(s);
+  assert.ok(applyCommand(s, {type:'open',id:'walk-in',now,tableId:'T1',guests:2}, menu));
+  assert.ok(applyCommand(s, {type:'open',id:'wrong-count',now,tableId:'T1',guests:2,reservationId:'B1'}, menu));
+  assert.deepEqual(s, before);
+  assert.equal(applyCommand(s, {type:'open',id:'booked',now,tableId:'T1',guests:4,reservationId:'B1'}, menu), null);
+  assert.equal(s.reservations[0].status, 'arrived');
+  assert.equal(s.tables[0].sessionId, 'booked');
+});
+
+test('rejecting needs a reason, produces a sample message and cannot be decided again', () => {
+  const s = fresh();
+  const before = structuredClone(s);
+  assert.ok(approve(s, {decision:'rejected',reason:' '}));
+  assert.deepEqual(s, before);
+  assert.equal(approve(s, {decision:'rejected',reason:'Hết bàn phù hợp'}), null);
+  assert.equal(s.reservations[0].status, 'rejected');
+  assert.ok(s.reservations[0].customerMessage.includes('Hết bàn phù hợp'));
+  const rejected = structuredClone(s);
+  assert.ok(approve(s));
+  assert.deepEqual(s, rejected);
+});
