@@ -17,7 +17,7 @@ export default function NotificationsScreen() {
   const unread = state.items.filter((i) => i.status === 'Ready' && !i.seen);
   const rows = state.items.filter((i) => i.readyAt && (tab === 'Chưa xem' ? i.status === 'Ready' && !i.seen : i.seen))
     .sort((a, b) => (b.readyAt || 0) - (a.readyAt || 0));
-  const demoItem = state.items.find((i) => (i.status === 'Cooking' || i.status === 'Pending') && state.tables.some((t) => t.active && t.sessionId === i.sessionId));
+  const demoItem = state.items.find((i) => (i.status === 'Cooking' || i.status === 'Pending' || i.status === 'Sent') && state.tables.some((t) => t.active && t.sessionId === i.sessionId));
 
   return (
     <Page>

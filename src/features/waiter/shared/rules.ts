@@ -185,7 +185,7 @@ export function applyCommand(
     if (
       !session ||
       session.payment !== 'unpaid' ||
-      !state.tables.some((t) => t.sessionId === session.id)
+      !state.tables.some((t) => t.active && t.id === session.tableId && t.sessionId === session.id)
     )
       return 'Phiên bàn không còn nhận món.';
     if (!c.lines.length) return 'Vui lòng chọn ít nhất một món.';
@@ -196,7 +196,8 @@ export function applyCommand(
         !menu.some((d) => d.id === line.dishId && d.available) ||
         !Number.isInteger(line.quantity) ||
         line.quantity < 1 ||
-        line.quantity > 99
+        line.quantity > 99 ||
+        typeof line.note !== 'string'
       )
         return 'Món hoặc số lượng không hợp lệ. Kiểm tra lại giỏ món.';
     }
@@ -222,12 +223,14 @@ export function applyCommand(
     });
   } else if (c.type === 'cancel') {
     const item = state.items.find((i) => i.id === c.itemId);
-    if (!item || item.status !== 'Pending')
+    if (!item || (item.status !== 'Pending' && item.status !== 'Sent'))
       return 'Chỉ được hủy món chưa bắt đầu chế biến.';
     if (
       state.sessions.find((s) => s.id === item.sessionId)?.payment !== 'unpaid'
     )
       return 'Không hủy món trong phiên đang thanh toán.';
+    if (!state.tables.some((t) => t.active && t.sessionId === item.sessionId))
+      return 'Phiên bàn không còn hoạt động.';
     if (!c.reason.trim()) return 'Vui lòng nhập lý do hủy món.';
     item.status = 'Cancelled';
     state.logs.unshift({
