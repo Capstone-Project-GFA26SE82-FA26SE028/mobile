@@ -1,4 +1,5 @@
 import type { CustomerOrder } from '../ordering/types';
+import type { WaiterProfile } from '../auth/data/demo';
 
 export type Dish = {
   id: string;
@@ -38,6 +39,7 @@ export type OrderItem = {
   status: 'Pending' | 'Cooking' | 'Ready' | 'Served' | 'Cancelled';
   readyAt?: number;
   seen: boolean;
+  servings?: { id: string; waiterId: string; waiterName: string; quantity: number; time: number }[];
 };
 export type ServiceRequest = {
   id: string;
@@ -60,6 +62,7 @@ export type Reservation = {
 };
 export type WaiterState = {
   signedIn: boolean;
+  waiter: WaiterProfile | null;
   alerts: boolean;
   tables: DiningTable[];
   sessions: Session[];
@@ -75,9 +78,9 @@ export type Command = { id: string; now: number } & (
   | { type: 'open'; tableId: string; guests: number; reservationId?: string }
   | { type: 'move'; sessionId: string; tableId: string; reason: string }
   | { type: 'order'; sessionId: string; lines: DraftLine[] }
-  | { type: 'confirm-order'; orderId: string; version: number; waiter: { id: string; name: string } }
+  | { type: 'confirm-order'; orderId: string; version: number }
   | { type: 'cancel'; itemId: string; reason: string }
-  | { type: 'serve'; itemId: string; quantity: number }
+  | { type: 'serve'; itemId: string; quantity: number; expectedServed?: number }
   | { type: 'seen'; itemId: string }
   | { type: 'request'; requestId: string; status: 'processing' | 'done' }
   | { type: 'collect'; sessionId: string; amount: number }

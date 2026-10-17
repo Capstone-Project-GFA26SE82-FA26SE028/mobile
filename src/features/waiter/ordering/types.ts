@@ -9,5 +9,3 @@ export type CustomerOrder = {
   confirmedBy?: { id: string; name: string };
   confirmedAt?: number;
 };
-
-export const demoWaiter = { id: 'W_DEMO', name: 'Trần Hoàng' } as const;

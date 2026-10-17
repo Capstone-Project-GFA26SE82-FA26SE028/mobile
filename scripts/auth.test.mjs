@@ -29,6 +29,7 @@ test('logout clears session flags and feedback while preserving waiter data', ()
   active = { ...active, feedback: { id: 'notice', text: 'Demo', error: false } };
   const loggedOut = reducer(active, signOut());
   assert.equal(loggedOut.signedIn, false);
+  assert.equal(loggedOut.waiter, null);
   assert.equal(loggedOut.alerts, false);
   assert.equal(loggedOut.feedback, null);
   for (const key of ['tables', 'sessions', 'items', 'customerOrders', 'requests', 'reservations', 'logs']) {

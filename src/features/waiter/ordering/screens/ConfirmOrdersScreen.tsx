@@ -8,12 +8,13 @@ import { waiterMenu } from '../../shared/data/menu';
 import { runCommand, useNow } from '../../shared/hooks';
 import { matches, minutes, money, time } from '../../shared/rules';
 import { colors, ui } from '../../shared/theme';
-import { demoWaiter, type CustomerOrder } from '../types';
+import type { CustomerOrder } from '../types';
 
 const total = (order: CustomerOrder) => order.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
 
 export default function ConfirmOrdersScreen() {
   const state = useAppSelector((s) => s.waiter);
+  const waiter = state.waiter;
   const now = useNow();
   const [tab, setTab] = useState('Chờ xác nhận');
   const [query, setQuery] = useState('');
@@ -116,11 +117,11 @@ export default function ConfirmOrdersScreen() {
               <Button title="Xác nhận và chuyển bếp" icon="checkmark-circle-outline" disabled={!checked || changed || !openSession(review) || unavailable} onPress={() => {
                 if (sending.current) return;
                 sending.current = true;
-                if (runCommand({ type: 'confirm-order', orderId: review.id, version: review.version, waiter: demoWaiter })) {
+                if (runCommand({ type: 'confirm-order', orderId: review.id, version: review.version })) {
                   setReview(null);
                 } else sending.current = false;
               }} />
-              <Text style={ui.small}>Nhân viên xác nhận: {demoWaiter.name}. Chỉ lượt gọi này được chuyển bếp và ghi nhận tính tiền sau khi bạn xác nhận.</Text>
+              <Text style={ui.small}>Nhân viên xác nhận: {waiter?.name}. Chỉ lượt gọi này được chuyển bếp và ghi nhận tính tiền sau khi bạn xác nhận.</Text>
             </>
           )}
         </Sheet>

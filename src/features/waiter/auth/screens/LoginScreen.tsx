@@ -12,8 +12,9 @@ import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { enterDemo } from '../../shared/waiterSlice';
 import { Button, Field, Icon, Notice } from '../../shared/components/UI';
 import { colors, ui } from '../../shared/theme';
+import { hasWaiterSession } from '../session';
 export default function LoginScreen() {
-  const signedIn = useAppSelector((s) => s.waiter.signedIn);
+  const signedIn = useAppSelector((s) => hasWaiterSession(s.waiter));
   const dispatch = useAppDispatch();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
