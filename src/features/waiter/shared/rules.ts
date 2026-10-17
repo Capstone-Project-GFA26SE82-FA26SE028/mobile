@@ -295,14 +295,21 @@ export function applyCommand(
     const total = sessionTotal(state, c.sessionId);
     if (!session || session.payment !== 'unpaid')
       return 'Phiên đã ghi nhận thu tiền hoặc đã thanh toán.';
-    if (total <= 0 || !Number.isSafeInteger(c.amount) || c.amount < total)
+    const table = state.tables.find((t) => t.id === session.tableId && t.sessionId === session.id && t.active);
+    if (!table || (c.tableId !== undefined && c.tableId !== table.id))
+      return 'Phiên bàn vừa thay đổi hoặc không còn hoạt động. Vui lòng kiểm tra lại.';
+    if (c.expectedTotal !== undefined && c.expectedTotal !== total)
+      return 'Tổng tiền vừa thay đổi. Vui lòng kiểm tra lại hóa đơn trước khi thu tiền.';
+    if (!Number.isSafeInteger(total) || total <= 0 || !Number.isSafeInteger(c.amount) || c.amount < total)
       return 'Số tiền nhận phải là số nguyên và đủ tổng tiền cần thu.';
     session.payment = 'pending_settlement';
     session.cashReceived = c.amount;
+    session.cashCollectedAt = c.now;
+    session.cashCollectedBy = { id: state.waiter.id, name: state.waiter.name };
     state.logs.unshift({
       id: c.id,
       time: c.now,
-      text: `Thu hộ ${money(total)}. Chờ bàn giao và xác nhận từ thu ngân.`,
+      text: `${state.waiter.name} thu hộ ${money(total)} tại ${table.name}. Khách đưa ${money(c.amount)}, tiền thối ${money(c.amount - total)}. Chờ bàn giao và xác nhận từ thu ngân.`,
     });
   } else if (c.type === 'reservation') {
     const reservation = state.reservations.find(
