@@ -27,7 +27,9 @@ const slice = createSlice({
       if (payload.type !== 'seen')
         state.feedback = {
           id: payload.id,
-          text: error || 'Đã ghi nhận trong phiên dùng thử.',
+          text: error || (payload.type === 'confirm-order'
+            ? 'Đã xác nhận lượt gọi và ghi nhận chuyển bếp, thu ngân trong phiên dùng thử.'
+            : 'Đã ghi nhận trong phiên dùng thử.'),
           error: !!error,
         };
     },

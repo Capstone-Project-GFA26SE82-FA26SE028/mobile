@@ -1,3 +1,5 @@
+import type { CustomerOrder } from '../ordering/types';
+
 export type Dish = {
   id: string;
   name: string;
@@ -62,6 +64,7 @@ export type WaiterState = {
   tables: DiningTable[];
   sessions: Session[];
   items: OrderItem[];
+  customerOrders: CustomerOrder[];
   requests: ServiceRequest[];
   reservations: Reservation[];
   logs: { id: string; text: string; time: number }[];
@@ -72,6 +75,7 @@ export type Command = { id: string; now: number } & (
   | { type: 'open'; tableId: string; guests: number; reservationId?: string }
   | { type: 'move'; sessionId: string; tableId: string; reason: string }
   | { type: 'order'; sessionId: string; lines: DraftLine[] }
+  | { type: 'confirm-order'; orderId: string; version: number; waiter: { id: string; name: string } }
   | { type: 'cancel'; itemId: string; reason: string }
   | { type: 'serve'; itemId: string; quantity: number }
   | { type: 'seen'; itemId: string }

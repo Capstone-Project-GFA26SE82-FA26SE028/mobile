@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useAppSelector } from '@/app/hooks';
 import {
   Badge,
+  Button,
   Chips,
   Empty,
   Icon,
@@ -36,6 +37,12 @@ export default function TablesScreen() {
         title="Xin chào, Hoàng!"
         subtitle="Chúc bạn một ca làm việc thật thuận lợi."
         action={<Badge text="Ca phục vụ" />}
+      />
+      <Button
+        title={`Đơn khách chờ xác nhận · ${state.customerOrders.filter((o) => o.status === 'awaiting_confirmation').length}`}
+        icon="receipt-outline"
+        secondary
+        onPress={() => router.push('/waiter/orders')}
       />
       <View style={ui.hero}>
         <View style={ui.between}>

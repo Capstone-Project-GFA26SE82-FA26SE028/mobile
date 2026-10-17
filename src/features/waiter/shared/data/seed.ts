@@ -1,9 +1,11 @@
 import type { WaiterState } from '../types';
+import { createCustomerOrders } from '../../ordering/data/seed';
 export function createWaiterState(now = Date.now()): WaiterState {
   return {
     signedIn: false,
     alerts: false,
     feedback: null,
+    customerOrders: createCustomerOrders(now),
     tables: Array.from({ length: 12 }, (_, i) => ({
       id: `T${i + 1}`,
       name: `Bàn ${String(i + 1).padStart(2, '0')}`,

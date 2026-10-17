@@ -70,6 +70,37 @@ export function applyCommand(
 ): string | null {
   if (!state.signedIn) return 'Vui lòng vào phiên phục vụ trước khi thao tác.';
   const c = command;
+  if (c.type === 'confirm-order') {
+    const order = state.customerOrders.find((o) => o.id === c.orderId);
+    if (!order || order.status !== 'awaiting_confirmation')
+      return 'Đơn đã được xác nhận hoặc không còn tồn tại. Hãy kiểm tra lại danh sách.';
+    if (order.version !== c.version)
+      return 'Đơn vừa được cập nhật. Vui lòng đóng bảng xác nhận và kiểm tra lại nội dung mới.';
+    if (!c.waiter.id.trim() || !c.waiter.name.trim())
+      return 'Không tìm thấy thông tin nhân viên xác nhận.';
+    const session = state.sessions.find((s) => s.id === order.sessionId);
+    if (!session || !state.tables.some((t) => t.active && t.id === session.tableId && t.sessionId === session.id))
+      return 'Phiên bàn đã đóng hoặc không còn hoạt động.';
+    // Only accepted orders become kitchen items and enter the billable total.
+    const error = applyCommand(state, {
+      type: 'order', id: `customer-${order.id}`, now: c.now,
+      sessionId: order.sessionId,
+      lines: order.lines.map((line) => ({
+        dishId: line.dishId, quantity: line.quantity,
+        note: [line.note, order.note].filter(Boolean).join(' · '),
+      })),
+    }, menu);
+    if (error) return error;
+    order.status = 'confirmed';
+    order.version += 1;
+    order.confirmedBy = { ...c.waiter };
+    order.confirmedAt = c.now;
+    state.logs.unshift({
+      id: c.id, time: c.now,
+      text: `${c.waiter.name} xác nhận đơn ${order.id}, chuyển bếp và thu ngân.`,
+    });
+    return null;
+  }
   if (c.type === 'open') {
     const table = state.tables.find((t) => t.id === c.tableId);
     if (
