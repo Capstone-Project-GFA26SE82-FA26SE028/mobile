@@ -76,7 +76,7 @@ export type WaiterState = {
 export type DraftLine = { dishId: string; quantity: number; note: string };
 export type Command = { id: string; now: number } & (
   | { type: 'open'; tableId: string; guests: number; reservationId?: string }
-  | { type: 'move'; sessionId: string; tableId: string; reason: string }
+  | { type: 'move'; sessionId: string; tableId: string; reason: string; sourceTableId?: string }
   | { type: 'order'; sessionId: string; lines: DraftLine[] }
   | { type: 'confirm-order'; orderId: string; version: number }
   | { type: 'cancel'; itemId: string; reason: string }

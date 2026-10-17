@@ -38,8 +38,9 @@ export default function TableDetailScreen() {
   const now = useNow();
   const table = state.tables.find((t) => t.id === id);
   const session = state.sessions.find((s) => s.id === table?.sessionId);
-  const [modal, setModal] = useState<'open' | 'cancel' | null>(null);
+  const [modal, setModal] = useState<'open' | 'move' | 'cancel' | null>(null);
   const [guests, setGuests] = useState(2);
+  const [target, setTarget] = useState('');
   const [reason, setReason] = useState('');
   const [itemId, setItemId] = useState('');
   if (!table)
@@ -50,6 +51,11 @@ export default function TableDetailScreen() {
     );
   const items = state.items.filter((i) => i.sessionId === session?.id);
   const hold = heldReservation(state, table.id, now);
+  const targets = state.tables.filter(
+    (t) => t.id !== table.id && t.active && !!t.area &&
+      tableStatus(state, t, now) === 'Trống' &&
+      t.capacity >= (session?.guests || 0),
+  );
   return (
     <Page>
       <Title
@@ -98,9 +104,12 @@ export default function TableDetailScreen() {
                 <Button
                   title="Đổi bàn"
                   secondary
-                  // UC_WAI_07 is migrated separately.
-                  disabled
-                  onPress={() => {}}
+                  disabled={!table.active || session.prebillPrinted || session.payment !== 'unpaid'}
+                  onPress={() => {
+                    setReason('');
+                    setTarget('');
+                    setModal('move');
+                  }}
                 />
               </View>
             </View>
@@ -255,6 +264,47 @@ export default function TableDetailScreen() {
             onPress={() => {
               if (runCommand({ type: 'open', tableId: table.id, guests }))
                 setModal(null);
+            }}
+          />
+        </Sheet>
+      )}
+      {modal === 'move' && session && (
+        <Sheet title="Đổi bàn cho khách" onClose={() => setModal(null)}>
+          <Text style={ui.muted}>
+            Chọn bàn trống đủ chỗ cho {session.guests} khách.
+          </Text>
+          <View style={ui.wrap}>
+            {targets.map((t) => (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Chuyển đến ${t.name}`}
+                accessibilityState={{ selected: target === t.id }}
+                key={t.id}
+                onPress={() => setTarget(t.id)}
+                style={{
+                  padding: 14,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: target === t.id ? colors.green : colors.line,
+                  backgroundColor: target === t.id ? colors.mint : '#fff',
+                }}
+              >
+                <Text style={ui.body}>{t.name}</Text>
+                <Text style={ui.small}>{t.area} · {t.capacity} chỗ</Text>
+              </Pressable>
+            ))}
+          </View>
+          {!targets.length && <Empty text="Chưa có bàn trống phù hợp." />}
+          <Field label="Lý do đổi bàn" value={reason} onChangeText={setReason} multiline maxLength={300} />
+          <Button
+            title="Xác nhận đổi bàn"
+            disabled={!targets.some((t) => t.id === target) || !reason.trim() ||
+              !table.active || session.prebillPrinted || session.payment !== 'unpaid'}
+            onPress={() => {
+              if (runCommand({ type: 'move', sessionId: session.id, tableId: target, reason, sourceTableId: table.id })) {
+                setModal(null);
+                router.replace({ pathname: '/waiter/table/[id]', params: { id: target } });
+              }
             }}
           />
         </Sheet>
