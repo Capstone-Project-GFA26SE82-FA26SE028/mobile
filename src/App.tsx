@@ -1,6 +1,6 @@
 import * as SplashScreen from 'expo-splash-screen';
 
-import Router from '@/routes/router';
+import { Stack } from 'expo-router';
 import { AppProviders } from '@/app/providers/app-providers';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 
@@ -10,7 +10,7 @@ export default function App() {
   return (
     <AppProviders>
       <AnimatedSplashOverlay />
-      <Router />
+      <Stack screenOptions={{ headerShown: false }} />
     </AppProviders>
   );
 }
