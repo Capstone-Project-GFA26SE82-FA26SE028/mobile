@@ -6,9 +6,10 @@ Native for Android, iOS, and web, while following the restaurant feature structu
 ## Run
 
 The Authentication feature is migrated from `old-mobile`. The app opens the login
-screen; choose **Vào chế độ dùng thử** to access the protected staff account screen
-and sign out. Real account authentication is not connected yet. See
-[Authentication scope](src/features/auth/README.md) for backend requirements.
+screen; choose **Vào chế độ dùng thử** to enter the original waiter layout, then
+open **Cá nhân** to sign out. Other feature tabs are temporary placeholders.
+Real account authentication is not connected yet. See
+[Authentication scope](src/features/waiter/auth/README.md) for backend requirements.
 
 ```sh
 npm install
@@ -141,7 +142,7 @@ RoleRoute accept authentication/role state from their caller and render a fallba
 when access is denied; they are not connected to an authentication backend yet.
 Server APIs must enforce authorization independently.
 
-The root layout uses a Stack navigator. `/` redirects to `/waiter/account`, whose
+The root layout uses a Stack navigator. `/` redirects to `/waiter/tables`, whose
 parent layout redirects signed-out users to `/login`. Explore and the starter tab
 components remain available in the source. Add feature routes under routes/expo;
 waiter routes reuse the authentication guard in waiter/_layout.tsx.

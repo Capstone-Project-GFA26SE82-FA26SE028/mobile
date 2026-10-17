@@ -9,16 +9,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { enterDemo } from '../authSlice';
-import { Button, Field, Icon, Notice } from '../components/UI';
-import { colors, ui } from '../theme';
+import { enterDemo } from '../../shared/waiterSlice';
+import { Button, Field, Icon, Notice } from '../../shared/components/UI';
+import { colors, ui } from '../../shared/theme';
 export default function LoginScreen() {
-  const signedIn = useAppSelector((s) => s.auth.signedIn);
+  const signedIn = useAppSelector((s) => s.waiter.signedIn);
   const dispatch = useAppDispatch();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  if (signedIn) return <Redirect href="/waiter/account" />;
+  if (signedIn) return <Redirect href="/waiter/tables" />;
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
       <KeyboardAvoidingView

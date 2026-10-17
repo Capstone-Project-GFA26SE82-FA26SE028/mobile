@@ -1,1 +1,1 @@
-export { default } from '@/features/auth/screens/SessionScreen';
+export { default } from '@/features/waiter/account/screens/AccountScreen';
