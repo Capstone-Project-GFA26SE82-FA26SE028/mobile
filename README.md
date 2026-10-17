@@ -12,6 +12,10 @@ Other feature tabs and table detail are temporary placeholders.
 Real account authentication is not connected yet. See
 [Authentication scope](src/features/waiter/auth/README.md) for backend requirements.
 
+UC_WAI_03 is available through **Đơn khách chờ xác nhận** on the table map.
+Review each QR order round and confirm it before it enters kitchen items and
+billable totals in local demo state. See [Order confirmation](src/features/waiter/ordering/README.md).
+
 ```sh
 npm install
 npm run start
