@@ -258,3 +258,32 @@ test('pending settlement prevents adding, cancelling and moving', () => {
   assert.ok(applyCommand(s, {type:'move', id:'move-after-cash', now, sessionId:'S6', tableId:'T1', reason:'Đổi bàn'}, menu));
   assert.deepEqual(s, accepted);
 });
+
+test('service requests are acknowledged FIFO and must be acknowledged before completion', () => {
+  const s = fresh();
+  const request = (requestId, status) => applyCommand(s, {type:'request',id:`${requestId}-${status}`,now,requestId,status}, menu);
+  const before = structuredClone(s);
+  assert.ok(request('R2', 'processing'));
+  assert.ok(request('R1', 'done'));
+  assert.deepEqual(s, before);
+  assert.equal(request('R1', 'processing'), null);
+  assert.equal(request('R2', 'processing'), null);
+  assert.equal(request('R1', 'done'), null);
+  assert.equal(s.requests.find(r => r.id === 'R1').status, 'done');
+  assert.ok(!s.requests.filter(r => r.status !== 'done').some(r => r.id === 'R1'));
+  const completed = structuredClone(s);
+  assert.ok(request('R1', 'done'));
+  assert.deepEqual(s, completed);
+});
+
+test('request table follows its session after a move and completion does not collect cash', () => {
+  const s = fresh();
+  assert.equal(move(s), null);
+  const request = s.requests.find(r => r.id === 'R1');
+  assert.equal(s.tables.find(t => t.sessionId === request.sessionId).id, 'T1');
+  assert.equal(applyCommand(s, {type:'request',id:'ack-r1',now,requestId:'R1',status:'processing'}, menu), null);
+  assert.equal(applyCommand(s, {type:'request',id:'ack-r2',now,requestId:'R2',status:'processing'}, menu), null);
+  assert.equal(applyCommand(s, {type:'request',id:'done-r2',now,requestId:'R2',status:'done'}, menu), null);
+  assert.equal(s.sessions.find(x => x.id === 'S6').payment, 'unpaid');
+  assert.equal(s.sessions.find(x => x.id === 'S6').cashReceived, undefined);
+});
