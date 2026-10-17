@@ -1,4 +1,5 @@
 import type { Command, DiningTable, Dish, WaiterState } from './types';
+import { hasWaiterSession } from '../auth/session';
 export const money = (n: number) =>
   new Intl.NumberFormat('vi-VN', {
     style: 'currency',
@@ -68,7 +69,8 @@ export function applyCommand(
   command: Command,
   menu: readonly Dish[],
 ): string | null {
-  if (!state.signedIn) return 'Vui lòng vào phiên phục vụ trước khi thao tác.';
+  if (!hasWaiterSession(state) || !state.waiter)
+    return 'Vui lòng vào phiên phục vụ hợp lệ trước khi thao tác.';
   const c = command;
   if (c.type === 'confirm-order') {
     const order = state.customerOrders.find((o) => o.id === c.orderId);
@@ -76,11 +78,13 @@ export function applyCommand(
       return 'Đơn đã được xác nhận hoặc không còn tồn tại. Hãy kiểm tra lại danh sách.';
     if (order.version !== c.version)
       return 'Đơn vừa được cập nhật. Vui lòng đóng bảng xác nhận và kiểm tra lại nội dung mới.';
-    if (!c.waiter.id.trim() || !c.waiter.name.trim())
+    if (!state.waiter.id.trim() || !state.waiter.name.trim())
       return 'Không tìm thấy thông tin nhân viên xác nhận.';
     const session = state.sessions.find((s) => s.id === order.sessionId);
     if (!session || !state.tables.some((t) => t.active && t.id === session.tableId && t.sessionId === session.id))
       return 'Phiên bàn đã đóng hoặc không còn hoạt động.';
+    if (order.lines.some((line) => !Number.isSafeInteger(line.price) || line.price < 0 || !line.name.trim()))
+      return 'Giá hoặc thông tin món trong đơn không hợp lệ. Vui lòng kiểm tra lại.';
     // Only accepted orders become kitchen items and enter the billable total.
     const error = applyCommand(state, {
       type: 'order', id: `customer-${order.id}`, now: c.now,
@@ -91,13 +95,20 @@ export function applyCommand(
       })),
     }, menu);
     if (error) return error;
+    // Keep the price/name reviewed with this order, even if the menu changes.
+    // Availability and quantities were validated before any item was created.
+    order.lines.forEach((line, index) => {
+      const item = state.items.find((i) => i.id === `customer-${order.id}-${index}`)!;
+      item.price = line.price;
+      item.name = line.name;
+    });
     order.status = 'confirmed';
     order.version += 1;
-    order.confirmedBy = { ...c.waiter };
+    order.confirmedBy = { id: state.waiter.id, name: state.waiter.name };
     order.confirmedAt = c.now;
     state.logs.unshift({
       id: c.id, time: c.now,
-      text: `${c.waiter.name} xác nhận đơn ${order.id}, chuyển bếp và thu ngân.`,
+      text: `${state.waiter.name} xác nhận đơn ${order.id}, chuyển bếp và thu ngân.`,
     });
     return null;
   }
@@ -228,6 +239,12 @@ export function applyCommand(
     const item = state.items.find((i) => i.id === c.itemId);
     if (!item || item.status !== 'Ready')
       return 'Món chưa sẵn sàng để lên bàn.';
+    if (!state.tables.some((t) => t.active && t.sessionId === item.sessionId))
+      return 'Phiên bàn không còn hoạt động. Vui lòng kiểm tra lại.';
+    if (item.servings?.some((s) => s.id === c.id))
+      return 'Lượt lên món này đã được ghi nhận.';
+    if (c.expectedServed !== undefined && c.expectedServed !== item.served)
+      return 'Số phần đã lên vừa thay đổi. Vui lòng mở lại bảng xác nhận.';
     if (
       !Number.isInteger(c.quantity) ||
       c.quantity < 1 ||
@@ -235,12 +252,16 @@ export function applyCommand(
     )
       return 'Số phần đã lên không hợp lệ.';
     item.served += c.quantity;
+    (item.servings ??= []).push({
+      id: c.id, waiterId: state.waiter.id, waiterName: state.waiter.name,
+      quantity: c.quantity, time: c.now,
+    });
     item.seen = true;
     if (item.served === item.quantity) item.status = 'Served';
     state.logs.unshift({
       id: c.id,
       time: c.now,
-      text: `Đã lên ${c.quantity} × ${item.name}.`,
+      text: `${state.waiter.name} đã lên ${c.quantity} × ${item.name}.`,
     });
   } else if (c.type === 'seen') {
     const item = state.items.find((i) => i.id === c.itemId);

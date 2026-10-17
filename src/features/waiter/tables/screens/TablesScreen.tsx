@@ -22,10 +22,12 @@ export default function TablesScreen() {
   const [area, setArea] = useState('Tất cả');
   const [status, setStatus] = useState('Tất cả');
   const [query, setQuery] = useState('');
+  const activeTables = state.tables.filter((t) => t.active);
+  const areas = [...new Set(activeTables.map((t) => t.area).filter(Boolean))];
   const ready = state.items
     .filter((i) => i.status === 'Ready')
     .reduce((n, i) => n + i.quantity - i.served, 0);
-  const rows = state.tables.filter(
+  const rows = activeTables.filter(
     (t) =>
       (area === 'Tất cả' || t.area === area) &&
       (status === 'Tất cả' || tableStatus(state, t, now) === status) &&
@@ -67,7 +69,7 @@ export default function TablesScreen() {
         <View style={{ flexDirection: 'row', marginTop: 5 }}>
           {[
             {
-              value: state.tables.filter((t) => t.sessionId).length,
+              value: activeTables.filter((t) => t.sessionId).length,
               label: 'Bàn có khách',
             },
             { value: ready, label: 'Phần chờ lên' },
@@ -126,10 +128,10 @@ export default function TablesScreen() {
         <Text accessibilityRole="header" style={ui.h2}>
           Sơ đồ bàn
         </Text>
-        <Text style={ui.small}>{state.tables.length} bàn · 3 khu vực</Text>
+        <Text style={ui.small}>{activeTables.length} bàn · {areas.length} khu vực</Text>
       </View>
       <Chips
-        options={['Tất cả', 'Tầng 1', 'Tầng 2', 'Sân vườn']}
+        options={['Tất cả', ...areas]}
         value={area}
         onChange={setArea}
       />

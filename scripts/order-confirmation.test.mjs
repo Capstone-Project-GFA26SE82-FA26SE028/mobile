@@ -21,10 +21,10 @@ const menu = [
   { id: 'salad', name: 'Salad', price: 79000, available: true },
   { id: 'toast', name: 'Bánh mì', price: 69000, available: true },
 ];
-const fresh = () => ({ ...createWaiterState(now), signedIn: true });
+const fresh = () => ({ ...createWaiterState(now), signedIn: true, waiter: { id: 'W1', name: 'Trần Hoàng', role: 'waiter', active: true } });
 const confirm = (s, overrides = {}, dishes = menu) => applyCommand(s, {
   type: 'confirm-order', id: 'confirm-test', now,
-  orderId: 'QR-001', version: 1, waiter: { id: 'W1', name: 'Trần Hoàng' }, ...overrides,
+  orderId: 'QR-001', version: 1, ...overrides,
 }, dishes);
 
 test('awaiting orders do not create kitchen items or add to billable totals', () => {
@@ -81,9 +81,35 @@ test('unavailable dishes, invalid quantities and missing staff reject the whole 
   for (const scenario of ['unavailable', 'quantity', 'staff']) {
     const s = fresh();
     if (scenario === 'quantity') s.customerOrders[0].lines[1].quantity = 0;
+    if (scenario === 'staff') { s.waiter = null; }
     const before = structuredClone(s);
-    const override = scenario === 'staff' ? { waiter: { id: '', name: '' } } : {};
+    const override = {};
     assert.ok(confirm(s, override, scenario === 'unavailable' ? unavailable : menu));
     assert.deepEqual(s, before);
   }
+});
+
+test('confirmation preserves reviewed prices instead of silently using newer menu prices', () => {
+  const s = fresh();
+  const changedMenu = menu.map(d => ({ ...d, price: d.price + 50000 }));
+  assert.equal(confirm(s, {}, changedMenu), null);
+  assert.equal(sessionTotal(s, 'S3'), 238000 + 279000);
+  assert.equal(s.items.find(i => i.id === 'customer-QR-001-0').price, 189000);
+  assert.equal(s.items.find(i => i.id === 'customer-QR-001-0').name, s.customerOrders[0].lines[0].name);
+});
+
+test('invalid reviewed prices reject atomically before creating kitchen items', () => {
+  for (const price of [-1, NaN, Infinity, 1.5]) {
+    const s = fresh();
+    s.customerOrders[0].lines[1].price = price;
+    const before = structuredClone(s);
+    assert.ok(confirm(s));
+    assert.deepEqual(s, before);
+  }
+});
+
+test('confirmation uses session identity rather than caller supplied staff', () => {
+  const s = fresh();
+  assert.equal(confirm(s, { waiter: { id: 'spoof', name: 'Another staff' } }), null);
+  assert.deepEqual(s.customerOrders[0].confirmedBy, { id: 'W1', name: 'Trần Hoàng' });
 });

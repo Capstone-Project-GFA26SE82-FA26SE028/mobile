@@ -40,7 +40,7 @@ export default function AccountScreen() {
             </Text>
           </View>
           <View style={{ gap: 5 }}>
-            <Text style={ui.h2}>Trần Hoàng</Text>
+            <Text style={ui.h2}>{state.waiter?.name || 'Nhân viên phục vụ'}</Text>
             <Text style={ui.muted}>Nhân viên phục vụ · Nhà hàng Mộc</Text>
             <Text style={ui.small}>Tài khoản dùng thử</Text>
           </View>
@@ -51,7 +51,7 @@ export default function AccountScreen() {
           <View style={{ flex: 1, gap: 5 }}>
             <Text style={ui.body}>Rung nhắc món chưa xem</Text>
             <Text style={ui.small}>
-              Mỗi 30 giây khi ứng dụng đang mở, trên thiết bị hỗ trợ rung.
+              Khi có món mới và mỗi 30 giây nếu chưa xem, trên thiết bị hỗ trợ rung.
             </Text>
           </View>
           <Switch

@@ -3,6 +3,7 @@ import { createCustomerOrders } from '../../ordering/data/seed';
 export function createWaiterState(now = Date.now()): WaiterState {
   return {
     signedIn: false,
+    waiter: null,
     alerts: false,
     feedback: null,
     customerOrders: createCustomerOrders(now),
