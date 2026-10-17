@@ -148,3 +148,58 @@ test('Cooking, Ready and Served dishes cannot be cancelled or changed by cancell
     assert.deepEqual(s, before);
   }
 });
+
+const move = (s, data = {}) => applyCommand(s, {
+  type:'move', id:'move-test', now, sessionId:'S3', sourceTableId:'T3', tableId:'T1', reason:'Gần cửa sổ', ...data,
+}, menu);
+
+test('moving preserves session, items, customer orders and requests; old table needs cleaning', () => {
+  const s = fresh();
+  const items = structuredClone(s.items);
+  const orders = structuredClone(s.customerOrders);
+  const requests = structuredClone(s.requests);
+  const total = sessionTotal(s, 'S3');
+  assert.equal(move(s), null);
+  assert.equal(s.tables[2].sessionId, null);
+  assert.equal(s.tables[2].needsCleaning, true);
+  assert.equal(s.tables[0].sessionId, 'S3');
+  assert.equal(s.sessions.find(x => x.id === 'S3').tableId, 'T1');
+  assert.equal(tableStatus(s, s.tables[0], now), 'Có khách');
+  assert.deepEqual(s.items, items);
+  assert.deepEqual(s.customerOrders, orders);
+  assert.deepEqual(s.requests, requests);
+  assert.equal(sessionTotal(s, 'S3'), total);
+  assert.ok(s.logs[0].text.includes('Gần cửa sổ'));
+});
+
+test('occupied, dirty, held, inactive, unassigned and undersized destinations cannot receive a session', () => {
+  for (const scenario of ['occupied','dirty','held','inactive','area','capacity','same-table']) {
+    const s = fresh();
+    const data = {};
+    if (scenario === 'occupied') data.tableId = 'T2';
+    if (scenario === 'dirty') data.tableId = 'T5';
+    if (scenario === 'held') data.tableId = 'T10';
+    if (scenario === 'inactive') s.tables[0].active = false;
+    if (scenario === 'area') s.tables[0].area = '';
+    if (scenario === 'capacity') s.tables[0].capacity = 1;
+    if (scenario === 'same-table') data.tableId = 'T3';
+    const before = structuredClone(s);
+    assert.ok(move(s, data));
+    assert.deepEqual(s, before);
+  }
+});
+
+test('prebill, payment, missing reason and stale source checks reject moves atomically', () => {
+  for (const scenario of ['prebill','settling','reason','stale','source']) {
+    const s = fresh();
+    const data = {};
+    if (scenario === 'prebill') s.sessions.find(x => x.id === 'S3').prebillPrinted = true;
+    if (scenario === 'settling') s.sessions.find(x => x.id === 'S3').payment = 'pending_settlement';
+    if (scenario === 'reason') data.reason = ' ';
+    if (scenario === 'stale') data.sourceTableId = 'T9';
+    if (scenario === 'source') s.tables[2].sessionId = null;
+    const before = structuredClone(s);
+    assert.ok(move(s, data));
+    assert.deepEqual(s, before);
+  }
+});

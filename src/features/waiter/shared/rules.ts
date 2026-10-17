@@ -161,6 +161,7 @@ export function applyCommand(
     if (
       !target ||
       !target.active ||
+      !target.area ||
       target.sessionId ||
       target.needsCleaning ||
       heldReservation(state, target.id, c.now)
@@ -170,7 +171,10 @@ export function applyCommand(
       return 'Bàn đích không đủ chỗ cho khách.';
     if (!c.reason.trim()) return 'Vui lòng nhập lý do đổi bàn.';
     const source = state.tables.find((t) => t.id === session.tableId);
-    if (!source) return 'Không tìm thấy bàn hiện tại.';
+    if (!source?.active || source.sessionId !== session.id)
+      return 'Phiên bàn hiện tại không còn hoạt động.';
+    if (c.sourceTableId !== undefined && c.sourceTableId !== source.id)
+      return 'Bàn hiện tại vừa thay đổi. Vui lòng mở lại chi tiết bàn.';
     source.sessionId = null;
     source.needsCleaning = true;
     target.sessionId = session.id;
