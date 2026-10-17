@@ -7,7 +7,8 @@ Native for Android, iOS, and web, while following the restaurant feature structu
 
 The Authentication feature is migrated from `old-mobile`. The app opens the login
 screen; choose **Vào chế độ dùng thử** to enter the original waiter layout, then
-open **Cá nhân** to sign out. Other feature tabs are temporary placeholders.
+view the original table map (UC_WAI_02), or open **Cá nhân** to sign out.
+Other feature tabs and table detail are temporary placeholders.
 Real account authentication is not connected yet. See
 [Authentication scope](src/features/waiter/auth/README.md) for backend requirements.
 

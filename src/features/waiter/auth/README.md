@@ -11,7 +11,7 @@ Backend integration remains pending: API endpoints, JWT handling, active-account
 
 LoginScreen, AccountScreen, WaiterLayout, App, route entry files, store and waiter/shared are unchanged copies of the originals. Shared types, rules, seed data, menu and its images are included because the original screens/layout/slice import them. No table, ordering, serving, requests, reservations or payment feature screens are included.
 
-Login redirects to `/waiter/tables`, as in the original. The original five-tab layout is preserved. Tables, Ready, Requests and Reservations have temporary route placeholders until their respective feature branches replace them; use the Cá nhân tab to inspect the original account screen and sign out.
+Login redirects to `/waiter/tables`, as in the original. The original five-tab layout is preserved. Tables is migrated in UC_WAI_02. Ready, Requests and Reservations have temporary route placeholders until their respective feature branches replace them; use the Cá nhân tab to inspect the original account screen and sign out.
 
 Validation: `npm run typecheck`, `npm run test:auth`, and `npx expo export --platform web`.
-Manual flow: open `/waiter/account` while signed out → login; check empty-input validation; enter demo → tables placeholder; open Cá nhân → original account screen; cancel logout → remain on account; confirm logout → login; reload or revisit a protected route → login.
+Manual flow: open `/waiter/account` while signed out → login; check empty-input validation; enter demo → tables; open Cá nhân → original account screen; cancel logout → remain on account; confirm logout → login; reload or revisit a protected route → login.
