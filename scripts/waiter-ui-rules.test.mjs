@@ -91,3 +91,60 @@ test('table statuses cover all four Excel states and reservation holds', () => {
   assert.equal(tableStatus(s, s.tables[9], now), 'Giữ chỗ');
   assert.equal(matches('Bàn 03', 'ban 03'), true);
 });
+
+test('tableside ordering creates kitchen Pending items immediately, preserving quantity and notes', () => {
+  const s = fresh();
+  const before = sessionTotal(s, 'S3');
+  const input = { type:'order', id:'tableside', now, sessionId:'S3', lines:[
+    { dishId:'salmon', quantity:2, note:'  Ít sốt  ' },
+    { dishId:'orange', quantity:1, note:'Không đá' },
+  ] };
+  assert.equal(applyCommand(s, input, menu), null);
+  const created = s.items.filter(i => i.id.startsWith('tableside-'));
+  assert.equal(created.length, 2);
+  assert.ok(created.every(i => i.status === 'Pending' && i.sessionId === 'S3'));
+  assert.equal(created[0].quantity, 2);
+  assert.equal(created[0].note, 'Ít sốt');
+  assert.equal(sessionTotal(s, 'S3'), before + 2 * 189000 + 45000);
+  const accepted = structuredClone(s);
+  assert.ok(applyCommand(s, input, menu));
+  assert.deepEqual(s, accepted);
+});
+
+test('invalid, sold-out and inactive-table orders fail before adding any lines', () => {
+  const dishes = [...menu, { id:'rice', name:'Cơm', price:99000, available:false }];
+  for (const scenario of ['sold-out', 'quantity', 'note', 'inactive', 'settling']) {
+    const s = fresh();
+    const lines = [{ dishId:'salmon', quantity:1, note:'' }, { dishId:'orange', quantity:1, note:'' }];
+    if (scenario === 'sold-out') lines[1].dishId = 'rice';
+    if (scenario === 'quantity') lines[1].quantity = 100;
+    if (scenario === 'note') lines[1].note = null;
+    if (scenario === 'inactive') s.tables[2].active = false;
+    if (scenario === 'settling') s.sessions.find(x => x.id === 'S3').payment = 'pending_settlement';
+    const before = structuredClone(s);
+    assert.ok(applyCommand(s, {type:'order', id:'bad-order', now, sessionId:'S3', lines}, dishes));
+    assert.deepEqual(s, before);
+  }
+});
+
+test('cancelling Pending or Sent needs a reason, removes charges and logs the reason', () => {
+  for (const status of ['Pending', 'Sent']) {
+    const s = fresh();
+    s.items.find(i => i.id === 'I3').status = status;
+    const before = structuredClone(s);
+    assert.ok(applyCommand(s, {type:'cancel',id:'cancel-empty',now,itemId:'I3',reason:' '}, menu));
+    assert.deepEqual(s, before);
+    assert.equal(applyCommand(s, {type:'cancel',id:'cancel',now,itemId:'I3',reason:'Khách đổi món'}, menu), null);
+    assert.equal(s.items.find(i => i.id === 'I3').status, 'Cancelled');
+    assert.equal(sessionTotal(s, 'S3'), 0);
+    assert.ok(s.logs[0].text.includes('Khách đổi món'));
+  }
+});
+
+test('Cooking, Ready and Served dishes cannot be cancelled or changed by cancellation', () => {
+  for (const itemId of ['I1', 'I2', 'I4']) {
+    const s = fresh(); const before = structuredClone(s);
+    assert.ok(applyCommand(s, {type:'cancel',id:'blocked',now,itemId,reason:'Khách yêu cầu'}, menu));
+    assert.deepEqual(s, before);
+  }
+});

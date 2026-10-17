@@ -23,7 +23,7 @@ export function receiveKitchenReady(state: WaiterState, event: KitchenReadyEvent
     return 'Số lượng món sẵn sàng không khớp với lượt gọi.';
   // Retries must not resurrect a seen notification or reset partial serving.
   if (item.status === 'Ready' || item.status === 'Served') return null;
-  if (item.status !== 'Cooking' && item.status !== 'Pending')
+  if (item.status !== 'Cooking' && item.status !== 'Pending' && item.status !== 'Sent')
     return 'Không thể nhận thông báo cho món đã hủy.';
   item.status = 'Ready';
   item.readyAt = now;

@@ -36,7 +36,7 @@ export type OrderItem = {
   quantity: number;
   served: number;
   note: string;
-  status: 'Pending' | 'Cooking' | 'Ready' | 'Served' | 'Cancelled';
+  status: 'Pending' | 'Sent' | 'Cooking' | 'Ready' | 'Served' | 'Cancelled';
   readyAt?: number;
   seen: boolean;
   servings?: { id: string; waiterId: string; waiterName: string; quantity: number; time: number }[];
