@@ -26,6 +26,8 @@ export type Session = {
   prebillPrinted: boolean;
   payment: 'unpaid' | 'pending_settlement' | 'paid';
   cashReceived?: number;
+  cashCollectedAt?: number;
+  cashCollectedBy?: { id: string; name: string };
 };
 export type OrderItem = {
   id: string;
@@ -83,7 +85,7 @@ export type Command = { id: string; now: number } & (
   | { type: 'serve'; itemId: string; quantity: number; expectedServed?: number }
   | { type: 'seen'; itemId: string }
   | { type: 'request'; requestId: string; status: 'processing' | 'done' }
-  | { type: 'collect'; sessionId: string; amount: number }
+  | { type: 'collect'; sessionId: string; amount: number; expectedTotal?: number; tableId?: string }
   | {
       type: 'reservation';
       reservationId: string;

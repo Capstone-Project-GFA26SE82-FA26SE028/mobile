@@ -210,9 +210,11 @@ export default function TableDetailScreen() {
                   : 'Thu hộ tiền mặt'
               }
               icon="wallet-outline"
-              // UC_WAI_08 is migrated separately.
-              disabled
-              onPress={() => {}}
+              disabled={!table.active || sessionTotal(state, session.id) <= 0}
+              onPress={() => router.push({
+                pathname: '/waiter/payment/[id]',
+                params: { id: table.id },
+              })}
             />
           </Card>
         </>

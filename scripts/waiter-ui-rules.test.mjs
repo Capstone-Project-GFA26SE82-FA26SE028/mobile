@@ -203,3 +203,58 @@ test('prebill, payment, missing reason and stale source checks reject moves atom
     assert.deepEqual(s, before);
   }
 });
+
+const collect = (s, data = {}) => applyCommand(s, {
+  type:'collect', id:'collect-test', now, sessionId:'S6', tableId:'T6', amount:500000, expectedTotal:468000, ...data,
+}, menu);
+
+test('cash collection records received cash, staff and time but does not pay or close the session', () => {
+  const s = fresh();
+  assert.equal(collect(s), null);
+  const session = s.sessions.find(x => x.id === 'S6');
+  assert.equal(session.payment, 'pending_settlement');
+  assert.equal(session.cashReceived, 500000);
+  assert.equal(session.cashReceived - sessionTotal(s, session.id), 32000);
+  assert.deepEqual(session.cashCollectedBy, {id:'W1', name:'Trần Hoàng'});
+  assert.equal(session.cashCollectedAt, now);
+  assert.equal(s.tables[5].sessionId, 'S6');
+  assert.ok(s.logs[0].text.includes('32.000'));
+  const accepted = structuredClone(s);
+  assert.ok(collect(s));
+  assert.deepEqual(s, accepted);
+});
+
+test('insufficient, fractional and invalid cash amounts are rejected without changing the session', () => {
+  for (const amount of [0, 467999, 500000.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+    const s = fresh(); const before = structuredClone(s);
+    assert.ok(collect(s, {amount}));
+    assert.deepEqual(s, before);
+  }
+});
+
+test('cash collection rejects stale totals, closed/inactive tables, empty bills and paid sessions', () => {
+  for (const scenario of ['total','table','closed','inactive','empty','paid']) {
+    const s = fresh(); const data = {};
+    if (scenario === 'total') data.expectedTotal = 1;
+    if (scenario === 'table') data.tableId = 'T2';
+    if (scenario === 'closed') s.tables[5].sessionId = null;
+    if (scenario === 'inactive') s.tables[5].active = false;
+    if (scenario === 'empty') s.items.filter(i => i.sessionId === 'S6').forEach(i => { i.status = 'Cancelled'; });
+    if (scenario === 'paid') s.sessions.find(x => x.id === 'S6').payment = 'paid';
+    const before = structuredClone(s);
+    assert.ok(collect(s, data));
+    assert.deepEqual(s, before);
+  }
+});
+
+test('pending settlement prevents adding, cancelling and moving', () => {
+  const s = fresh();
+  s.sessions.find(x => x.id === 'S6').prebillPrinted = false;
+  s.items.find(x => x.id === 'I4').status = 'Pending';
+  assert.equal(collect(s), null);
+  const accepted = structuredClone(s);
+  assert.ok(applyCommand(s, {type:'order', id:'after-cash', now, sessionId:'S6', lines:[{dishId:'salmon',quantity:1,note:''}]}, menu));
+  assert.ok(applyCommand(s, {type:'cancel', id:'cancel-after-cash', now, itemId:'I4', reason:'Khách đổi món'}, menu));
+  assert.ok(applyCommand(s, {type:'move', id:'move-after-cash', now, sessionId:'S6', tableId:'T1', reason:'Đổi bàn'}, menu));
+  assert.deepEqual(s, accepted);
+});
