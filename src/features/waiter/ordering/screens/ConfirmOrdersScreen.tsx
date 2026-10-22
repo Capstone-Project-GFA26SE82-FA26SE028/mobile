@@ -1,3 +1,4 @@
+import LiveOrdersScreen from './LiveOrdersScreen';
 import { useRef, useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useAppSelector } from '@/app/hooks';
@@ -12,7 +13,7 @@ import type { CustomerOrder } from '../types';
 
 const total = (order: CustomerOrder) => order.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
 
-export default function ConfirmOrdersScreen() {
+function DemoConfirmOrdersScreen() {
   const state = useAppSelector((s) => s.waiter);
   const waiter = state.waiter;
   const now = useNow();
@@ -128,4 +129,9 @@ export default function ConfirmOrdersScreen() {
       )}
     </Page>
   );
+}
+
+export default function ConfirmOrdersScreen() {
+  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  return apiMode ? <LiveOrdersScreen /> : <DemoConfirmOrdersScreen />;
 }

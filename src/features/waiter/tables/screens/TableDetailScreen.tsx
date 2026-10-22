@@ -1,3 +1,4 @@
+import LiveTableDetailScreen from './LiveTableDetailScreen';
 import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
@@ -31,7 +32,7 @@ const labels = {
   Served: 'Đã lên món',
   Cancelled: 'Đã hủy',
 };
-export default function TableDetailScreen() {
+function DemoTableDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const state = useAppSelector((s) => s.waiter);
   const router = useRouter();
@@ -337,4 +338,9 @@ export default function TableDetailScreen() {
       )}
     </Page>
   );
+}
+
+export default function TableDetailScreen() {
+  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  return apiMode ? <LiveTableDetailScreen /> : <DemoTableDetailScreen />;
 }

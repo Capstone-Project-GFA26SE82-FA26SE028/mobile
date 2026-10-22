@@ -1,3 +1,4 @@
+import UnsupportedWaiterScreen from '../../shared/components/UnsupportedWaiterScreen';
 import { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -19,7 +20,7 @@ import { colors, ui } from '../../shared/theme';
 import { runCommand, useNow } from '../../shared/hooks';
 import { matches, time } from '../../shared/rules';
 import { inHoldWindow, reservationTableError } from '../rules';
-export default function ReservationsScreen() {
+function DemoReservationsScreen() {
   const state = useAppSelector((s) => s.waiter);
   const router = useRouter();
   const now = useNow();
@@ -229,4 +230,9 @@ export default function ReservationsScreen() {
       )}
     </Page>
   );
+}
+
+export default function ReservationsScreen() {
+  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  return apiMode ? <UnsupportedWaiterScreen /> : <DemoReservationsScreen />;
 }

@@ -1,3 +1,4 @@
+import LiveTablesScreen from './LiveTablesScreen';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
@@ -15,7 +16,7 @@ import {
 import { colors, ui } from '../../shared/theme';
 import { useNow } from '../../shared/hooks';
 import { matches, minutes, tableStatus } from '../../shared/rules';
-export default function TablesScreen() {
+function DemoTablesScreen() {
   const state = useAppSelector((s) => s.waiter);
   const router = useRouter();
   const now = useNow();
@@ -267,4 +268,9 @@ export default function TablesScreen() {
       </Text>
     </Page>
   );
+}
+
+export default function TablesScreen() {
+  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  return apiMode ? <LiveTablesScreen /> : <DemoTablesScreen />;
 }

@@ -14,8 +14,10 @@ Logout calls POST /api/auth/logout and always clears local credentials. Network
 failure means server revocation cannot be confirmed; server expiry still applies.
 Requests time out after 15 seconds. Single-device policy is enforced by Identity.
 
-Demo entry remains available. Tables, orders, payments, requests, reservations
-and notifications still use demo data even after real login. Account states this.
+Demo entry remains available as a separate mode. Real login clears demo business
+data and uses live table/menu/order screens. Query caches are cleared on account
+changes or session expiry. Unsupported backend operations have no local success fallback.
+See [Waiter API integration](../api/README.md) for available operations.
 
 ## Connection
 

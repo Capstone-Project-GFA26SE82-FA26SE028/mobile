@@ -1,3 +1,4 @@
+import LiveReadyScreen from '../../serving/screens/LiveReadyScreen';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
@@ -8,7 +9,7 @@ import { minutes, time } from '../../shared/rules';
 import { colors, ui } from '../../shared/theme';
 import { kitchenReady } from '../../shared/waiterSlice';
 
-export default function NotificationsScreen() {
+function DemoNotificationsScreen() {
   const state = useAppSelector((s) => s.waiter);
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -61,4 +62,9 @@ export default function NotificationsScreen() {
       <Text style={[ui.small, { textAlign: 'center' }]}>Thông báo trong ứng dụng · Chưa kết nối push hoặc sự kiện bếp thật</Text>
     </Page>
   );
+}
+
+export default function NotificationsScreen() {
+  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  return apiMode ? <LiveReadyScreen /> : <DemoNotificationsScreen />;
 }
