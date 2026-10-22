@@ -1,3 +1,4 @@
+import UnsupportedWaiterScreen from '../../shared/components/UnsupportedWaiterScreen';
 import { useRef, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
@@ -17,7 +18,7 @@ import {
 import { colors, ui } from '../../shared/theme';
 import { runCommand } from '../../shared/hooks';
 import { money, sessionTotal, time } from '../../shared/rules';
-export default function PaymentScreen() {
+function DemoPaymentScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const state = useAppSelector((s) => s.waiter);
   const table = state.tables.find((t) => t.id === id);
@@ -192,4 +193,9 @@ export default function PaymentScreen() {
       )}
     </Page>
   );
+}
+
+export default function PaymentScreen() {
+  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  return apiMode ? <UnsupportedWaiterScreen /> : <DemoPaymentScreen />;
 }

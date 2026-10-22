@@ -1,3 +1,4 @@
+import UnsupportedWaiterScreen from '../../shared/components/UnsupportedWaiterScreen';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -16,7 +17,7 @@ import {
 import { colors, ui } from '../../shared/theme';
 import { runCommand, useNow } from '../../shared/hooks';
 import { minutes, time } from '../../shared/rules';
-export default function RequestsScreen() {
+function DemoRequestsScreen() {
   const state = useAppSelector((s) => s.waiter);
   const now = useNow();
   const router = useRouter();
@@ -138,4 +139,9 @@ export default function RequestsScreen() {
       {!rows.length && <Empty text="Không có yêu cầu trong danh sách này." />}
     </Page>
   );
+}
+
+export default function RequestsScreen() {
+  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  return apiMode ? <UnsupportedWaiterScreen /> : <DemoRequestsScreen />;
 }

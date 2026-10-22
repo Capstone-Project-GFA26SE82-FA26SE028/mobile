@@ -57,7 +57,7 @@ export default function AccountScreen() {
           </View>
           <View style={{ gap: 5 }}>
             <Text style={ui.h2}>{state.waiter?.name || 'Nhân viên phục vụ'}</Text>
-            <Text style={ui.muted}>Nhân viên phục vụ · Nhà hàng Mộc</Text>
+            <Text style={ui.muted}>Nhân viên phục vụ</Text>
             <Text style={ui.small}>{state.authMode === 'api' ? state.waiter?.email : 'Tài khoản dùng thử'}</Text>
           </View>
         </View>
@@ -73,13 +73,14 @@ export default function AccountScreen() {
           <Switch
             accessibilityLabel="Rung nhắc món chưa xem"
             value={state.alerts}
+            disabled={state.authMode === 'api'}
             onValueChange={(v) => { dispatch(setAlerts(v)); }}
             trackColor={{ false: '#DDE5DF', true: '#92C5AC' }}
             thumbColor={state.alerts ? colors.green : '#fff'}
           />
         </View>
         <Notice text={state.authMode === 'api'
-          ? 'Đã đăng nhập backend. Các dữ liệu bàn, đơn và thông báo hiện vẫn là dữ liệu mẫu. Mở lại ứng dụng cần đăng nhập lại.'
+          ? 'Bàn, thực đơn và order được lấy từ backend. Chưa hỗ trợ push notification. Mở lại ứng dụng cần đăng nhập lại.'
           : 'Chưa kết nối push notification hoặc đồng bộ bếp. Dữ liệu dùng thử được đặt lại khi tải lại ứng dụng.'} />
       </Card>
       <View style={ui.between}>

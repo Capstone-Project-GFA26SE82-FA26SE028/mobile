@@ -1,3 +1,4 @@
+import LiveReadyScreen from './LiveReadyScreen';
 import { useRef, useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import { useAppSelector } from '@/app/hooks';
@@ -17,7 +18,7 @@ import { ui } from '../../shared/theme';
 import { waiterMenu } from '../../shared/data/menu';
 import { minutes } from '../../shared/rules';
 import { runCommand, useNow } from '../../shared/hooks';
-export default function ReadyScreen() {
+function DemoReadyScreen() {
   const state = useAppSelector((s) => s.waiter);
   const now = useNow();
   const [tab, setTab] = useState('Chờ lên món');
@@ -140,4 +141,9 @@ export default function ReadyScreen() {
       )}
     </Page>
   );
+}
+
+export default function ReadyScreen() {
+  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  return apiMode ? <LiveReadyScreen /> : <DemoReadyScreen />;
 }

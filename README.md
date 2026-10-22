@@ -8,10 +8,13 @@ Native for Android, iOS, and web, while following the restaurant feature structu
 The Authentication feature is migrated from `old-mobile`. The app opens the login
 screen; choose **Vào chế độ dùng thử** to enter the original waiter layout, then
 view the original table map (UC_WAI_02), or open **Cá nhân** to sign out.
-Other feature tabs and table detail are temporary placeholders.
 Real Waiter authentication now uses backend login, refresh and logout APIs.
-Account displays the signed-in profile; other business screens still use demo data.
+After backend login, tables, table sessions, menu, order creation and guest-order
+confirmation use Axios and TanStack Query. Tables/orders refresh every five seconds.
+Unsupported payments, reservations and service-request operations display an
+unavailable state instead of changing demo data. Demo entry remains separate.
 See [Authentication setup](src/features/waiter/auth/README.md) for configuration.
+See [Waiter API integration](src/features/waiter/api/README.md) for supported flows and checks.
 
 UC_WAI_03 is available through **Đơn khách chờ xác nhận** on the table map.
 Review each QR order round and confirm it before it enters kitchen items and

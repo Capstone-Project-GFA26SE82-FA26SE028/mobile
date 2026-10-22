@@ -14,6 +14,14 @@ const slice = createSlice({
       state.authMessage = payload;
     },
     authenticated(state, { payload }: PayloadAction<WaiterProfile>) {
+      state.tables = [];
+      state.sessions = [];
+      state.items = [];
+      state.customerOrders = [];
+      state.requests = [];
+      state.reservations = [];
+      state.logs = [];
+      state.alerts = false;
       state.authMessage = undefined;
       state.signedIn = true;
       state.authMode = 'api';
@@ -27,6 +35,7 @@ const slice = createSlice({
         : null;
     },
     enterDemo(state) {
+      if (!state.tables.length) Object.assign(state, createWaiterState());
       state.authMessage = undefined;
       state.authMode = 'demo';
       state.signedIn = true;

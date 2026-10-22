@@ -1,3 +1,4 @@
+import LiveOrderScreen from './LiveOrderScreen';
 import { useRef, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
@@ -21,7 +22,7 @@ import { waiterMenu } from '../../shared/data/menu';
 import { matches, money } from '../../shared/rules';
 import { runCommand } from '../../shared/hooks';
 import type { Dish, DraftLine } from '../../shared/types';
-export default function OrderScreen() {
+function DemoOrderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const state = useAppSelector((s) => s.waiter);
   const router = useRouter();
@@ -228,4 +229,9 @@ export default function OrderScreen() {
       )}
     </Page>
   );
+}
+
+export default function OrderScreen() {
+  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  return apiMode ? <LiveOrderScreen /> : <DemoOrderScreen />;
 }
