@@ -3,6 +3,7 @@ export type WaiterProfile = {
   name: string;
   role: 'waiter';
   active: boolean;
+  email?: string;
 };
 
 export const demoWaiter: WaiterProfile = {

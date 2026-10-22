@@ -9,8 +9,9 @@ The Authentication feature is migrated from `old-mobile`. The app opens the logi
 screen; choose **Vào chế độ dùng thử** to enter the original waiter layout, then
 view the original table map (UC_WAI_02), or open **Cá nhân** to sign out.
 Other feature tabs and table detail are temporary placeholders.
-Real account authentication is not connected yet. See
-[Authentication scope](src/features/waiter/auth/README.md) for backend requirements.
+Real Waiter authentication now uses backend login, refresh and logout APIs.
+Account displays the signed-in profile; other business screens still use demo data.
+See [Authentication setup](src/features/waiter/auth/README.md) for configuration.
 
 UC_WAI_03 is available through **Đơn khách chờ xác nhận** on the table map.
 Review each QR order round and confirm it before it enters kitchen items and

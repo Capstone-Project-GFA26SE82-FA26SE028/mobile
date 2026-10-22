@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Switch, Text, View } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { setAlerts, signOut } from '../../shared/waiterSlice';
+import { setAlerts, signOut, setAuthMessage } from '../../shared/waiterSlice';
 import {
   Button,
   Card,
@@ -14,10 +14,26 @@ import {
 } from '../../shared/components/UI';
 import { colors, ui } from '../../shared/theme';
 import { time } from '../../shared/rules';
+import { authError, authService } from '../../auth/authService';
 export default function AccountScreen() {
   const state = useAppSelector((s) => s.waiter);
   const dispatch = useAppDispatch();
   const [confirm, setConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  async function logout() {
+    if (loading) return;
+    setLoading(true);
+    try {
+      if (state.authMode === 'api') await authService.logout();
+      else authService.clear();
+      dispatch(signOut());
+      setConfirm(false);
+    } catch (error) {
+      // Local credentials are cleared even when the revocation request fails.
+      dispatch(signOut());
+      dispatch(setAuthMessage(`Đã đăng xuất trên thiết bị, nhưng chưa xác nhận thu hồi phiên trên máy chủ. ${authError(error)}`));
+    } finally { setLoading(false); }
+  }
   return (
     <Page>
       <Title title="Cá nhân" subtitle="Thông tin và thiết lập ca phục vụ." />
@@ -36,13 +52,13 @@ export default function AccountScreen() {
             <Text
               style={{ color: colors.green, fontSize: 20, fontWeight: '700' }}
             >
-              TH
+              {(state.waiter?.name || 'NV').split(/\s+/).slice(-2).map(part => part[0]).join('').toUpperCase()}
             </Text>
           </View>
           <View style={{ gap: 5 }}>
             <Text style={ui.h2}>{state.waiter?.name || 'Nhân viên phục vụ'}</Text>
             <Text style={ui.muted}>Nhân viên phục vụ · Nhà hàng Mộc</Text>
-            <Text style={ui.small}>Tài khoản dùng thử</Text>
+            <Text style={ui.small}>{state.authMode === 'api' ? state.waiter?.email : 'Tài khoản dùng thử'}</Text>
           </View>
         </View>
       </Card>
@@ -62,7 +78,9 @@ export default function AccountScreen() {
             thumbColor={state.alerts ? colors.green : '#fff'}
           />
         </View>
-        <Notice text="Chưa kết nối push notification, đồng bộ bếp hoặc đăng nhập thật. Dữ liệu trong phiên dùng thử được đặt lại khi tải lại ứng dụng." />
+        <Notice text={state.authMode === 'api'
+          ? 'Đã đăng nhập backend. Các dữ liệu bàn, đơn và thông báo hiện vẫn là dữ liệu mẫu. Mở lại ứng dụng cần đăng nhập lại.'
+          : 'Chưa kết nối push notification hoặc đồng bộ bếp. Dữ liệu dùng thử được đặt lại khi tải lại ứng dụng.'} />
       </Card>
       <View style={ui.between}>
         <Text style={ui.h2}>Hoạt động trong phiên</Text>
@@ -95,8 +113,8 @@ export default function AccountScreen() {
       />
       {confirm && (
         <Sheet
-          title="Kết thúc phiên dùng thử?"
-          onClose={() => setConfirm(false)}
+          title={state.authMode === 'api' ? 'Đăng xuất tài khoản?' : 'Kết thúc phiên dùng thử?'}
+          onClose={() => { if (!loading) setConfirm(false); }}
         >
           <Text style={ui.body}>Bạn sẽ quay về màn hình đăng nhập.</Text>
           {state.sessions.some((s) => s.payment === 'pending_settlement') && (
@@ -105,13 +123,7 @@ export default function AccountScreen() {
               error
             />
           )}
-          <Button
-            title="Xác nhận đăng xuất"
-            onPress={() => {
-              setConfirm(false);
-              dispatch(signOut());
-            }}
-          />
+          <Button title={loading ? 'Đang đăng xuất…' : 'Xác nhận đăng xuất'} disabled={loading} onPress={logout} />
         </Sheet>
       )}
     </Page>

@@ -65,6 +65,8 @@ export type Reservation = {
   customerMessage?: string;
 };
 export type WaiterState = {
+  authMode?: 'demo' | 'api';
+  authMessage?: string;
   signedIn: boolean;
   waiter: WaiterProfile | null;
   alerts: boolean;

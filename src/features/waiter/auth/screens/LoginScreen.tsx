@@ -9,16 +9,37 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { enterDemo } from '../../shared/waiterSlice';
+import { authenticated, enterDemo } from '../../shared/waiterSlice';
+import { authError, authService } from '../authService';
 import { Button, Field, Icon, Notice } from '../../shared/components/UI';
 import { colors, ui } from '../../shared/theme';
 import { hasWaiterSession } from '../session';
 export default function LoginScreen() {
   const signedIn = useAppSelector((s) => hasWaiterSession(s.waiter));
+  const authMessage = useAppSelector((s) => s.waiter.authMessage);
   const dispatch = useAppDispatch();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  async function login() {
+    if (loading) return;
+    setError('');
+    if (!username.trim() || !password) {
+      setError('Vui lòng nhập email và mật khẩu.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const profile = await authService.login(username, password);
+      setPassword('');
+      dispatch(authenticated(profile));
+    } catch (error) {
+      setError(authError(error));
+    } finally {
+      setLoading(false);
+    }
+  }
   if (signedIn) return <Redirect href="/waiter/tables" />;
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -77,38 +98,39 @@ export default function LoginScreen() {
           <View style={[ui.card, { padding: 22, gap: 18 }]}>
             <Text style={ui.h2}>Đăng nhập nhân viên</Text>
             <Field
-              label="Email / Số điện thoại / Tên đăng nhập"
+              label="Email"
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
               autoComplete="username"
-              placeholder="Nhập tài khoản của bạn"
+              keyboardType="email-address"
+              editable={!loading}
+              placeholder="Nhập email của bạn"
             />
             <Field
               label="Mật khẩu"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
+              editable={!loading}
               autoComplete="current-password"
               placeholder="Nhập mật khẩu"
             />
             {!!error && <Notice text={error} error />}
+            {!!authMessage && !error && <Notice text={authMessage} error />}
             <Button
-              title="Đăng nhập"
-              onPress={() =>
-                setError(
-                  !username.trim() || !password
-                    ? 'Vui lòng nhập đủ tài khoản và mật khẩu.'
-                    : 'Chưa kết nối dịch vụ đăng nhập. Bạn có thể trải nghiệm bằng chế độ dùng thử bên dưới.',
-                )
-              }
+              title={loading ? 'Đang đăng nhập…' : 'Đăng nhập'}
+              disabled={loading}
+              onPress={login}
             />
             <View style={ui.divider} />
             <Button
               title="Vào chế độ dùng thử"
               secondary
+              disabled={loading}
               icon="play-outline"
               onPress={() => {
+                authService.clear();
                 setPassword('');
                 dispatch(enterDemo());
               }}
