@@ -1,2 +1,5 @@
-// Add endpoint paths when the backend API contract is available.
-export const endpoints = {} as const;
+export const endpoints = {
+  login: '/api/auth/login',
+  refresh: '/api/auth/refresh',
+  logout: '/api/auth/logout',
+} as const;
