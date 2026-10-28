@@ -1,10 +1,10 @@
 import { RoleGate } from '@/features/auth/components/RoleGate';
-import InventoryHomeScreen from '@/features/inventory/screens/InventoryHomeScreen';
+import StockListScreen from '@/features/inventory/stock/screens/StockListScreen';
 
 export default function InventoryRoute() {
   return (
     <RoleGate role="inventory">
-      <InventoryHomeScreen />
+      <StockListScreen />
     </RoleGate>
   );
 }

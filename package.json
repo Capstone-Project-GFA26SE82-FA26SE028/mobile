@@ -46,6 +46,7 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test:auth": "node --experimental-strip-types --test scripts/auth.test.mjs",
+    "test:inventory": "node --test scripts/inventory.test.mjs",
     "test:waiter-api": "node --test scripts/waiter-api.test.mjs",
     "test:waiter-cart": "node --test scripts/waiter-cart.test.mjs",
     "test:ordering": "node --test scripts/order-confirmation.test.mjs",
