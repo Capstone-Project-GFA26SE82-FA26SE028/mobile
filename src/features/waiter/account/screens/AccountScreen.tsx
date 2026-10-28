@@ -14,7 +14,7 @@ import {
 } from '../../shared/components/UI';
 import { colors, ui } from '../../shared/theme';
 import { time } from '../../shared/rules';
-import { authError, authService } from '../../auth/authService';
+import { authError, authService } from '@/features/auth/api/authApi';
 export default function AccountScreen() {
   const state = useAppSelector((s) => s.waiter);
   const dispatch = useAppDispatch();
@@ -25,7 +25,7 @@ export default function AccountScreen() {
     setLoading(true);
     try {
       if (state.authMode === 'api') await authService.logout();
-      else authService.clear();
+      else await authService.clear();
       dispatch(signOut());
       setConfirm(false);
     } catch (error) {

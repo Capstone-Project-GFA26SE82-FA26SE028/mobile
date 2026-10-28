@@ -15,7 +15,14 @@ require.extensions['.ts'] = (module, filename) => {
 };
 require.extensions['.jpg'] = (module, filename) => { module.exports = filename; };
 const { default: reducer, enterDemo, signOut, setAlerts } = require('../src/features/waiter/shared/waiterSlice.ts');
-const { createAuthService } = require('../src/features/waiter/auth/authService.ts');
+const storageModule = require.resolve('../src/features/auth/storage.ts');
+require.cache[storageModule] = { id: storageModule, filename: storageModule, loaded: true, exports: { authStorage: { read: async () => null, write: async () => {} } } };
+const { createAuthService: createService } = require('../src/features/auth/api/authApi.ts');
+function memoryStorage(value = null) {
+  return { read: async () => value, write: async next => { value = next; } };
+}
+function createAuthService(client, storage = memoryStorage()) { return createService(client, storage); }
+const { default: authReducer, sessionChanged } = require('../src/features/auth/authSlice.ts');
 const { authenticated } = require('../src/features/waiter/shared/waiterSlice.ts');
 
 function credentials(overrides = {}) {
@@ -41,7 +48,7 @@ test('login uses email contract and the real active waiter profile', async () =>
   assert.equal(state.waiter.id, 'waiter-id');
 });
 
-test('non-waiter and inactive accounts cannot enter and their sessions are revoked', async () => {
+test('unsupported roles and inactive accounts cannot enter and their sessions are revoked', async () => {
   for (const user of [
     { ...credentials().user, roleId: 'manager' },
     { ...credentials().user, isActive: false },
@@ -51,7 +58,7 @@ test('non-waiter and inactive accounts cannot enter and their sessions are revok
       calls.push(args);
       return reply(credentials({ user }));
     } });
-    await assert.rejects(auth.login('x', '123'), /nhân viên phục vụ/);
+    await assert.rejects(auth.login('x', '123'), /active Waiter or Inventory/);
     assert.equal(await auth.token(), null);
     assert.equal(calls[1][0], '/api/auth/logout');
     assert.equal(calls[1][2].headers.Authorization, 'Bearer access');
@@ -79,7 +86,7 @@ test('refresh failure removes access and notifies the route guard', async () => 
   } });
   await auth.login('x', '123');
   let expired = false;
-  auth.onExpired(() => { expired = true; });
+  auth.onChange(user => { if (!user) expired = true; });
   await assert.rejects(auth.unauthorized('access'), /revoked/);
   assert.equal(expired, true);
   assert.equal(await auth.token(), null);
@@ -93,7 +100,7 @@ test('logout revokes the server session and clears local credentials on network 
     throw new Error('offline');
   } });
   await auth.login('x', '123');
-  await assert.rejects(auth.logout(), /offline/);
+  await assert.rejects(auth.logout(), /Server sign-out/);
   assert.equal(calls[1][0], '/api/auth/logout');
   assert.equal(calls[1][2].headers.Authorization, 'Bearer access');
   assert.equal(await auth.token(), null);
@@ -103,13 +110,14 @@ test('late refresh cannot restore credentials after logout', async () => {
   let resolveRefresh;
   const auth = createAuthService({ post: async path => {
     if (path.endsWith('/login')) return reply(credentials());
+    if (path.endsWith('/logout')) return reply(null);
     return new Promise(resolve => { resolveRefresh = resolve; });
   } });
   await auth.login('x', '123');
   const pending = auth.unauthorized('access');
   auth.clear();
   resolveRefresh(reply(credentials({ accessToken: 'late-token' })));
-  await assert.rejects(pending, /thay đổi/);
+  await assert.rejects(pending, /session changed/);
   assert.equal(await auth.token(), null);
 });
 
@@ -135,4 +143,119 @@ test('logout clears session flags and feedback while preserving waiter data', ()
   const resumed = reducer(loggedOut, enterDemo());
   assert.equal(resumed.signedIn, true);
   assert.deepEqual(resumed.sessions, active.sessions);
+});
+
+test('inventory signs in through the same API and updates the common auth state', async () => {
+  const user = { ...credentials().user, userId: 'inventory-id', roleId: 'inventory' };
+  const auth = createAuthService({ post: async () => reply(credentials({ user })) });
+  let state = authReducer(undefined, { type: '@@init' });
+  auth.onChange(user => { state = authReducer(state, sessionChanged({ user })); });
+  const profile = await auth.login('inventory@gmail.com', 'secret');
+  assert.equal(profile.role, 'inventory');
+  assert.equal(state.status, 'signedIn');
+  assert.equal(JSON.stringify(state).includes('refreshToken'), false);
+});
+
+test('native session restoration verifies with refresh and persists only rotated refresh credentials', async () => {
+  const storage = memoryStorage({ refreshToken: 'saved-refresh', sessionExpiresAt: credentials().sessionExpiresAt });
+  const calls = [];
+  const auth = createAuthService({ post: async (...args) => { calls.push(args); return reply(credentials({ accessToken: 'restored-access', refreshToken: 'rotated-refresh' })); } }, storage);
+  let profile;
+  auth.onChange(user => { profile = user; });
+  await Promise.all([auth.restore(), auth.restore()]);
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0], ['/api/auth/refresh', { refreshToken: 'saved-refresh' }]);
+  assert.equal(await auth.token(), 'restored-access');
+  assert.equal(profile.role, 'waiter');
+  assert.deepEqual(Object.keys(await storage.read()).sort(), ['refreshToken', 'sessionExpiresAt']);
+  assert.equal((await storage.read()).refreshToken, 'rotated-refresh');
+});
+
+test('failed restore clears saved credentials instead of opening a workspace', async () => {
+  const storage = memoryStorage({ refreshToken: 'revoked', sessionExpiresAt: credentials().sessionExpiresAt });
+  const auth = createAuthService({ post: async () => { throw new Error('Session revoked'); } }, storage);
+  let user = 'not-checked';
+  auth.onChange(value => { user = value; });
+  await auth.restore();
+  assert.equal(user, null);
+  assert.equal(await storage.read(), null);
+  assert.equal(await auth.token(), null);
+});
+
+test('late login cannot restore a session after sign out and revokes its returned token', async () => {
+  let resolveLogin;
+  const calls = [];
+  const auth = createAuthService({ post: async (...args) => {
+    calls.push(args);
+    if (args[0].endsWith('/login')) return new Promise(resolve => { resolveLogin = resolve; });
+    return reply(null);
+  } });
+  const pending = auth.login('staff@example.com', 'secret');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  await auth.clear();
+  resolveLogin(reply(credentials()));
+  await assert.rejects(pending, /session changed/);
+  assert.equal(await auth.token(), null);
+  assert.equal(calls.at(-1)[0], '/api/auth/logout');
+});
+
+test('overlapping logins cannot let an older response overwrite a newer account', async () => {
+  const resolvers = [];
+  const auth = createAuthService({ post: async path => path.endsWith('/login') ? new Promise(resolve => resolvers.push(resolve)) : reply(null) });
+  const first = auth.login('first@example.com', 'secret');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const second = auth.login('second@example.com', 'secret');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  resolvers[1](reply(credentials({ accessToken: 'second', user: { ...credentials().user, roleId: 'inventory', userId: 'second' } })));
+  await second;
+  resolvers[0](reply(credentials()));
+  await assert.rejects(first, /session changed/);
+  assert.equal(await auth.token(), 'second');
+});
+
+test('sign out removes device credentials even if the server is offline', async () => {
+  const storage = memoryStorage();
+  const auth = createAuthService({ post: async path => {
+    if (path.endsWith('/login')) return reply(credentials());
+    throw new Error('offline');
+  } }, storage);
+  await auth.login('waiter@example.com', 'secret');
+  assert(await storage.read());
+  await assert.rejects(auth.logout(), /Server sign-out/);
+  assert.equal(await storage.read(), null);
+  assert.equal(await auth.token(), null);
+});
+
+test('a session is not accepted if secure persistence fails', async () => {
+  const calls = [];
+  const storage = { read: async () => null, write: async value => { if (value) throw new Error('Storage unavailable'); } };
+  const auth = createAuthService({ post: async (...args) => { calls.push(args); return reply(credentials()); } }, storage);
+  await assert.rejects(auth.login('waiter@example.com', 'secret'), /Storage unavailable/);
+  assert.equal(await auth.token(), null);
+  assert.equal(calls.at(-1)[0], '/api/auth/logout');
+});
+
+test('a late failed logout cannot replace a newly signed-in profile', async () => {
+  let failLogout;
+  const auth = createAuthService({ post: async path => {
+    if (path.endsWith('/login')) return reply(credentials());
+    return new Promise((_, reject) => { failLogout = reject; });
+  } });
+  let current;
+  auth.onChange(user => { current = user; });
+  await auth.login('first@example.com', 'secret');
+  const pending = auth.logout();
+  await auth.login('second@example.com', 'secret');
+  failLogout(new Error('offline'));
+  await assert.rejects(pending, /Server sign-out/);
+  assert.equal(current.id, 'waiter-id');
+  assert.equal(await auth.token(), 'access');
+});
+
+test('username login uses the backend email field without requiring email syntax', async () => {
+  const calls = [];
+  const auth = createAuthService({ post: async (...args) => { calls.push(args); return reply(credentials()); } });
+  await auth.login(' waiter01 ', 'secret');
+  assert.deepEqual(calls[0], ['/api/auth/login', { email: 'waiter01', password: 'secret' }]);
+  assert.equal(await auth.token(), 'access');
 });

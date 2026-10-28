@@ -5,15 +5,12 @@ Native for Android, iOS, and web, while following the restaurant feature structu
 
 ## Run
 
-The Authentication feature is migrated from `old-mobile`. The app opens the login
-screen; choose **Vào chế độ dùng thử** to enter the original waiter layout, then
-view the original table map (UC_WAI_02), or open **Cá nhân** to sign out.
-Real Waiter authentication now uses backend login, refresh and logout APIs.
-After backend login, tables, table sessions, menu, order creation and guest-order
-confirmation use Axios and TanStack Query. Tables/orders refresh every five seconds.
-Unsupported payments, reservations and service-request operations display an
-unavailable state instead of changing demo data. Demo entry remains separate.
-See [Authentication setup](src/features/waiter/auth/README.md) for configuration.
+Staff sign-in is shared by Waiter and Inventory under `src/features/auth`.
+The app uses real backend login, token refresh and logout. Active Waiter accounts
+open `/waiter/tables`; Inventory accounts open `/inventory`. Native sessions use
+SecureStore; web preview keeps credentials in memory and requires sign-in after reload.
+There is no demo button on the shared sign-in screen.
+See [Authentication setup](src/features/auth/README.md) for configuration.
 See [Waiter API integration](src/features/waiter/api/README.md) for supported flows and checks.
 
 UC_WAI_03 is available through **Đơn khách chờ xác nhận** on the table map.
@@ -42,7 +39,6 @@ src/
     navigation/
   api/
     axiosClient.ts
-    endpoints.ts
     config.ts
   assets/
     images/
