@@ -1,6 +1,6 @@
 import { ActivityIndicator } from 'react-native';
 import { Button, Notice } from './UI';
-import { authError } from '../../auth/authService';
+import { authError } from '@/features/auth/api/authApi';
 
 export function QueryStatus({ query }: { query: { isPending: boolean; error: unknown; refetch: () => unknown } }) {
   return <>

@@ -7,7 +7,7 @@ import { Button, Card, Empty, Field, Notice, Page, Stepper, Title } from '../../
 import { QueryStatus } from '../../shared/components/QueryStatus';
 import { ui } from '../../shared/theme';
 import { money } from '../../shared/rules';
-import { authError } from '../../auth/authService';
+import { authError } from '@/features/auth/api/authApi';
 import { useServiceTables } from '../../tables/hooks/useTables';
 import { useOrderActions } from '../hooks/useOrders';
 import { cartId, clearCart, completeCartSubmission, failCartSubmission, removeCartLine,
