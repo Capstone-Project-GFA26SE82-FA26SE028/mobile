@@ -1,19 +1,21 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 import type { StockLot, StockMovement } from '../types/types';
-import { quantity, StockBadge, stockDate, stockColors as c } from './StockUI';
+import { formatQuantity } from '../utils/formatQuantity';
+import { StatusBadge } from '../../../../components/StatusBadge/StatusBadge';
+import { formatStockDate } from '../utils/formatStockDate';
 
 export function StockLotCard({ lot, unit }: { lot: StockLot; unit: string }) {
   const label =
     lot.remainingQuantity === 0
-      ? 'Depleted'
+      ? 'Đã hết'
       : lot.expiryStatus === 'Expired'
-        ? 'Expired'
+        ? 'Hết hạn'
         : lot.expiryStatus === 'ExpiringSoon'
-          ? 'Expiring soon'
+          ? 'Sắp hết hạn'
           : lot.expiryStatus === 'Valid'
-            ? 'Valid'
-            : 'Expiry unknown';
+            ? 'Còn hạn'
+            : 'Chưa có hạn dùng';
   const tone =
     lot.remainingQuantity === 0
       ? 'gray'
@@ -28,39 +30,40 @@ export function StockLotCard({ lot, unit }: { lot: StockLot; unit: string }) {
     <View style={s.card}>
       <View style={s.row}>
         <View style={[s.icon, { backgroundColor: '#F0F5EF' }]}>
-          <Ionicons name="layers-outline" size={20} color={c.green} />
+          <Ionicons name="layers-outline" size={20} color={'#236347'} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={s.title}>
-            Received {stockDate(lot.receivedAt).split(',')[0]}
+            Nhập ngày {formatStockDate(lot.receivedAt).split(',')[0]}
           </Text>
           <Text style={s.subtitle}>
-            {quantity(lot.receivedQuantity)} {unit} received
+            Đã nhập {formatQuantity(lot.receivedQuantity)} {unit}
           </Text>
         </View>
-        <StockBadge label={label} tone={tone} />
+        <StatusBadge label={label} tone={tone} />
       </View>
       <View style={s.lotBottom}>
         <View style={{ flex: 1 }}>
-          <Text style={s.label}>REMAINING</Text>
+          <Text style={s.label}>CÒN LẠI</Text>
           <Text style={s.balance}>
-            {quantity(lot.remainingQuantity)} <Text style={s.unit}>{unit}</Text>
+            {formatQuantity(lot.remainingQuantity)}{' '}
+            <Text style={s.unit}>{unit}</Text>
           </Text>
         </View>
         <View style={{ alignItems: 'flex-end' }}>
-          <Text style={s.label}>EXPIRY DATE</Text>
+          <Text style={s.label}>HẠN SỬ DỤNG</Text>
           <Text
             style={[
               s.expiry,
-              lot.expiryStatus === 'Expired' && { color: c.red },
+              lot.expiryStatus === 'Expired' && { color: '#B44741' },
             ]}
           >
-            {stockDate(lot.expiryDate, true)}
+            {formatStockDate(lot.expiryDate, true)}
           </Text>
         </View>
       </View>
       {!lot.canIssue && lot.remainingQuantity > 0 && (
-        <Text style={s.unavailable}>Not available for issue</Text>
+        <Text style={s.unavailable}>Không thể xuất kho lô này</Text>
       )}
     </View>
   );
@@ -75,16 +78,19 @@ export function StockMovementCard({
 }) {
   const positive = movement.quantityChange > 0;
   const labels: Record<string, string> = {
-    Receipt: 'Stock received',
-    Issue: 'Manual issue',
-    Cooking: 'Kitchen usage',
-    Adjustment: 'Stock adjustment',
+    Receipt: 'Nhập kho',
+    Issue: 'Xuất kho thủ công',
+    Cooking: 'Sử dụng tại bếp',
+    Adjustment: 'Điều chỉnh tồn kho',
   };
   return (
     <View style={s.card}>
       <View style={s.row}>
         <View
-          style={[s.icon, { backgroundColor: positive ? c.mint : '#FFF3E4' }]}
+          style={[
+            s.icon,
+            { backgroundColor: positive ? '#EAF4ED' : '#FFF3E4' },
+          ]}
         >
           <Ionicons
             name={
@@ -95,23 +101,24 @@ export function StockMovementCard({
                   : 'arrow-up-outline'
             }
             size={20}
-            color={positive ? c.green : c.amber}
+            color={positive ? '#236347' : '#A76A1B'}
           />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.title}>
             {labels[movement.movementType] || movement.movementType}
           </Text>
-          <Text style={s.subtitle}>{stockDate(movement.createdAt)}</Text>
+          <Text style={s.subtitle}>{formatStockDate(movement.createdAt)}</Text>
         </View>
       </View>
       <View style={s.movementBottom}>
         <Text selectable style={s.reason}>
-          {movement.reason || 'No reason provided'}
+          {movement.reason || 'Chưa có lý do'}
         </Text>
-        <Text style={[s.change, { color: positive ? c.green : c.amber }]}>
+        <Text style={[s.change, { color: positive ? '#236347' : '#A76A1B' }]}>
           {positive ? '+' : ''}
-          {quantity(movement.quantityChange)} <Text style={s.unit}>{unit}</Text>
+          {formatQuantity(movement.quantityChange)}{' '}
+          <Text style={s.unit}>{unit}</Text>
         </Text>
       </View>
     </View>
@@ -123,7 +130,7 @@ const s = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: c.line,
+    borderColor: '#E4EBE6',
   },
   row: {
     flexDirection: 'row',
@@ -138,8 +145,8 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: { color: c.ink, fontSize: 14, fontWeight: '600', lineHeight: 20 },
-  subtitle: { color: c.muted, fontSize: 11, marginTop: 4, lineHeight: 17 },
+  title: { color: '#23382D', fontSize: 14, fontWeight: '600', lineHeight: 20 },
+  subtitle: { color: '#738078', fontSize: 11, marginTop: 4, lineHeight: 17 },
   lotBottom: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -152,15 +159,15 @@ const s = StyleSheet.create({
     borderColor: '#F0F3F0',
   },
   label: {
-    color: c.muted,
+    color: '#738078',
     fontSize: 10,
     letterSpacing: 0.2,
     fontWeight: '500',
   },
-  balance: { color: c.dark, fontSize: 23, fontWeight: '700', marginTop: 5 },
-  unit: { color: c.muted, fontSize: 12, fontWeight: '400' },
-  expiry: { color: c.ink, fontSize: 13, fontWeight: '500', marginTop: 8 },
-  unavailable: { color: c.red, fontSize: 11, marginTop: 12 },
+  balance: { color: '#153F30', fontSize: 23, fontWeight: '700', marginTop: 5 },
+  unit: { color: '#738078', fontSize: 12, fontWeight: '400' },
+  expiry: { color: '#23382D', fontSize: 13, fontWeight: '500', marginTop: 8 },
+  unavailable: { color: '#B44741', fontSize: 11, marginTop: 12 },
   movementBottom: {
     marginTop: 14,
     borderTopWidth: 1,
@@ -168,6 +175,6 @@ const s = StyleSheet.create({
     paddingTop: 12,
     gap: 10,
   },
-  reason: { color: c.muted, fontSize: 12, lineHeight: 19 },
+  reason: { color: '#738078', fontSize: 12, lineHeight: 19 },
   change: { fontSize: 20, fontWeight: '700', textAlign: 'right' },
 });

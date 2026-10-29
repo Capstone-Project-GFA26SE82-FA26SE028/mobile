@@ -1,3 +1,4 @@
+import { stockError } from '../api/stockApi';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import {
@@ -9,24 +10,20 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import InventoryLayout from '../../../../layouts/inventory/InventoryLayout';
 import { useStock } from '../hooks/useStock';
 import { IngredientCard } from '../components/IngredientCard';
-import {
-  InventoryHeader,
-  LoadMore,
-  quantity,
-  StockEmpty,
-  StockError,
-  StockLoading,
-  stockColors as c,
-} from '../components/StockUI';
+import { LoadMoreButton } from '../../../../components/LoadMoreButton/LoadMoreButton';
+import { formatQuantity } from '../utils/formatQuantity';
+import { EmptyState } from '../../../../components/EmptyState/EmptyState';
+import { ErrorState } from '../../../../components/ErrorState/ErrorState';
+import { Loading } from '../../../../components/Loading/Loading';
 import type { StockFilter } from '../types/types';
 
 const filters: { key: StockFilter; label: string }[] = [
-  { key: 'all', label: 'All items' },
-  { key: 'low', label: 'Low stock' },
-  { key: 'inactive', label: 'Inactive' },
+  { key: 'all', label: 'Tất cả' },
+  { key: 'low', label: 'Sắp hết' },
+  { key: 'inactive', label: 'Ngừng dùng' },
 ];
 
 export default function StockListScreen() {
@@ -35,8 +32,7 @@ export default function StockListScreen() {
   const wide = useWindowDimensions().width >= 768;
   const { ingredients, counts } = model;
   return (
-    <SafeAreaView style={s.page}>
-      <InventoryHeader />
+    <InventoryLayout>
       <FlatList
         key={wide ? 'wide' : 'phone'}
         numColumns={wide ? 2 : 1}
@@ -68,8 +64,8 @@ export default function StockListScreen() {
               <View pointerEvents="none" style={s.heroGlow} />
               <View style={s.heroTitleRow}>
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={s.heroCaption}>INVENTORY</Text>
-                  <Text style={s.title}>Stock overview</Text>
+                  <Text style={s.heroCaption}>KHO NGUYÊN LIỆU</Text>
+                  <Text style={s.title}>Tổng quan tồn kho</Text>
                 </View>
                 <View style={s.heroIcon}>
                   <Ionicons name="layers-outline" size={24} color="#C6DBBF" />
@@ -78,7 +74,7 @@ export default function StockListScreen() {
               <View style={s.stats}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Show all ingredients"
+                  accessibilityLabel="Xem tất cả nguyên liệu"
                   onPress={() => {
                     model.setSearch('');
                     model.setFilter('all');
@@ -87,14 +83,14 @@ export default function StockListScreen() {
                 >
                   <Text style={s.statValue}>
                     {counts.data && !counts.isError
-                      ? quantity(counts.data.all)
+                      ? formatQuantity(counts.data.all)
                       : '—'}
                   </Text>
-                  <Text style={s.statLabel}>Total ingredients</Text>
+                  <Text style={s.statLabel}>Tổng nguyên liệu</Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Show low stock"
+                  accessibilityLabel="Xem nguyên liệu sắp hết"
                   onPress={() => {
                     model.setSearch('');
                     model.setFilter('low');
@@ -104,7 +100,7 @@ export default function StockListScreen() {
                   <View style={s.row}>
                     <Text style={[s.statValue, { color: '#F4D69A' }]}>
                       {counts.data && !counts.isError
-                        ? quantity(counts.data.low)
+                        ? formatQuantity(counts.data.low)
                         : '—'}
                     </Text>
                     <Ionicons
@@ -113,13 +109,13 @@ export default function StockListScreen() {
                       color="#F4D69A"
                     />
                   </View>
-                  <Text style={s.statLabel}>Low stock</Text>
+                  <Text style={s.statLabel}>Sắp hết</Text>
                 </Pressable>
               </View>
             </View>
             {counts.isError && (
-              <StockError
-                error={counts.error}
+              <ErrorState
+                message={stockError(counts.error)}
                 busy={counts.isFetching}
                 onRetry={() => void counts.refetch()}
               />
@@ -127,8 +123,8 @@ export default function StockListScreen() {
             <View style={s.search}>
               <Ionicons name="search-outline" size={20} color="#8C9B90" />
               <TextInput
-                accessibilityLabel="Search ingredients"
-                placeholder="Search name or code..."
+                accessibilityLabel="Tìm nguyên liệu"
+                placeholder="Tìm tên hoặc mã nguyên liệu…"
                 placeholderTextColor="#8C9B90"
                 value={model.search}
                 onChangeText={model.setSearch}
@@ -140,7 +136,7 @@ export default function StockListScreen() {
               {!!model.search && (
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Clear search"
+                  accessibilityLabel="Xóa tìm kiếm"
                   onPress={() => model.setSearch('')}
                   style={s.clear}
                 >
@@ -170,27 +166,27 @@ export default function StockListScreen() {
             </View>
             <View style={s.listHeading}>
               <Text style={s.listTitle}>
-                Ingredients{' '}
+                Nguyên liệu{' '}
                 <Text style={s.count}>
                   {model.total === undefined
                     ? ''
-                    : '(' + quantity(model.total) + ')'}
+                    : '(' + formatQuantity(model.total) + ')'}
                 </Text>
               </Text>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Refresh inventory"
+                accessibilityLabel="Tải lại tồn kho"
                 disabled={ingredients.isFetching || counts.isFetching}
                 onPress={() => void model.refresh()}
                 style={s.refresh}
               >
-                <Ionicons name="refresh-outline" size={17} color={c.green} />
-                <Text style={{ fontSize: 12, color: c.green }}>Refresh</Text>
+                <Ionicons name="refresh-outline" size={17} color={'#236347'} />
+                <Text style={{ fontSize: 12, color: '#236347' }}>Tải lại</Text>
               </Pressable>
             </View>
             {ingredients.isError && (
-              <StockError
-                error={ingredients.error}
+              <ErrorState
+                message={stockError(ingredients.error)}
                 stale={model.items.length > 0}
                 busy={ingredients.isFetching}
                 onRetry={() => void ingredients.refetch()}
@@ -200,39 +196,38 @@ export default function StockListScreen() {
         }
         ListEmptyComponent={
           ingredients.isPending ? (
-            <StockLoading />
+            <Loading />
           ) : ingredients.isSuccess ? (
-            <StockEmpty
+            <EmptyState
               title={
                 model.search.trim()
-                  ? 'No matching ingredients'
+                  ? 'Không tìm thấy nguyên liệu phù hợp'
                   : model.filter === 'low'
-                    ? 'No low-stock ingredients'
-                    : 'No ingredients found'
+                    ? 'Không có nguyên liệu sắp hết'
+                    : 'Chưa có nguyên liệu'
               }
             >
               {model.search.trim()
-                ? 'Try a different name or ingredient code.'
+                ? 'Thử tìm bằng tên hoặc mã nguyên liệu khác.'
                 : model.filter === 'low'
-                  ? 'Active ingredients are above their minimum stock levels.'
-                  : 'Ingredients added by your manager will appear here.'}
-            </StockEmpty>
+                  ? 'Các nguyên liệu đang dùng đều có tồn kho trên mức tối thiểu.'
+                  : 'Nguyên liệu do quản lý thêm sẽ hiển thị tại đây.'}
+            </EmptyState>
           ) : null
         }
         ListFooterComponent={
           ingredients.hasNextPage ? (
-            <LoadMore
+            <LoadMoreButton
               busy={ingredients.isFetching}
               onPress={() => void ingredients.fetchNextPage()}
             />
           ) : null
         }
       />
-    </SafeAreaView>
+    </InventoryLayout>
   );
 }
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: c.bg },
   content: {
     width: '100%',
     maxWidth: 1000,
@@ -242,7 +237,7 @@ const s = StyleSheet.create({
     paddingBottom: 28,
   },
   hero: {
-    backgroundColor: c.dark,
+    backgroundColor: '#153F30',
     borderRadius: 22,
     padding: 20,
     marginBottom: 18,
@@ -306,7 +301,7 @@ const s = StyleSheet.create({
     minHeight: 48,
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: c.line,
+    borderColor: '#E4EBE6',
     borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -318,7 +313,7 @@ const s = StyleSheet.create({
     minHeight: 48,
     paddingHorizontal: 10,
     fontSize: 14,
-    color: c.ink,
+    color: '#23382D',
   },
   clear: { padding: 12 },
   filters: {
@@ -338,16 +333,16 @@ const s = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 10,
   },
-  activeChip: { backgroundColor: c.green },
-  chipLabel: { color: c.muted, fontSize: 12, fontWeight: '600' },
+  activeChip: { backgroundColor: '#236347' },
+  chipLabel: { color: '#738078', fontSize: 12, fontWeight: '600' },
   listHeading: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
   },
-  listTitle: { color: c.ink, fontSize: 16, fontWeight: '700' },
-  count: { fontWeight: '400', color: c.muted, fontSize: 13 },
+  listTitle: { color: '#23382D', fontSize: 16, fontWeight: '700' },
+  count: { fontWeight: '400', color: '#738078', fontSize: 13 },
   refresh: {
     flexDirection: 'row',
     alignItems: 'center',

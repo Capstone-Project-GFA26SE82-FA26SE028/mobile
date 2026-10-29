@@ -1,3 +1,5 @@
+import { StatusBadge } from '@/components/StatusBadge/StatusBadge';
+import { EmptyState } from '@/components/EmptyState/EmptyState';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
@@ -69,33 +71,7 @@ export function Badge({
   text: string;
   tone?: 'green' | 'amber' | 'red' | 'blue' | 'gray';
 }) {
-  const color = {
-    green: colors.green,
-    amber: colors.amber,
-    red: colors.red,
-    blue: colors.blue,
-    gray: colors.muted,
-  }[tone];
-  const backgroundColor = {
-    green: colors.mint,
-    amber: '#FFF4DF',
-    red: '#FDF0ED',
-    blue: '#EDF4FC',
-    gray: '#F0F3F1',
-  }[tone];
-  return (
-    <View
-      style={{
-        backgroundColor,
-        paddingHorizontal: 9,
-        paddingVertical: 5,
-        borderRadius: 7,
-        alignSelf: 'flex-start',
-      }}
-    >
-      <Text style={{ color, fontSize: 11, fontWeight: '600' }}>{text}</Text>
-    </View>
-  );
+  return <StatusBadge label={text} tone={tone} dot={false} />;
 }
 export function Button({
   title,
@@ -238,12 +214,7 @@ export function Chips({
   );
 }
 export function Empty({ text }: { text: string }) {
-  return (
-    <View style={{ padding: 35, alignItems: 'center', gap: 12 }}>
-      <Icon name="leaf-outline" size={36} color="#A9BFB1" />
-      <Text style={[ui.muted, { textAlign: 'center' }]}>{text}</Text>
-    </View>
-  );
+  return <EmptyState title={text} icon="leaf-outline" />;
 }
 export function Notice({
   text,
@@ -278,9 +249,11 @@ export function Sheet({
   children,
   onClose,
 }: PropsWithChildren<{ title: string; onClose: () => void }>) {
-  const feedback = useAppSelector(s => s.waiter.feedback);
+  const feedback = useAppSelector((s) => s.waiter.feedback);
   const dispatch = useAppDispatch();
-  useEffect(() => { dispatch(clearFeedback()); }, [dispatch]);
+  useEffect(() => {
+    dispatch(clearFeedback());
+  }, [dispatch]);
   return (
     <Modal transparent animationType="slide" onRequestClose={onClose} visible>
       <KeyboardAvoidingView

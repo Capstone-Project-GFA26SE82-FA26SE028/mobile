@@ -46,7 +46,7 @@ test('detail uses the selected ingredient and rejects a mismatched response', as
   handler = async () => reply({ ingredientId: 'ABC', stockQuantity: 4.75 });
   assert.equal((await api.getIngredient('abc')).stockQuantity, 4.75);
   assert.equal(calls[0][0], '/api/ingredients/abc');
-  await assert.rejects(api.getIngredient('other'), /does not match/);
+  await assert.rejects(api.getIngredient('other'), /không khớp/);
 });
 
 test('lots preserve server expiry and availability flags and support pagination', async () => {
@@ -57,7 +57,7 @@ test('lots preserve server expiry and availability flags and support pagination'
   assert.deepEqual(calls[0][1].params, { page: 3, pageSize: 20 });
   assert.equal(data.items[0].expiryStatus, 'Expired');
   assert.equal(data.items[0].canIssue, false);
-  await assert.rejects(api.getStockLots('other', 1), /do not match/);
+  await assert.rejects(api.getStockLots('other', 1), /không thuộc nguyên liệu/);
 });
 
 test('history preserves signed quantities and rejects another ingredient', async () => {
@@ -67,7 +67,7 @@ test('history preserves signed quantities and rejects another ingredient', async
   assert.equal(calls[0][0], '/api/ingredients/abc/stock-movements');
   assert.deepEqual(calls[0][1].params, { page: 2, pageSize: 20 });
   assert.equal(data.items[0].quantityChange, -0.25);
-  await assert.rejects(api.getStockMovements('other', 1), /does not match/);
+  await assert.rejects(api.getStockMovements('other', 1), /không thuộc nguyên liệu/);
 });
 
 test('backend failures are not presented as an empty or zero-stock success', async () => {
