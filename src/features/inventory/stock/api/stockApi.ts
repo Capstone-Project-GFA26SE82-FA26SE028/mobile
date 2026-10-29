@@ -11,7 +11,7 @@ import type {
 type Response<T> = { isSuccess: boolean; message?: string; result: T };
 function result<T>(response: Response<T>) {
   if (!response.isSuccess)
-    throw new Error(response.message || 'Unable to load inventory.');
+    throw new Error(response.message || 'Không thể tải tồn kho.');
   return response.result;
 }
 export async function getIngredients(
@@ -59,7 +59,7 @@ export async function getIngredient(id: string, signal?: AbortSignal) {
   );
   const ingredient = result(data);
   if (ingredient.ingredientId.toLowerCase() !== id.toLowerCase())
-    throw new Error('The ingredient does not match this page.');
+    throw new Error('Nguyên liệu trả về không khớp với trang này.');
   return ingredient;
 }
 export async function getStockLots(
@@ -77,7 +77,7 @@ export async function getStockLots(
       (lot) => lot.ingredientId.toLowerCase() !== id.toLowerCase(),
     )
   )
-    throw new Error('The lots do not match this ingredient.');
+    throw new Error('Lô hàng trả về không thuộc nguyên liệu này.');
   return lots;
 }
 export async function getStockMovements(
@@ -95,24 +95,24 @@ export async function getStockMovements(
       (movement) => movement.ingredientId.toLowerCase() !== id.toLowerCase(),
     )
   )
-    throw new Error('The history does not match this ingredient.');
+    throw new Error('Lịch sử trả về không thuộc nguyên liệu này.');
   return movements;
 }
 export function stockError(error: unknown) {
   if (axios.isAxiosError(error)) {
     if (!error.response)
-      return 'Unable to connect. Check your connection and try again.';
+      return 'Không kết nối được máy chủ. Kiểm tra kết nối và thử lại.';
     if (error.response.status === 401)
-      return 'Your session has ended. Please sign in again.';
+      return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
     if (error.response.status === 403)
-      return 'Your account does not have access to this inventory.';
+      return 'Tài khoản không có quyền truy cập kho này.';
     if (error.response.status === 404)
-      return 'This ingredient is no longer available.';
+      return 'Nguyên liệu này không còn tồn tại.';
     if (error.response.status >= 500)
-      return 'Inventory is temporarily unavailable. Please try again.';
+      return 'Dịch vụ kho đang gián đoạn. Vui lòng thử lại.';
     return typeof error.response.data?.message === 'string'
       ? error.response.data.message
-      : 'Unable to load inventory.';
+      : 'Không thể tải tồn kho.';
   }
-  return error instanceof Error ? error.message : 'Unable to load inventory.';
+  return error instanceof Error ? error.message : 'Không thể tải tồn kho.';
 }

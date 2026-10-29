@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Ingredient } from '../types/types';
-import { quantity, StockBadge, stockColors as c } from './StockUI';
+import { formatQuantity } from '../utils/formatQuantity';
+import { StatusBadge } from '../../../../components/StatusBadge/StatusBadge';
 
 export function IngredientCard({
   ingredient,
@@ -13,7 +14,7 @@ export function IngredientCard({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={'View ' + ingredient.ingredientName}
+      accessibilityLabel={'Xem ' + ingredient.ingredientName}
       onPress={onPress}
       style={({ pressed }) => [
         s.card,
@@ -35,7 +36,9 @@ export function IngredientCard({
             name="cube-outline"
             size={22}
             color={
-              ingredient.isActive && ingredient.isLowStock ? c.amber : c.green
+              ingredient.isActive && ingredient.isLowStock
+                ? '#A76A1B'
+                : '#236347'
             }
           />
         </View>
@@ -51,20 +54,20 @@ export function IngredientCard({
       </View>
       <View style={s.bottom}>
         <View style={{ flexShrink: 1 }}>
-          <Text style={s.caption}>On hand</Text>
+          <Text style={s.caption}>Tồn hiện tại</Text>
           <Text style={s.quantity}>
-            {quantity(ingredient.stockQuantity)}{' '}
+            {formatQuantity(ingredient.stockQuantity)}{' '}
             <Text style={s.unit}>{ingredient.baseUnit}</Text>
           </Text>
         </View>
         <View style={{ alignItems: 'flex-end', gap: 8 }}>
-          <StockBadge
+          <StatusBadge
             label={
               !ingredient.isActive
-                ? 'Inactive'
+                ? 'Ngừng dùng'
                 : ingredient.isLowStock
-                  ? 'Low stock'
-                  : 'In stock'
+                  ? 'Sắp hết'
+                  : 'Còn hàng'
             }
             tone={
               !ingredient.isActive
@@ -75,7 +78,8 @@ export function IngredientCard({
             }
           />
           <Text style={s.minimum}>
-            Min. {quantity(ingredient.lowStockThreshold)} {ingredient.baseUnit}
+            Tối thiểu {formatQuantity(ingredient.lowStockThreshold)}{' '}
+            {ingredient.baseUnit}
           </Text>
         </View>
       </View>
@@ -88,7 +92,7 @@ const s = StyleSheet.create({
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: c.line,
+    borderColor: '#E4EBE6',
     overflow: 'hidden',
   },
   lowAccent: {
@@ -109,8 +113,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  name: { fontSize: 16, fontWeight: '600', lineHeight: 22, color: c.ink },
-  code: { color: c.muted, fontSize: 10, marginTop: 4 },
+  name: { fontSize: 16, fontWeight: '600', lineHeight: 22, color: '#23382D' },
+  code: { color: '#738078', fontSize: 10, marginTop: 4 },
   bottom: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -125,11 +129,11 @@ const s = StyleSheet.create({
     backgroundColor: '#F6F8F5',
   },
   caption: {
-    color: c.muted,
+    color: '#738078',
     fontSize: 11,
     fontWeight: '400',
   },
-  quantity: { color: c.dark, fontSize: 25, fontWeight: '700', marginTop: 3 },
-  unit: { color: c.muted, fontSize: 13, fontWeight: '500' },
-  minimum: { color: c.muted, fontSize: 11 },
+  quantity: { color: '#153F30', fontSize: 25, fontWeight: '700', marginTop: 3 },
+  unit: { color: '#738078', fontSize: 13, fontWeight: '500' },
+  minimum: { color: '#738078', fontSize: 11 },
 });

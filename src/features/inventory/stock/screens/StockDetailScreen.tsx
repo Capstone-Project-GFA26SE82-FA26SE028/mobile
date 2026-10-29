@@ -1,18 +1,15 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { stockError } from '../api/stockApi';
+import { useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import InventoryLayout from '../../../../layouts/inventory/InventoryLayout';
 import { useStockDetail } from '../hooks/useStock';
-import {
-  InventoryHeader,
-  LoadMore,
-  quantity,
-  StockBadge,
-  StockEmpty,
-  StockError,
-  StockLoading,
-  stockColors as c,
-} from '../components/StockUI';
+import { LoadMoreButton } from '../../../../components/LoadMoreButton/LoadMoreButton';
+import { formatQuantity } from '../utils/formatQuantity';
+import { StatusBadge } from '../../../../components/StatusBadge/StatusBadge';
+import { EmptyState } from '../../../../components/EmptyState/EmptyState';
+import { ErrorState } from '../../../../components/ErrorState/ErrorState';
+import { Loading } from '../../../../components/Loading/Loading';
 import { StockLotCard, StockMovementCard } from '../components/StockDetailRows';
 import type { StockLot, StockMovement } from '../types/types';
 
@@ -27,7 +24,6 @@ type Row =
 
 function IngredientDetails({ id }: { id: string }) {
   const model = useStockDetail(id);
-  const router = useRouter();
   const ingredient = model.ingredient.data;
   const active = model.tab === 'lots' ? model.lots : model.history;
   const data: Row[] =
@@ -46,23 +42,24 @@ function IngredientDetails({ id }: { id: string }) {
               .map((item) => [item.stockMovementId, item]),
           ).values(),
         ].map((item) => ({ kind: 'history', item }));
-  const back = () =>
-    router.canGoBack() ? router.back() : router.replace('/inventory');
   return (
-    <SafeAreaView style={s.page}>
-      <InventoryHeader onBack={back} />
+    <InventoryLayout
+      title="Chi tiết nguyên liệu"
+      subtitle="Tồn kho, lô hàng và lịch sử"
+      back="/inventory"
+    >
       {!model.validId ? (
         <View style={s.content}>
-          <StockEmpty title="Invalid ingredient">
-            Go back to inventory and select an ingredient.
-          </StockEmpty>
+          <EmptyState title="Nguyên liệu không hợp lệ">
+            Quay lại tồn kho và chọn một nguyên liệu.
+          </EmptyState>
         </View>
       ) : model.ingredient.isPending ? (
-        <StockLoading />
+        <Loading />
       ) : !ingredient ? (
         <View style={s.content}>
-          <StockError
-            error={model.ingredient.error}
+          <ErrorState
+            message={stockError(model.ingredient.error)}
             busy={model.ingredient.isFetching}
             onRetry={() => void model.ingredient.refetch()}
           />
@@ -95,8 +92,8 @@ function IngredientDetails({ id }: { id: string }) {
           ListHeaderComponent={
             <>
               {model.ingredient.isError && (
-                <StockError
-                  error={model.ingredient.error}
+                <ErrorState
+                  message={stockError(model.ingredient.error)}
                   stale
                   busy={model.ingredient.isFetching}
                   onRetry={() => void model.refresh()}
@@ -105,15 +102,15 @@ function IngredientDetails({ id }: { id: string }) {
               <View style={s.overview}>
                 <View style={s.overviewTop}>
                   <View style={s.icon}>
-                    <Ionicons name="cube-outline" size={27} color={c.green} />
+                    <Ionicons name="cube-outline" size={27} color={'#236347'} />
                   </View>
-                  <StockBadge
+                  <StatusBadge
                     label={
                       !ingredient.isActive
-                        ? 'Inactive'
+                        ? 'Ngừng dùng'
                         : ingredient.isLowStock
-                          ? 'Low stock'
-                          : 'In stock'
+                          ? 'Sắp hết'
+                          : 'Còn hàng'
                     }
                     tone={
                       !ingredient.isActive
@@ -130,16 +127,16 @@ function IngredientDetails({ id }: { id: string }) {
                 </Text>
                 <View style={s.stockStats}>
                   <View style={s.stat}>
-                    <Text style={s.statLabel}>On hand</Text>
+                    <Text style={s.statLabel}>Tồn hiện tại</Text>
                     <Text style={s.stockValue}>
-                      {quantity(ingredient.stockQuantity)}{' '}
+                      {formatQuantity(ingredient.stockQuantity)}{' '}
                       <Text style={s.unit}>{ingredient.baseUnit}</Text>
                     </Text>
                   </View>
                   <View style={[s.stat, s.minimum]}>
-                    <Text style={s.statLabel}>Minimum stock</Text>
+                    <Text style={s.statLabel}>Tồn tối thiểu</Text>
                     <Text style={s.minimumValue}>
-                      {quantity(ingredient.lowStockThreshold)}{' '}
+                      {formatQuantity(ingredient.lowStockThreshold)}{' '}
                       <Text style={s.unit}>{ingredient.baseUnit}</Text>
                     </Text>
                   </View>
@@ -149,10 +146,10 @@ function IngredientDetails({ id }: { id: string }) {
                     <Ionicons
                       name="alert-circle-outline"
                       size={17}
-                      color={c.amber}
+                      color={'#A76A1B'}
                     />
                     <Text style={s.lowText}>
-                      At or below minimum stock. Plan a replenishment.
+                      Tồn kho đã chạm mức tối thiểu. Cần nhập bổ sung.
                     </Text>
                   </View>
                 )}
@@ -163,48 +160,56 @@ function IngredientDetails({ id }: { id: string }) {
                     key={tab}
                     accessibilityRole="tab"
                     accessibilityState={{ selected: model.tab === tab }}
-                    accessibilityLabel={tab === 'lots' ? 'Lots' : 'History'}
+                    accessibilityLabel={tab === 'lots' ? 'Lô hàng' : 'Lịch sử'}
                     onPress={() => model.setTab(tab)}
                     style={[s.tab, model.tab === tab && s.selectedTab]}
                   >
                     <Ionicons
                       name={tab === 'lots' ? 'layers-outline' : 'time-outline'}
                       size={18}
-                      color={model.tab === tab ? c.green : c.muted}
+                      color={model.tab === tab ? '#236347' : '#738078'}
                     />
                     <Text
                       style={[
                         s.tabText,
-                        model.tab === tab && { color: c.green },
+                        model.tab === tab && { color: '#236347' },
                       ]}
                     >
-                      {tab === 'lots' ? 'Lots' : 'History'}
+                      {tab === 'lots' ? 'Lô hàng' : 'Lịch sử'}
                     </Text>
                   </Pressable>
                 ))}
               </View>
               <View style={s.sectionHeading}>
                 <Text style={s.sectionTitle}>
-                  {model.tab === 'lots' ? 'Stock lots' : 'Stock movements'}{' '}
+                  {model.tab === 'lots'
+                    ? 'Danh sách lô hàng'
+                    : 'Biến động tồn kho'}{' '}
                   <Text style={s.total}>
                     {active.data
-                      ? '(' + quantity(active.data.pages[0].totalCount) + ')'
+                      ? '(' +
+                        formatQuantity(active.data.pages[0].totalCount) +
+                        ')'
                       : ''}
                   </Text>
                 </Text>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Refresh ingredient"
+                  accessibilityLabel="Tải lại nguyên liệu"
                   disabled={active.isFetching || model.ingredient.isFetching}
                   onPress={() => void model.refresh()}
                   style={s.refresh}
                 >
-                  <Ionicons name="refresh-outline" size={18} color={c.green} />
+                  <Ionicons
+                    name="refresh-outline"
+                    size={18}
+                    color={'#236347'}
+                  />
                 </Pressable>
               </View>
               {active.isError && (
-                <StockError
-                  error={active.error}
+                <ErrorState
+                  message={stockError(active.error)}
                   stale={data.length > 0}
                   busy={active.isFetching}
                   onRetry={() => void active.refetch()}
@@ -214,24 +219,22 @@ function IngredientDetails({ id }: { id: string }) {
           }
           ListEmptyComponent={
             active.isPending ? (
-              <StockLoading />
+              <Loading />
             ) : active.isSuccess ? (
-              <StockEmpty
+              <EmptyState
                 title={
-                  model.tab === 'lots'
-                    ? 'No stock lots yet'
-                    : 'No movements yet'
+                  model.tab === 'lots' ? 'Chưa có lô hàng' : 'Chưa có biến động'
                 }
               >
                 {model.tab === 'lots'
-                  ? 'Lots appear after a goods receipt is confirmed.'
-                  : 'Confirmed receipts and stock usage will appear here.'}
-              </StockEmpty>
+                  ? 'Lô hàng sẽ xuất hiện sau khi xác nhận phiếu nhập kho.'
+                  : 'Các lần nhập và sử dụng nguyên liệu sẽ hiển thị tại đây.'}
+              </EmptyState>
             ) : null
           }
           ListFooterComponent={
             active.hasNextPage ? (
-              <LoadMore
+              <LoadMoreButton
                 busy={active.isFetching}
                 onPress={() => void active.fetchNextPage()}
               />
@@ -239,11 +242,10 @@ function IngredientDetails({ id }: { id: string }) {
           }
         />
       )}
-    </SafeAreaView>
+    </InventoryLayout>
   );
 }
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: c.bg },
   content: {
     width: '100%',
     maxWidth: 760,
@@ -257,7 +259,7 @@ const s = StyleSheet.create({
     borderRadius: 22,
     padding: 20,
     borderWidth: 1,
-    borderColor: c.line,
+    borderColor: '#E4EBE6',
   },
   overviewTop: {
     flexDirection: 'row',
@@ -273,13 +275,13 @@ const s = StyleSheet.create({
     backgroundColor: '#EFF5ED',
   },
   name: {
-    color: c.ink,
+    color: '#23382D',
     fontSize: 24,
     fontWeight: '700',
     marginTop: 14,
     lineHeight: 31,
   },
-  code: { color: c.muted, fontSize: 10, marginTop: 7 },
+  code: { color: '#738078', fontSize: 10, marginTop: 7 },
   stockStats: {
     flexDirection: 'row',
     marginTop: 18,
@@ -288,16 +290,21 @@ const s = StyleSheet.create({
     borderRadius: 15,
   },
   stat: { flex: 1, minWidth: 0 },
-  minimum: { borderLeftWidth: 1, borderColor: c.line, paddingLeft: 18 },
-  statLabel: { color: c.muted, fontSize: 11 },
-  stockValue: { color: c.green, fontSize: 28, fontWeight: '700', marginTop: 8 },
+  minimum: { borderLeftWidth: 1, borderColor: '#E4EBE6', paddingLeft: 18 },
+  statLabel: { color: '#738078', fontSize: 11 },
+  stockValue: {
+    color: '#236347',
+    fontSize: 28,
+    fontWeight: '700',
+    marginTop: 8,
+  },
   minimumValue: {
-    color: c.ink,
+    color: '#23382D',
     fontSize: 23,
     fontWeight: '600',
     marginTop: 11,
   },
-  unit: { color: c.muted, fontSize: 12, fontWeight: '400' },
+  unit: { color: '#738078', fontSize: 12, fontWeight: '400' },
   lowNotice: {
     backgroundColor: '#FFF5E5',
     flexDirection: 'row',
@@ -307,7 +314,7 @@ const s = StyleSheet.create({
     padding: 12,
     marginTop: 14,
   },
-  lowText: { flex: 1, fontSize: 12, color: c.amber, lineHeight: 19 },
+  lowText: { flex: 1, fontSize: 12, color: '#A76A1B', lineHeight: 19 },
   tabs: {
     flexDirection: 'row',
     padding: 5,
@@ -325,7 +332,7 @@ const s = StyleSheet.create({
     borderRadius: 11,
   },
   selectedTab: { backgroundColor: '#fff' },
-  tabText: { color: c.muted, fontSize: 13, fontWeight: '600' },
+  tabText: { color: '#738078', fontSize: 13, fontWeight: '600' },
   sectionHeading: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -333,8 +340,8 @@ const s = StyleSheet.create({
     marginTop: 12,
     marginBottom: 8,
   },
-  sectionTitle: { color: c.ink, fontSize: 15, fontWeight: '700' },
-  total: { color: c.muted, fontSize: 12, fontWeight: '400' },
+  sectionTitle: { color: '#23382D', fontSize: 15, fontWeight: '700' },
+  total: { color: '#738078', fontSize: 12, fontWeight: '400' },
   refresh: {
     width: 42,
     height: 42,
