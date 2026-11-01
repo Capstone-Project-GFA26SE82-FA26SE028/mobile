@@ -15,16 +15,21 @@ import {
   Sheet,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/theme';
-import { runCommand } from '../../shared/hooks';
-import { money, sessionTotal, time } from '../../shared/rules';
+import { colors, ui } from '../../shared/utils/theme';
+import { runCommand } from '../../shared/hooks/useWaiterCommands';
+import { money, sessionTotal, time } from '../../shared/utils/rules';
 function DemoPaymentScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const state = useAppSelector((s) => s.waiter);
   const table = state.tables.find((t) => t.id === id);
   const session = state.sessions.find((s) => s.id === table?.sessionId);
   const [amount, setAmount] = useState('');
-  const [confirm, setConfirm] = useState<{ sessionId: string; tableId: string; total: number; received: number } | null>(null);
+  const [confirm, setConfirm] = useState<{
+    sessionId: string;
+    tableId: string;
+    total: number;
+    received: number;
+  } | null>(null);
   const sending = useRef(false);
   if (!table || !session)
     return (
@@ -39,8 +44,17 @@ function DemoPaymentScreen() {
   );
   const pending = session.payment === 'pending_settlement';
   const paid = session.payment === 'paid';
-  const validAmount = !!amount && Number.isSafeInteger(received) && received >= total && total > 0;
-  const changed = !!confirm && (confirm.sessionId !== session.id || confirm.tableId !== table.id || confirm.total !== total || session.payment !== 'unpaid');
+  const validAmount =
+    !!amount &&
+    Number.isSafeInteger(received) &&
+    received >= total &&
+    total > 0;
+  const changed =
+    !!confirm &&
+    (confirm.sessionId !== session.id ||
+      confirm.tableId !== table.id ||
+      confirm.total !== total ||
+      session.payment !== 'unpaid');
   const unfinished = items.some((i) => i.status !== 'Served');
   return (
     <Page>
@@ -89,7 +103,14 @@ function DemoPaymentScreen() {
             </View>
           </View>
           <Badge text="Pending_Settlement" tone="amber" />
-          {session.cashCollectedBy && <Text style={ui.muted}>Nhân viên nhận tiền: {session.cashCollectedBy.name}{session.cashCollectedAt ? ` · ${time(session.cashCollectedAt)}` : ''}</Text>}
+          {session.cashCollectedBy && (
+            <Text style={ui.muted}>
+              Nhân viên nhận tiền: {session.cashCollectedBy.name}
+              {session.cashCollectedAt
+                ? ` · ${time(session.cashCollectedAt)}`
+                : ''}
+            </Text>
+          )}
           <Text style={ui.body}>
             Đã nhận từ khách: {money(session.cashReceived || 0)}
           </Text>
@@ -149,7 +170,12 @@ function DemoPaymentScreen() {
             disabled={!validAmount || !table.active}
             onPress={() => {
               sending.current = false;
-              setConfirm({ sessionId: session.id, tableId: table.id, total, received });
+              setConfirm({
+                sessionId: session.id,
+                tableId: table.id,
+                total,
+                received,
+              });
             }}
           />
           <Text style={ui.small}>
@@ -166,8 +192,8 @@ function DemoPaymentScreen() {
             Bạn đã nhận {money(confirm.received)} từ khách tại {table.name}?
           </Text>
           <Text style={ui.body}>
-            Tiền thối: {money(confirm.received - confirm.total)}. Số tiền giao thu ngân:{' '}
-            {money(confirm.total)}.
+            Tiền thối: {money(confirm.received - confirm.total)}. Số tiền giao
+            thu ngân: {money(confirm.total)}.
           </Text>
           <Button
             title="Tôi đã nhận tiền từ khách"
@@ -188,7 +214,12 @@ function DemoPaymentScreen() {
               else sending.current = false;
             }}
           />
-          {changed && <Notice text="Phiên bàn hoặc tổng tiền đã thay đổi. Đóng bảng này và kiểm tra lại trước khi nhận tiền." error />}
+          {changed && (
+            <Notice
+              text="Phiên bàn hoặc tổng tiền đã thay đổi. Đóng bảng này và kiểm tra lại trước khi nhận tiền."
+              error
+            />
+          )}
         </Sheet>
       )}
     </Page>
@@ -196,6 +227,13 @@ function DemoPaymentScreen() {
 }
 
 export default function PaymentScreen() {
-  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
-  return apiMode ? <UnsupportedWaiterScreen title="Thu hộ tiền" subtitle="Kiểm tra hóa đơn trước khi nhận tiền từ khách." /> : <DemoPaymentScreen />;
+  const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
+  return apiMode ? (
+    <UnsupportedWaiterScreen
+      title="Thu hộ tiền"
+      subtitle="Kiểm tra hóa đơn trước khi nhận tiền từ khách."
+    />
+  ) : (
+    <DemoPaymentScreen />
+  );
 }

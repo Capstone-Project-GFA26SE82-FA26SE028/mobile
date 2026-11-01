@@ -14,9 +14,9 @@ import {
   Page,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/theme';
-import { runCommand, useNow } from '../../shared/hooks';
-import { minutes, time } from '../../shared/rules';
+import { colors, ui } from '../../shared/utils/theme';
+import { runCommand, useNow } from '../../shared/hooks/useWaiterCommands';
+import { minutes, time } from '../../shared/utils/rules';
 function DemoRequestsScreen() {
   const state = useAppSelector((s) => s.waiter);
   const now = useNow();
@@ -142,6 +142,14 @@ function DemoRequestsScreen() {
 }
 
 export default function RequestsScreen() {
-  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
-  return apiMode ? <UnsupportedWaiterScreen title="Yêu cầu của khách" subtitle="Một chút quan tâm, thêm nhiều hài lòng." tabs={['Đang chờ', 'Đã xong']} /> : <DemoRequestsScreen />;
+  const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
+  return apiMode ? (
+    <UnsupportedWaiterScreen
+      title="Yêu cầu của khách"
+      subtitle="Một chút quan tâm, thêm nhiều hài lòng."
+      tabs={['Đang chờ', 'Đã xong']}
+    />
+  ) : (
+    <DemoRequestsScreen />
+  );
 }

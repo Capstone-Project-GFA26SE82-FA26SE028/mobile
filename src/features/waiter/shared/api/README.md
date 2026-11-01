@@ -2,11 +2,15 @@
 
 ## File organization
 
-- `api/`: transport binding (`waiterApi.ts`), HTTP service and API response/request types.
+- `tables/api/`: table HTTP service and authenticated binding; `tables/types/`: table contracts.
+- `ordering/api/`: menu/order HTTP service and authenticated binding; `ordering/types/`: order, menu and cart contracts.
+- `shared/api/waiterTransport.ts`: shared envelope handling and pagination.
+- Each feature keeps its own `screens`, `components`, `hooks`, `types`, `utils` and `store` as needed.
+- `shared/types/`, `shared/utils/`, `shared/store/`: common state, rules, theme and Redux state.
 - `tables/screens/`: table list/detail UI; `tables/hooks/`: table queries and session opening.
 - `ordering/screens/`: ordering and confirmation UI; `ordering/hooks/`: menu/order queries and mutations.
 - `ordering/components/OrderCard.tsx`: order display shared by ordering and table detail.
-- `serving/screens/LiveReadyScreen.tsx`: ready items, also used by the notification route.
+- `serving/screens/LiveReadyScreen.tsx`: ready items; `notifications/screens/LiveNotificationsScreen.tsx`: kitchen notifications.
 - `shared/components/`: reusable loading/error and unavailable UI.
 - `shared/hooks/useWaiterScope.ts`: account query scope and cross-feature invalidation.
 

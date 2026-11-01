@@ -1,6 +1,9 @@
-import type { Command, DiningTable, Dish, WaiterState } from './types';
-import { hasWaiterSession } from '../auth/session';
-import { inHoldWindow, reservationTableError } from '../reservations/rules';
+import type { Command, DiningTable, Dish, WaiterState } from '../types/types';
+import { hasWaiterSession } from '../../auth/utils/session';
+import {
+  inHoldWindow,
+  reservationTableError,
+} from '../../reservations/utils/rules';
 export const money = (n: number) =>
   new Intl.NumberFormat('vi-VN', {
     style: 'currency',
@@ -39,9 +42,7 @@ export const heldReservation = (
 ) =>
   state.reservations.find(
     (r) =>
-      r.status === 'confirmed' &&
-      r.tableId === tableId &&
-      inHoldWindow(r, now),
+      r.status === 'confirmed' && r.tableId === tableId && inHoldWindow(r, now),
   );
 export function tableStatus(
   state: WaiterState,
@@ -81,24 +82,46 @@ export function applyCommand(
     if (!state.waiter.id.trim() || !state.waiter.name.trim())
       return 'Không tìm thấy thông tin nhân viên xác nhận.';
     const session = state.sessions.find((s) => s.id === order.sessionId);
-    if (!session || !state.tables.some((t) => t.active && t.id === session.tableId && t.sessionId === session.id))
+    if (
+      !session ||
+      !state.tables.some(
+        (t) =>
+          t.active && t.id === session.tableId && t.sessionId === session.id,
+      )
+    )
       return 'Phiên bàn đã đóng hoặc không còn hoạt động.';
-    if (order.lines.some((line) => !Number.isSafeInteger(line.price) || line.price < 0 || !line.name.trim()))
+    if (
+      order.lines.some(
+        (line) =>
+          !Number.isSafeInteger(line.price) ||
+          line.price < 0 ||
+          !line.name.trim(),
+      )
+    )
       return 'Giá hoặc thông tin món trong đơn không hợp lệ. Vui lòng kiểm tra lại.';
     // Only accepted orders become kitchen items and enter the billable total.
-    const error = applyCommand(state, {
-      type: 'order', id: `customer-${order.id}`, now: c.now,
-      sessionId: order.sessionId,
-      lines: order.lines.map((line) => ({
-        dishId: line.dishId, quantity: line.quantity,
-        note: [line.note, order.note].filter(Boolean).join(' · '),
-      })),
-    }, menu);
+    const error = applyCommand(
+      state,
+      {
+        type: 'order',
+        id: `customer-${order.id}`,
+        now: c.now,
+        sessionId: order.sessionId,
+        lines: order.lines.map((line) => ({
+          dishId: line.dishId,
+          quantity: line.quantity,
+          note: [line.note, order.note].filter(Boolean).join(' · '),
+        })),
+      },
+      menu,
+    );
     if (error) return error;
     // Keep the price/name reviewed with this order, even if the menu changes.
     // Availability and quantities were validated before any item was created.
     order.lines.forEach((line, index) => {
-      const item = state.items.find((i) => i.id === `customer-${order.id}-${index}`)!;
+      const item = state.items.find(
+        (i) => i.id === `customer-${order.id}-${index}`,
+      )!;
       item.price = line.price;
       item.name = line.name;
     });
@@ -107,7 +130,8 @@ export function applyCommand(
     order.confirmedBy = { id: state.waiter.id, name: state.waiter.name };
     order.confirmedAt = c.now;
     state.logs.unshift({
-      id: c.id, time: c.now,
+      id: c.id,
+      time: c.now,
       text: `${state.waiter.name} xác nhận đơn ${order.id}, chuyển bếp và thu ngân.`,
     });
     return null;
@@ -191,7 +215,10 @@ export function applyCommand(
     if (
       !session ||
       session.payment !== 'unpaid' ||
-      !state.tables.some((t) => t.active && t.id === session.tableId && t.sessionId === session.id)
+      !state.tables.some(
+        (t) =>
+          t.active && t.id === session.tableId && t.sessionId === session.id,
+      )
     )
       return 'Phiên bàn không còn nhận món.';
     if (!c.lines.length) return 'Vui lòng chọn ít nhất một món.';
@@ -262,8 +289,11 @@ export function applyCommand(
       return 'Số phần đã lên không hợp lệ.';
     item.served += c.quantity;
     (item.servings ??= []).push({
-      id: c.id, waiterId: state.waiter.id, waiterName: state.waiter.name,
-      quantity: c.quantity, time: c.now,
+      id: c.id,
+      waiterId: state.waiter.id,
+      waiterName: state.waiter.name,
+      quantity: c.quantity,
+      time: c.now,
     });
     item.seen = true;
     if (item.served === item.quantity) item.status = 'Served';
@@ -297,12 +327,19 @@ export function applyCommand(
     const total = sessionTotal(state, c.sessionId);
     if (!session || session.payment !== 'unpaid')
       return 'Phiên đã ghi nhận thu tiền hoặc đã thanh toán.';
-    const table = state.tables.find((t) => t.id === session.tableId && t.sessionId === session.id && t.active);
+    const table = state.tables.find(
+      (t) => t.id === session.tableId && t.sessionId === session.id && t.active,
+    );
     if (!table || (c.tableId !== undefined && c.tableId !== table.id))
       return 'Phiên bàn vừa thay đổi hoặc không còn hoạt động. Vui lòng kiểm tra lại.';
     if (c.expectedTotal !== undefined && c.expectedTotal !== total)
       return 'Tổng tiền vừa thay đổi. Vui lòng kiểm tra lại hóa đơn trước khi thu tiền.';
-    if (!Number.isSafeInteger(total) || total <= 0 || !Number.isSafeInteger(c.amount) || c.amount < total)
+    if (
+      !Number.isSafeInteger(total) ||
+      total <= 0 ||
+      !Number.isSafeInteger(c.amount) ||
+      c.amount < total
+    )
       return 'Số tiền nhận phải là số nguyên và đủ tổng tiền cần thu.';
     session.payment = 'pending_settlement';
     session.cashReceived = c.amount;
@@ -320,7 +357,12 @@ export function applyCommand(
     if (!reservation || reservation.status !== 'pending')
       return 'Yêu cầu đặt bàn đã được xử lý.';
     if (c.decision === 'confirmed') {
-      const error = reservationTableError(state, reservation, c.tableId || '', c.now);
+      const error = reservationTableError(
+        state,
+        reservation,
+        c.tableId || '',
+        c.now,
+      );
       if (error) return error;
       const table = state.tables.find((t) => t.id === c.tableId)!;
       reservation.tableId = table.id;

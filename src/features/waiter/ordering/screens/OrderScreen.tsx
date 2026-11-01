@@ -17,11 +17,11 @@ import {
   Stepper,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/theme';
-import { waiterMenu } from '../../shared/data/menu';
-import { matches, money } from '../../shared/rules';
-import { runCommand } from '../../shared/hooks';
-import type { Dish, DraftLine } from '../../shared/types';
+import { colors, ui } from '../../shared/utils/theme';
+import { waiterMenu } from '../utils/menu';
+import { matches, money } from '../../shared/utils/rules';
+import { runCommand } from '../../shared/hooks/useWaiterCommands';
+import type { Dish, DraftLine } from '../../shared/types/types';
 function DemoOrderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const state = useAppSelector((s) => s.waiter);
@@ -36,7 +36,12 @@ function DemoOrderScreen() {
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState('');
   const [review, setReview] = useState(false);
-  if (!table?.active || !session || session.tableId !== table.id || session.payment !== 'unpaid')
+  if (
+    !table?.active ||
+    !session ||
+    session.tableId !== table.id ||
+    session.payment !== 'unpaid'
+  )
     return (
       <Page>
         <Empty text="Phiên bàn chưa mở hoặc đang thanh toán, không thể nhận thêm món." />
@@ -178,7 +183,11 @@ function DemoOrderScreen() {
               <Field
                 label={`Ghi chú món ${i + 1}`}
                 value={line.note}
-                onChangeText={(value) => setCart(cart.map((l, j) => i === j ? { ...l, note: value } : l))}
+                onChangeText={(value) =>
+                  setCart(
+                    cart.map((l, j) => (i === j ? { ...l, note: value } : l)),
+                  )
+                }
                 placeholder="Ít cay, không hành…"
                 multiline
                 maxLength={300}
@@ -232,6 +241,6 @@ function DemoOrderScreen() {
 }
 
 export default function OrderScreen() {
-  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
   return apiMode ? <LiveOrderScreen /> : <DemoOrderScreen />;
 }

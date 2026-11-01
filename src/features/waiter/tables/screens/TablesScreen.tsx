@@ -13,9 +13,9 @@ import {
   Search,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/theme';
-import { useNow } from '../../shared/hooks';
-import { matches, minutes, tableStatus } from '../../shared/rules';
+import { colors, ui } from '../../shared/utils/theme';
+import { useNow } from '../../shared/hooks/useWaiterCommands';
+import { matches, minutes, tableStatus } from '../../shared/utils/rules';
 function DemoTablesScreen() {
   const state = useAppSelector((s) => s.waiter);
   const router = useRouter();
@@ -130,13 +130,11 @@ function DemoTablesScreen() {
         <Text accessibilityRole="header" style={ui.h2}>
           Sơ đồ bàn
         </Text>
-        <Text style={ui.small}>{activeTables.length} bàn · {areas.length} khu vực</Text>
+        <Text style={ui.small}>
+          {activeTables.length} bàn · {areas.length} khu vực
+        </Text>
       </View>
-      <Chips
-        options={['Tất cả', ...areas]}
-        value={area}
-        onChange={setArea}
-      />
+      <Chips options={['Tất cả', ...areas]} value={area} onChange={setArea} />
       <Search value={query} onChange={setQuery} placeholder="Tìm số bàn…" />
       <View style={[ui.wrap, { gap: 12 }]}>
         {[
@@ -182,7 +180,10 @@ function DemoTablesScreen() {
           </Pressable>
         ))}
       </View>
-      <View onLayout={({ nativeEvent }) => setGridWidth(nativeEvent.layout.width)} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+      <View
+        onLayout={({ nativeEvent }) => setGridWidth(nativeEvent.layout.width)}
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}
+      >
         {rows.map((table) => {
           const label = tableStatus(state, table, now);
           const session = state.sessions.find((s) => s.id === table.sessionId);
@@ -271,6 +272,6 @@ function DemoTablesScreen() {
 }
 
 export default function TablesScreen() {
-  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
   return apiMode ? <LiveTablesScreen /> : <DemoTablesScreen />;
 }

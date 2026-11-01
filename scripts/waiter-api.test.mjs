@@ -12,8 +12,10 @@ require.extensions['.ts'] = (module, filename) => {
   module._compile(outputText, filename);
 };
 require.extensions['.jpg'] = (module, filename) => { module.exports = filename; };
-const { createWaiterService } = require('../src/features/waiter/api/waiterService.ts');
-const { default: reducer, authenticated, enterDemo } = require('../src/features/waiter/shared/waiterSlice.ts');
+const { createTableService } = require('../src/features/waiter/tables/api/tablesService.ts');
+const { createOrderingService } = require('../src/features/waiter/ordering/api/orderingService.ts');
+const createWaiterService = client => ({ ...createTableService(client), ...createOrderingService(client) });
+const { default: reducer, authenticated, enterDemo } = require('../src/features/waiter/shared/store/waiterSlice.ts');
 const reply = result => ({ data: { isSuccess: true, result } });
 
 test('tables and menu load every page and forward cancellation signals', async () => {

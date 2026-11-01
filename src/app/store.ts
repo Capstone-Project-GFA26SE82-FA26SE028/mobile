@@ -1,10 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 
-import waiterReducer from '@/features/waiter/shared/waiterSlice';
-import { authenticated, signOut } from '@/features/waiter/shared/waiterSlice';
+import waiterReducer from '@/features/waiter/shared/store/waiterSlice';
+import {
+  authenticated,
+  signOut,
+} from '@/features/waiter/shared/store/waiterSlice';
 import { authService } from '@/features/auth/api/authApi';
 import authReducer, { sessionChanged } from '@/features/auth/authSlice';
-import waiterCartReducer from '@/features/waiter/ordering/cartSlice';
+import waiterCartReducer from '@/features/waiter/ordering/store/cartSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,

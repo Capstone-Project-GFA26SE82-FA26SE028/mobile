@@ -15,15 +15,15 @@ import {
   Stepper,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/theme';
+import { colors, ui } from '../../shared/utils/theme';
 import {
   heldReservation,
   money,
   sessionTotal,
   tableStatus,
   time,
-} from '../../shared/rules';
-import { runCommand, useNow } from '../../shared/hooks';
+} from '../../shared/utils/rules';
+import { runCommand, useNow } from '../../shared/hooks/useWaiterCommands';
 const labels = {
   Pending: 'Chờ chế biến',
   Sent: 'Đã gửi bếp',
@@ -53,7 +53,10 @@ function DemoTableDetailScreen() {
   const items = state.items.filter((i) => i.sessionId === session?.id);
   const hold = heldReservation(state, table.id, now);
   const targets = state.tables.filter(
-    (t) => t.id !== table.id && t.active && !!t.area &&
+    (t) =>
+      t.id !== table.id &&
+      t.active &&
+      !!t.area &&
       tableStatus(state, t, now) === 'Trống' &&
       t.capacity >= (session?.guests || 0),
   );
@@ -83,7 +86,9 @@ function DemoTableDetailScreen() {
             <Text style={ui.body}>
               {session.guests} khách · Mở lúc {time(session.openedAt)}
             </Text>
-            <Text style={ui.muted}>Nhân viên phụ trách: {state.waiter?.name}</Text>
+            <Text style={ui.muted}>
+              Nhân viên phụ trách: {state.waiter?.name}
+            </Text>
             {session.prebillPrinted && (
               <Notice text="Đã in hóa đơn tạm tính. Không thể đổi bàn." />
             )}
@@ -105,7 +110,11 @@ function DemoTableDetailScreen() {
                 <Button
                   title="Đổi bàn"
                   secondary
-                  disabled={!table.active || session.prebillPrinted || session.payment !== 'unpaid'}
+                  disabled={
+                    !table.active ||
+                    session.prebillPrinted ||
+                    session.payment !== 'unpaid'
+                  }
                   onPress={() => {
                     setReason('');
                     setTarget('');
@@ -160,7 +169,9 @@ function DemoTableDetailScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`Hủy ${item.name}`}
                     disabled={
-                      (item.status !== 'Pending' && item.status !== 'Sent') || session.payment !== 'unpaid' || !table.active
+                      (item.status !== 'Pending' && item.status !== 'Sent') ||
+                      session.payment !== 'unpaid' ||
+                      !table.active
                     }
                     onPress={() => {
                       setItemId(item.id);
@@ -212,10 +223,12 @@ function DemoTableDetailScreen() {
               }
               icon="wallet-outline"
               disabled={!table.active || sessionTotal(state, session.id) <= 0}
-              onPress={() => router.push({
-                pathname: '/waiter/payment/[id]',
-                params: { id: table.id },
-              })}
+              onPress={() =>
+                router.push({
+                  pathname: '/waiter/payment/[id]',
+                  params: { id: table.id },
+                })
+              }
             />
           </Card>
         </>
@@ -293,20 +306,44 @@ function DemoTableDetailScreen() {
                 }}
               >
                 <Text style={ui.body}>{t.name}</Text>
-                <Text style={ui.small}>{t.area} · {t.capacity} chỗ</Text>
+                <Text style={ui.small}>
+                  {t.area} · {t.capacity} chỗ
+                </Text>
               </Pressable>
             ))}
           </View>
           {!targets.length && <Empty text="Chưa có bàn trống phù hợp." />}
-          <Field label="Lý do đổi bàn" value={reason} onChangeText={setReason} multiline maxLength={300} />
+          <Field
+            label="Lý do đổi bàn"
+            value={reason}
+            onChangeText={setReason}
+            multiline
+            maxLength={300}
+          />
           <Button
             title="Xác nhận đổi bàn"
-            disabled={!targets.some((t) => t.id === target) || !reason.trim() ||
-              !table.active || session.prebillPrinted || session.payment !== 'unpaid'}
+            disabled={
+              !targets.some((t) => t.id === target) ||
+              !reason.trim() ||
+              !table.active ||
+              session.prebillPrinted ||
+              session.payment !== 'unpaid'
+            }
             onPress={() => {
-              if (runCommand({ type: 'move', sessionId: session.id, tableId: target, reason, sourceTableId: table.id })) {
+              if (
+                runCommand({
+                  type: 'move',
+                  sessionId: session.id,
+                  tableId: target,
+                  reason,
+                  sourceTableId: table.id,
+                })
+              ) {
                 setModal(null);
-                router.replace({ pathname: '/waiter/table/[id]', params: { id: target } });
+                router.replace({
+                  pathname: '/waiter/table/[id]',
+                  params: { id: target },
+                });
               }
             }}
           />
@@ -327,8 +364,16 @@ function DemoTableDetailScreen() {
           <Button
             title="Xác nhận hủy món"
             danger
-            disabled={!reason.trim() || !table.active || session?.payment !== 'unpaid' ||
-              !state.items.some((i) => i.id === itemId && (i.status === 'Pending' || i.status === 'Sent'))}
+            disabled={
+              !reason.trim() ||
+              !table.active ||
+              session?.payment !== 'unpaid' ||
+              !state.items.some(
+                (i) =>
+                  i.id === itemId &&
+                  (i.status === 'Pending' || i.status === 'Sent'),
+              )
+            }
             onPress={() => {
               if (runCommand({ type: 'cancel', itemId, reason }))
                 setModal(null);
@@ -341,6 +386,6 @@ function DemoTableDetailScreen() {
 }
 
 export default function TableDetailScreen() {
-  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
   return apiMode ? <LiveTableDetailScreen /> : <DemoTableDetailScreen />;
 }

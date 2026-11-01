@@ -12,8 +12,8 @@ require.extensions['.ts'] = (module, filename) => {
   });
   module._compile(outputText, filename);
 };
-const { createWaiterState } = require('../src/features/waiter/shared/data/seed.ts');
-const { applyCommand, sessionTotal } = require('../src/features/waiter/shared/rules.ts');
+const { createWaiterState } = require('../src/features/waiter/shared/utils/seed.ts');
+const { applyCommand, sessionTotal } = require('../src/features/waiter/shared/utils/rules.ts');
 const now = 1792249200000;
 const menu = [
   { id: 'salmon', name: 'Cá hồi', price: 189000, available: true },
@@ -27,8 +27,8 @@ const confirm = (s, overrides = {}, dishes = menu) => applyCommand(s, {
   orderId: 'QR-001', version: 1, ...overrides,
 }, dishes);
 
-const { hasWaiterSession } = require('../src/features/waiter/auth/session.ts');
-const { tableStatus, matches } = require('../src/features/waiter/shared/rules.ts');
+const { hasWaiterSession } = require('../src/features/waiter/auth/utils/session.ts');
+const { tableStatus, matches } = require('../src/features/waiter/shared/utils/rules.ts');
 const serve = (s, data = {}) => applyCommand(s, { type:'serve', id:'serve-test', now, itemId:'I1', quantity:1, expectedServed:0, ...data }, menu);
 
 test('inactive, wrong-role and missing-identity demo sessions cannot mutate data', () => {
@@ -288,7 +288,7 @@ test('request table follows its session after a move and completion does not col
   assert.equal(s.sessions.find(x => x.id === 'S6').cashReceived, undefined);
 });
 
-const { reservationTableError, inHoldWindow } = require('../src/features/waiter/reservations/rules.ts');
+const { reservationTableError, inHoldWindow } = require('../src/features/waiter/reservations/utils/rules.ts');
 const approve = (s, data = {}) => applyCommand(s, {
   type:'reservation', id:'reservation-test', now, reservationId:'B1', decision:'confirmed', tableId:'T1', ...data,
 }, menu);

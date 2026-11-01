@@ -12,7 +12,7 @@ require.extensions['.ts'] = (module, filename) => {
   module._compile(outputText, filename);
 };
 const { default: reducer, cartId, addCartLine, updateCartLine, removeCartLine,
-  clearCart, startCartSubmission, failCartSubmission, completeCartSubmission } = require('../src/features/waiter/ordering/cartSlice.ts');
+  clearCart, startCartSubmission, failCartSubmission, completeCartSubmission } = require('../src/features/waiter/ordering/store/cartSlice.ts');
 const line = (id = 'line') => ({ id, itemId: 'dish', name: 'Dish', price: 15000, quantity: 2, note: 'Less salt',
   options: [{ optionId: 'size', quantity: 1 }], optionNames: ['Large'] });
 const add = (tableId = 'table', sessionId = 'session', id = 'line') => addCartLine({ tableId, sessionId, line: line(id) });

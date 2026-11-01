@@ -11,7 +11,7 @@ open `/waiter/tables`; Inventory accounts open `/inventory`. Native sessions use
 SecureStore; web preview keeps credentials in memory and requires sign-in after reload.
 There is no demo button on the shared sign-in screen.
 See [Authentication setup](src/features/auth/README.md) for configuration.
-See [Waiter API integration](src/features/waiter/api/README.md) for supported flows and checks.
+See [Waiter API integration](src/features/waiter/shared/api/README.md) for supported flows and checks.
 
 UC_WAI_03 is available through **Đơn khách chờ xác nhận** on the table map.
 Review each QR order round and confirm it before it enters kitchen items and

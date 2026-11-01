@@ -14,7 +14,7 @@ require.extensions['.ts'] = (module, filename) => {
   module._compile(outputText, filename);
 };
 require.extensions['.jpg'] = (module, filename) => { module.exports = filename; };
-const { default: reducer, enterDemo, signOut, setAlerts } = require('../src/features/waiter/shared/waiterSlice.ts');
+const { default: reducer, enterDemo, signOut, setAlerts } = require('../src/features/waiter/shared/store/waiterSlice.ts');
 const storageModule = require.resolve('../src/features/auth/storage.ts');
 require.cache[storageModule] = { id: storageModule, filename: storageModule, loaded: true, exports: { authStorage: { read: async () => null, write: async () => {} } } };
 const { createAuthService: createService } = require('../src/features/auth/api/authApi.ts');
@@ -23,7 +23,7 @@ function memoryStorage(value = null) {
 }
 function createAuthService(client, storage = memoryStorage()) { return createService(client, storage); }
 const { default: authReducer, sessionChanged } = require('../src/features/auth/authSlice.ts');
-const { authenticated } = require('../src/features/waiter/shared/waiterSlice.ts');
+const { authenticated } = require('../src/features/waiter/shared/store/waiterSlice.ts');
 
 function credentials(overrides = {}) {
   return {

@@ -3,7 +3,7 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { clearFeedback } from '../waiterSlice';
+import { clearFeedback } from '../store/waiterSlice';
 import type { ComponentProps, PropsWithChildren, ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
@@ -16,7 +16,7 @@ import {
   View,
   type TextInputProps,
 } from 'react-native';
-import { colors, ui } from '../theme';
+import { colors, ui } from '../utils/theme';
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 export function Icon({
   name,
