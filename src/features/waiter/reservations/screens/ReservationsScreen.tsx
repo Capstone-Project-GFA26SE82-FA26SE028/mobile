@@ -1,4 +1,4 @@
-import UnsupportedWaiterScreen from '../../shared/components/UnsupportedWaiterScreen';
+import LiveReservationsScreen from './LiveReservationsScreen';
 import { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -259,14 +259,5 @@ function DemoReservationsScreen() {
 
 export default function ReservationsScreen() {
   const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
-  return apiMode ? (
-    <UnsupportedWaiterScreen
-      title="Đặt bàn trước"
-      subtitle="Chuẩn bị một chỗ ngồi thật chu đáo cho khách."
-      tabs={['Chờ duyệt', 'Đã xác nhận', 'Đã đến', 'Từ chối']}
-      searchable
-    />
-  ) : (
-    <DemoReservationsScreen />
-  );
+  return apiMode ? <LiveReservationsScreen /> : <DemoReservationsScreen />;
 }

@@ -50,9 +50,11 @@ unlock editing; ambiguous network failures retain the key. Check existing table
 orders when the result is uncertain. Backend Idempotency-Key prevents duplicating
 that same submission.
 
-No API is currently exposed for serving, cancellation/editing of submitted items,
-moving guests, cash handover, service requests or reservations. Those controls are
-unavailable after backend login. Displayed order totals are not final payment totals.
+Reservation integration is documented in `../../reservations/README.md`.
+Serving has a backend endpoint but is not yet connected to the mobile UI.
+Cancellation/editing of submitted items, moving guests, cash handover and service
+requests remain unavailable in the mobile API flow.
+Displayed order totals are not final payment totals.
 Table service responses do not include capacity, guest count, session start time,
 coordinates or all four Excel table states; these values are not fabricated.
 

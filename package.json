@@ -57,7 +57,8 @@
     "test:ordering": "node --test scripts/order-confirmation.test.mjs",
     "test:notifications": "node --test scripts/notifications.test.mjs",
     "test:waiter-ui": "node --test scripts/waiter-ui-rules.test.mjs",
-    "test:waiter-styles": "node --test scripts/waiter-nativewind.test.mjs"
+    "test:waiter-styles": "node --test scripts/waiter-nativewind.test.mjs",
+    "test:reservations": "node --test scripts/reservations.test.mjs"
   },
   "private": true
 }
