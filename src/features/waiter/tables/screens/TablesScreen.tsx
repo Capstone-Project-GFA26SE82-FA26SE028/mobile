@@ -23,6 +23,7 @@ function DemoTablesScreen() {
   const [area, setArea] = useState('Tất cả');
   const [status, setStatus] = useState('Tất cả');
   const [query, setQuery] = useState('');
+  const [gridWidth, setGridWidth] = useState(0);
   const activeTables = state.tables.filter((t) => t.active);
   const areas = [...new Set(activeTables.map((t) => t.area).filter(Boolean))];
   const ready = state.items
@@ -181,7 +182,7 @@ function DemoTablesScreen() {
           </Pressable>
         ))}
       </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+      <View onLayout={({ nativeEvent }) => setGridWidth(nativeEvent.layout.width)} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
         {rows.map((table) => {
           const label = tableStatus(state, table, now);
           const session = state.sessions.find((s) => s.id === table.sessionId);
@@ -207,10 +208,9 @@ function DemoTablesScreen() {
                 })
               }
               style={({ pressed }) => ({
-                width: '47.8%',
-                flexGrow: 1,
-                minWidth: 130,
-                maxWidth: 260,
+                width: gridWidth > 0 ? (gridWidth - 12) / 2 : '47.8%',
+                flexGrow: 0,
+                flexShrink: 0,
                 padding: 15,
                 borderRadius: 17,
                 backgroundColor: label === 'Chờ trả món' ? '#FFFAEF' : '#fff',

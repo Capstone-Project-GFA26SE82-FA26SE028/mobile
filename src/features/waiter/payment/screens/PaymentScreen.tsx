@@ -197,5 +197,5 @@ function DemoPaymentScreen() {
 
 export default function PaymentScreen() {
   const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
-  return apiMode ? <UnsupportedWaiterScreen /> : <DemoPaymentScreen />;
+  return apiMode ? <UnsupportedWaiterScreen title="Thu hộ tiền" subtitle="Kiểm tra hóa đơn trước khi nhận tiền từ khách." /> : <DemoPaymentScreen />;
 }

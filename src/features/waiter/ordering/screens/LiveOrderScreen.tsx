@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Image, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { Badge, Button, Card, Chips, Empty, Field, Notice, Page, Search, Sheet, Stepper, Title } from '../../shared/components/UI';
+import { Badge, Button, Card, Chips, Empty, Field, Icon, Notice, Page, Search, Sheet, Stepper, Title } from '../../shared/components/UI';
 import { money } from '../../shared/rules';
-import { ui } from '../../shared/theme';
+import { colors, ui } from '../../shared/theme';
 import { QueryStatus } from '../../shared/components/QueryStatus';
 import { useServiceTables } from '../../tables/hooks/useTables';
 import { useWaiterMenu, useMenuItem } from '../hooks/useMenu';
@@ -52,8 +52,7 @@ export default function LiveOrderScreen() {
     (category === 'Tất cả' || d.categoryName === category));
   return <View style={{ flex: 1 }}>
     <Page>
-    <Title title={`Gọi món · ${table?.tableCode || ''}`} subtitle="Giá và khả dụng được backend kiểm tra lại khi gửi." />
-    <Button title={count ? `Giỏ hàng · ${count} phần` : 'Giỏ hàng'} icon="cart-outline" secondary disabled={!sessionId} onPress={openCart} />
+    <Title title={`Gọi món · ${table?.tableCode || ''}`} subtitle="Chọn món và ghi chú theo yêu cầu của khách." />
     {!!added && <Notice text={added} />}
     {locked && <Notice text="Lượt gọi này đã gửi và đang chờ kết quả. Mở giỏ để kiểm tra hoặc thử lại." />}
     <QueryStatus query={tables} />
@@ -63,22 +62,27 @@ export default function LiveOrderScreen() {
       <Notice text="Bàn có nhiều phiên. Chọn đúng phiên trước khi gửi order." />
       <Chips options={sessions} value={chosenSession} onChange={value => { if (!locked) setChosenSession(value); }} />
     </>}
-    <Search value={search} onChange={setSearch} placeholder="Tìm món…" />
+    <Search value={search} onChange={setSearch} placeholder="Tìm món ăn, đồ uống…" />
     <Chips options={['Tất cả', ...new Set((menu.data ?? []).map(d => d.categoryName))]} value={category} onChange={setCategory} />
-    {rows.map(item => <Card key={item.itemId}>
-      {!!item.imageUrl && <Image source={{ uri: item.imageUrl }} style={{ width: '100%', height: 140, borderRadius: 12 }} />}
-      <Title title={item.itemName} subtitle={item.categoryName} />
-      {!!item.description && <Text style={ui.muted}>{item.description}</Text>}
-      <Text style={ui.money}>{item.price === null ? 'Chưa có giá' : money(item.price)}</Text>
-      {!item.canOrder && <Badge text="Hiện không nhận món" tone="gray" />}
-      <Button title="Chọn món" disabled={!item.canOrder || !sessionId || locked} onPress={() => {
+    {rows.map(item => <Pressable key={item.itemId} accessibilityRole="button" accessibilityLabel={`Chọn ${item.itemName}`}
+      accessibilityState={{ disabled: !item.canOrder || !sessionId || locked }}
+      disabled={!item.canOrder || !sessionId || locked} onPress={() => {
         setQuantity(1); setNote(''); setSelected({}); setItemId(item.itemId);
-      }} />
-    </Card>)}
+      }} style={[ui.card, ui.row, { opacity: item.canOrder ? 1 : 0.5 }]}>
+      {item.imageUrl ? <Image source={{ uri: item.imageUrl }} style={ui.image} /> : <View style={[ui.image, { alignItems: 'center', justifyContent: 'center' }]}><Icon name="restaurant-outline" /></View>}
+      <View style={{ flex: 1, gap: 6 }}>
+        <Text style={[ui.body, { fontWeight: '600' }]}>{item.itemName}</Text>
+        <Text style={ui.link}>{item.price === null ? 'Chưa có giá' : money(item.price)}</Text>
+        {!item.canOrder && <Badge text="Tạm hết món" tone="gray" />}
+      </View>
+      <View style={{ borderRadius: 10, backgroundColor: colors.mint, padding: 7 }}><Icon name="add" size={20} /></View>
+    </Pressable>)}
     {menu.isSuccess && !rows.length && <Empty text="Không có món phù hợp." />}
     {itemId && <Sheet title={dish?.itemName || 'Chi tiết món'} onClose={() => setItemId(null)}>
       <QueryStatus query={detail} />
       {dish && <>
+        {!!dish.imageUrl && <Image source={{ uri: dish.imageUrl }} style={{ width: '100%', height: 160, borderRadius: 14 }} />}
+        <Text style={ui.money}>{money(unitPrice(dish))}</Text>
         <Stepper value={quantity} onChange={setQuantity} />
         {dish.optionGroups.map(group => <Card key={group.optionGroupId}>
           <Text style={ui.h2}>{group.optionGroupName}</Text>

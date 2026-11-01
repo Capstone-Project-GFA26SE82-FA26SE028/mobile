@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
-import { Card, Notice, Title } from '../../shared/components/UI';
+import { Badge, Card, Notice, Title } from '../../shared/components/UI';
 import { money } from '../../shared/rules';
 import { ui } from '../../shared/theme';
 import type { Order } from '../../api/types';
@@ -13,10 +13,13 @@ export function OrderCard({ order, children }: { order: Order; children?: ReactN
   return <Card>
     <Title title={order.orderNumber} subtitle={`${statuses[order.status] || order.status} · ${new Date(order.createdAt).toLocaleString('vi-VN')}`} />
     {order.items.map(line => <View key={line.orderItemId} style={{ gap: 5 }}>
-      <Text style={ui.body}>{line.quantity} × {line.nameSnapshot} · {money(line.lineTotal)}</Text>
+      <View style={ui.between}>
+        <Text style={[ui.body, { fontWeight: '700', flex: 1 }]}>{line.quantity} × {line.nameSnapshot}</Text>
+        <Text style={ui.link}>{money(line.lineTotal)}</Text>
+      </View>
       {line.options.map(option => <Text key={option.optionId} style={ui.small}>{option.quantity} × {option.name}</Text>)}
       {!!line.note && <Notice text={`Ghi chú: ${line.note}`} />}
-      <Text style={ui.small}>{statuses[line.status] || line.status}</Text>
+      <Badge text={statuses[line.status] || line.status} tone={line.status === 'Ready' ? 'amber' : line.status === 'Cancelled' ? 'gray' : 'green'} />
     </View>)}
     <Text style={ui.money}>{money(order.totalAmount)}</Text>
     {children}

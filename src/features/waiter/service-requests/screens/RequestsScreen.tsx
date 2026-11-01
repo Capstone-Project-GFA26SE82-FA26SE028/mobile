@@ -143,5 +143,5 @@ function DemoRequestsScreen() {
 
 export default function RequestsScreen() {
   const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
-  return apiMode ? <UnsupportedWaiterScreen /> : <DemoRequestsScreen />;
+  return apiMode ? <UnsupportedWaiterScreen title="Yêu cầu của khách" subtitle="Một chút quan tâm, thêm nhiều hài lòng." tabs={['Đang chờ', 'Đã xong']} /> : <DemoRequestsScreen />;
 }
