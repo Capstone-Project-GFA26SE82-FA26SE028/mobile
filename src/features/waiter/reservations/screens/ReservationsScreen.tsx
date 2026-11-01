@@ -234,5 +234,5 @@ function DemoReservationsScreen() {
 
 export default function ReservationsScreen() {
   const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
-  return apiMode ? <UnsupportedWaiterScreen /> : <DemoReservationsScreen />;
+  return apiMode ? <UnsupportedWaiterScreen title="Đặt bàn trước" subtitle="Chuẩn bị một chỗ ngồi thật chu đáo cho khách." tabs={['Chờ duyệt', 'Đã xác nhận', 'Đã đến', 'Từ chối']} searchable /> : <DemoReservationsScreen />;
 }

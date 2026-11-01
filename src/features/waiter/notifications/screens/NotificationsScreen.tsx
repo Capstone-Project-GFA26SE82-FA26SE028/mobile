@@ -1,4 +1,4 @@
-import LiveReadyScreen from '../../serving/screens/LiveReadyScreen';
+import LiveNotificationsScreen from './LiveNotificationsScreen';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
@@ -66,5 +66,5 @@ function DemoNotificationsScreen() {
 
 export default function NotificationsScreen() {
   const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
-  return apiMode ? <LiveReadyScreen /> : <DemoNotificationsScreen />;
+  return apiMode ? <LiveNotificationsScreen /> : <DemoNotificationsScreen />;
 }

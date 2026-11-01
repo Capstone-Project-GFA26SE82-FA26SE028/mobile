@@ -7,6 +7,8 @@ import { clearFeedback } from '@/features/waiter/shared/waiterSlice';
 import { Icon, type IconName } from '@/features/waiter/shared/components/UI';
 import { colors, ui } from '@/features/waiter/shared/theme';
 import { hasWaiterSession } from '@/features/waiter/auth/session';
+import { useServiceTables } from '@/features/waiter/tables/hooks/useTables';
+import { useSessionOrders } from '@/features/waiter/ordering/hooks/useOrders';
 const tabs: {
   path:
     | '/waiter/tables'
@@ -29,12 +31,19 @@ export default function WaiterLayout() {
   const router = useRouter();
   const pathname = usePathname();
   const signedIn = hasWaiterSession(state);
-  const unread = state.items.filter(
+  const apiMode = state.authMode === 'api';
+  const liveTables = useServiceTables(signedIn && apiMode);
+  const liveOrders = useSessionOrders(signedIn && apiMode ? (liveTables.data ?? []).flatMap(t => t.openSessionIds) : []);
+  const liveReady = (liveOrders.data ?? []).flatMap(order => order.items.filter(item => item.status === 'Ready').map(item => ({
+    id: item.orderItemId, sessionId: order.tableSessionId, name: item.nameSnapshot,
+    quantity: item.quantity, note: item.note,
+  })));
+  const unread = apiMode ? liveReady.length : state.items.filter(
     (i) => i.status === 'Ready' && !i.seen,
   ).length;
   const requests = state.requests.filter((r) => r.status !== 'done').length;
   const announced = useRef(new Set<string>());
-  const unseenItems = state.items.filter((i) => i.status === 'Ready' && !i.seen);
+  const unseenItems = apiMode ? liveReady : state.items.filter((i) => i.status === 'Ready' && !i.seen);
   useEffect(() => {
     if (!signedIn || !state.alerts) { announced.current.clear(); return; }
     const ready = state.items.filter((i) => i.status === 'Ready' && !i.seen);
@@ -180,9 +189,9 @@ export default function WaiterLayout() {
             style={[ui.row, { backgroundColor: '#FFF4DF', paddingHorizontal: 20, paddingVertical: 12 }]}>
             <Icon name="notifications-outline" color={colors.amber} />
             <View style={{ flex: 1 }}>
-              <Text style={[ui.body, { fontWeight: '600' }]}>{state.tables.find((t) => t.sessionId === unseenItems[0].sessionId)?.name || 'Món sẵn sàng'} · {unseenItems[0].quantity} × {unseenItems[0].name}</Text>
+              <Text style={[ui.body, { fontWeight: '600' }]}>{(apiMode ? liveTables.data?.find(t => t.openSessionIds.includes(unseenItems[0].sessionId))?.tableCode : state.tables.find((t) => t.sessionId === unseenItems[0].sessionId)?.name) || 'Món sẵn sàng'} · {unseenItems[0].quantity} × {unseenItems[0].name}</Text>
               {!!unseenItems[0].note && <Text style={ui.small}>{unseenItems[0].note}</Text>}
-              <Text style={ui.small}>{unseenItems.length} thông báo chưa xem · Nhấn để kiểm tra</Text>
+              <Text style={ui.small}>{unseenItems.length} {apiMode ? 'món sẵn sàng' : 'thông báo chưa xem'} · Nhấn để kiểm tra</Text>
             </View>
             <Icon name="chevron-forward" size={16} color={colors.amber} />
           </Pressable>
