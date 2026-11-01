@@ -1,3 +1,4 @@
+import { TableGrid } from '../components/TableGrid';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
@@ -52,7 +53,6 @@ export default function LiveTablesScreen() {
   const [area, setArea] = useState('Tất cả');
   const [status, setStatus] = useState('Tất cả');
   const [query, setQuery] = useState('');
-  const [gridWidth, setGridWidth] = useState(0);
   const areas = [...new Set(activeTables.map((t) => t.area).filter(Boolean))];
   const rows = activeTables.filter(
     (t) =>
@@ -193,11 +193,10 @@ export default function LiveTablesScreen() {
           </Pressable>
         ))}
       </View>
-      <View
-        onLayout={({ nativeEvent }) => setGridWidth(nativeEvent.layout.width)}
-        className="flex-row flex-wrap gap-[12px]"
-      >
-        {rows.map((table) => {
+      <TableGrid
+        items={rows}
+        getKey={(table) => table.id}
+        renderItem={(table) => {
           const label = tableStatus(table);
           const tone =
             label === 'Chờ trả món'
@@ -220,9 +219,7 @@ export default function LiveTablesScreen() {
               }
               className="p-[15px] rounded-[17px] border-[1px] gap-[12px] opacity-[1] active:opacity-[0.75]"
               style={{
-                width: gridWidth > 0 ? (gridWidth - 12) / 2 : '47.8%',
-                flexGrow: 0,
-                flexShrink: 0,
+                flex: 1,
                 backgroundColor: label === 'Chờ trả món' ? '#FFFAEF' : '#fff',
                 borderColor:
                   label === 'Chờ trả món'
@@ -259,8 +256,8 @@ export default function LiveTablesScreen() {
               </View>
             </Pressable>
           );
-        })}
-      </View>
+        }}
+      />
       {tables.isSuccess && !rows.length && (
         <Empty text="Không tìm thấy bàn phù hợp với bộ lọc." />
       )}
