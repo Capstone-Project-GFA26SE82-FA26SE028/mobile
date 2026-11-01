@@ -10,7 +10,6 @@ import {
   Page,
   Title,
 } from '../../shared/components/UI';
-import { ui } from '@/features/waiter/shared/utils/theme';
 import { money } from '../../shared/utils/rules';
 import { useServiceTables, useOpenTable } from '../hooks/useTables';
 import { useSessionOrders } from '../../ordering/hooks/useOrders';
@@ -72,11 +71,13 @@ export default function LiveTableDetailScreen() {
           {sessions.length > 0 && (
             <>
               <Card>
-                <View style={ui.between}>
-                  <Text style={ui.h2}>Phiên phục vụ</Text>
+                <View className="flex-row items-center justify-between gap-[10px]">
+                  <Text className="text-[17px] font-[700] text-[#183B32]">
+                    Phiên phục vụ
+                  </Text>
                   <Badge text="Đang mở" />
                 </View>
-                <Text style={ui.muted}>
+                <Text className="text-[12px] leading-[19px] text-[#7C8983]">
                   {table.areaName} · {sessions.length} phiên đang mở
                 </Text>
                 <Button
@@ -110,9 +111,11 @@ export default function LiveTableDetailScreen() {
                   />
                 ))}
               <QueryStatus query={orders} />
-              <View style={ui.between}>
-                <Text style={ui.h2}>Món đã gọi</Text>
-                <Text style={ui.muted}>
+              <View className="flex-row items-center justify-between gap-[10px]">
+                <Text className="text-[17px] font-[700] text-[#183B32]">
+                  Món đã gọi
+                </Text>
+                <Text className="text-[12px] leading-[19px] text-[#7C8983]">
                   {rows.reduce((sum, order) => sum + order.items.length, 0)}{' '}
                   dòng món
                 </Text>
@@ -124,7 +127,7 @@ export default function LiveTableDetailScreen() {
                 <Empty text="Phiên bàn chưa có order." />
               )}
               {orders.isSuccess && (
-                <Text style={ui.money}>
+                <Text className="text-[#12664C] text-[18px] font-[700]">
                   Tổng món đã xác nhận:{' '}
                   {money(
                     rows

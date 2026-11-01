@@ -17,7 +17,7 @@ import {
   Stepper,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import { waiterMenu } from '../utils/menu';
 import { matches, money } from '../../shared/utils/rules';
 import { runCommand } from '../../shared/hooks/useWaiterCommands';
@@ -88,21 +88,23 @@ function DemoOrderScreen() {
             setQuantity(1);
             setNote('');
           }}
-          style={[ui.card, ui.row, { opacity: d.available ? 1 : 0.5 }]}
+          className="rounded-[18px] bg-[#fff] p-[17px] border-[1px] border-[#E5EBE7] gap-[10px] flex-row items-center"
+          style={{ opacity: d.available ? 1 : 0.5 }}
         >
-          <Image source={d.image} style={ui.image} />
-          <View style={{ flex: 1, gap: 6 }}>
-            <Text style={[ui.body, { fontWeight: '600' }]}>{d.name}</Text>
-            <Text style={ui.link}>{money(d.price)}</Text>
+          <Image
+            source={d.image}
+            className="w-[66px] h-[66px] rounded-[14px] bg-[#EAF5EF]"
+          />
+          <View className="gap-[6px]" style={{ flex: 1 }}>
+            <Text className="text-[14px] leading-[21px] text-[#183B32] font-[600]">
+              {d.name}
+            </Text>
+            <Text className="text-[#12664C] text-[13px] font-[600]">
+              {money(d.price)}
+            </Text>
             {!d.available && <Badge text="Tạm hết món" tone="gray" />}
           </View>
-          <View
-            style={{
-              borderRadius: 10,
-              backgroundColor: colors.mint,
-              padding: 7,
-            }}
-          >
+          <View className="rounded-[10px] bg-[#EAF5EF] p-[7px]">
             <Icon name="add" size={20} />
           </View>
         </Pressable>
@@ -110,11 +112,13 @@ function DemoOrderScreen() {
       {!rows.length && <Empty text="Không có món phù hợp." />}
       {cart.length > 0 && (
         <Card>
-          <View style={ui.between}>
-            <Text style={ui.h2}>
+          <View className="flex-row items-center justify-between gap-[10px]">
+            <Text className="text-[17px] font-[700] text-[#183B32]">
               {cart.reduce((n, l) => n + l.quantity, 0)} phần đã chọn
             </Text>
-            <Text style={ui.money}>{money(total)}</Text>
+            <Text className="text-[#12664C] text-[18px] font-[700]">
+              {money(total)}
+            </Text>
           </View>
           <Button
             title="Xem và xác nhận gọi món"
@@ -127,10 +131,12 @@ function DemoOrderScreen() {
         <Sheet title={dish.name} onClose={() => setDish(null)}>
           <Image
             source={dish.image}
-            style={{ width: '100%', height: 160, borderRadius: 14 }}
+            className="w-[100%] h-[160px] rounded-[14px]"
           />
-          <View style={ui.between}>
-            <Text style={ui.money}>{money(dish.price)}</Text>
+          <View className="flex-row items-center justify-between gap-[10px]">
+            <Text className="text-[#12664C] text-[18px] font-[700]">
+              {money(dish.price)}
+            </Text>
             <Stepper value={quantity} onChange={setQuantity} />
           </View>
           <Field
@@ -152,21 +158,19 @@ function DemoOrderScreen() {
       )}
       {review && (
         <Sheet title="Xác nhận lượt gọi món" onClose={() => setReview(false)}>
-          <Text style={ui.muted}>
+          <Text className="text-[12px] leading-[19px] text-[#7C8983]">
             {table?.name} · {session.guests} khách
           </Text>
           {cart.map((line, i) => (
             <View
               key={i}
-              style={{
-                gap: 10,
-                borderBottomWidth: 1,
-                borderColor: colors.line,
-                paddingBottom: 14,
-              }}
+              className="gap-[10px] border-b-[1px] border-[#E5EBE7] pb-[14px]"
             >
-              <View style={ui.between}>
-                <Text style={[ui.body, { flex: 1, fontWeight: '600' }]}>
+              <View className="flex-row items-center justify-between gap-[10px]">
+                <Text
+                  className="text-[14px] leading-[21px] text-[#183B32] font-[600]"
+                  style={{ flex: 1 }}
+                >
                   {waiterMenu.find((d) => d.id === line.dishId)?.name}
                 </Text>
                 <Pressable
@@ -175,7 +179,7 @@ function DemoOrderScreen() {
                   onPress={() =>
                     setCart(cart.filter((_, index) => i !== index))
                   }
-                  style={{ padding: 10 }}
+                  className="p-[10px]"
                 >
                   <Icon name="trash-outline" color={colors.red} size={18} />
                 </Pressable>
@@ -204,11 +208,15 @@ function DemoOrderScreen() {
               />
             </View>
           ))}
-          <View style={ui.between}>
-            <Text style={ui.h2}>Tổng tạm tính</Text>
-            <Text style={ui.money}>{money(total)}</Text>
+          <View className="flex-row items-center justify-between gap-[10px]">
+            <Text className="text-[17px] font-[700] text-[#183B32]">
+              Tổng tạm tính
+            </Text>
+            <Text className="text-[#12664C] text-[18px] font-[700]">
+              {money(total)}
+            </Text>
           </View>
-          <Text style={ui.small}>
+          <Text className="text-[11px] leading-[16px] text-[#7C8983]">
             Lượt gọi sẽ xuất hiện ở trạng thái chờ chế biến trong phiên dùng
             thử.
           </Text>

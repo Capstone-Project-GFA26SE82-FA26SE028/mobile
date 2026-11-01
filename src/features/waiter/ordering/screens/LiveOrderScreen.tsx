@@ -18,7 +18,7 @@ import {
   Title,
 } from '../../shared/components/UI';
 import { money } from '../../shared/utils/rules';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import { QueryStatus } from '../../shared/components/QueryStatus';
 import { useServiceTables } from '../../tables/hooks/useTables';
 import { useWaiterMenu, useMenuItem } from '../hooks/useMenu';
@@ -150,36 +150,29 @@ export default function LiveOrderScreen() {
               setSelected({});
               setItemId(item.itemId);
             }}
-            style={[ui.card, ui.row, { opacity: item.canOrder ? 1 : 0.5 }]}
+            className="rounded-[18px] bg-[#fff] p-[17px] border-[1px] border-[#E5EBE7] gap-[10px] flex-row items-center"
+            style={{ opacity: item.canOrder ? 1 : 0.5 }}
           >
             {item.imageUrl ? (
-              <Image source={{ uri: item.imageUrl }} style={ui.image} />
+              <Image
+                source={{ uri: item.imageUrl }}
+                className="w-[66px] h-[66px] rounded-[14px] bg-[#EAF5EF]"
+              />
             ) : (
-              <View
-                style={[
-                  ui.image,
-                  { alignItems: 'center', justifyContent: 'center' },
-                ]}
-              >
+              <View className="w-[66px] h-[66px] rounded-[14px] bg-[#EAF5EF] items-center justify-center">
                 <Icon name="restaurant-outline" />
               </View>
             )}
-            <View style={{ flex: 1, gap: 6 }}>
-              <Text style={[ui.body, { fontWeight: '600' }]}>
+            <View className="gap-[6px]" style={{ flex: 1 }}>
+              <Text className="text-[14px] leading-[21px] text-[#183B32] font-[600]">
                 {item.itemName}
               </Text>
-              <Text style={ui.link}>
+              <Text className="text-[#12664C] text-[13px] font-[600]">
                 {item.price === null ? 'Chưa có giá' : money(item.price)}
               </Text>
               {!item.canOrder && <Badge text="Tạm hết món" tone="gray" />}
             </View>
-            <View
-              style={{
-                borderRadius: 10,
-                backgroundColor: colors.mint,
-                padding: 7,
-              }}
-            >
+            <View className="rounded-[10px] bg-[#EAF5EF] p-[7px]">
               <Icon name="add" size={20} />
             </View>
           </Pressable>
@@ -198,15 +191,19 @@ export default function LiveOrderScreen() {
                 {!!dish.imageUrl && (
                   <Image
                     source={{ uri: dish.imageUrl }}
-                    style={{ width: '100%', height: 160, borderRadius: 14 }}
+                    className="w-[100%] h-[160px] rounded-[14px]"
                   />
                 )}
-                <Text style={ui.money}>{money(unitPrice(dish))}</Text>
+                <Text className="text-[#12664C] text-[18px] font-[700]">
+                  {money(unitPrice(dish))}
+                </Text>
                 <Stepper value={quantity} onChange={setQuantity} />
                 {dish.optionGroups.map((group) => (
                   <Card key={group.optionGroupId}>
-                    <Text style={ui.h2}>{group.optionGroupName}</Text>
-                    <Text style={ui.small}>
+                    <Text className="text-[17px] font-[700] text-[#183B32]">
+                      {group.optionGroupName}
+                    </Text>
+                    <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                       Chọn từ {group.minSelection} đến {group.maxSelection}
                     </Text>
                     {group.options.map((option) => (
@@ -283,10 +280,14 @@ export default function LiveOrderScreen() {
           </Sheet>
         )}
       </Page>
-      <View style={[ui.card, { borderRadius: 0 }]}>
-        <View style={ui.between}>
-          <Text style={ui.h2}>Giỏ đặt hộ · {count} phần</Text>
-          <Text style={ui.money}>{money(total)}</Text>
+      <View className="rounded-[0px] bg-[#fff] p-[17px] border-[1px] border-[#E5EBE7] gap-[12px]">
+        <View className="flex-row items-center justify-between gap-[10px]">
+          <Text className="text-[17px] font-[700] text-[#183B32]">
+            Giỏ đặt hộ · {count} phần
+          </Text>
+          <Text className="text-[#12664C] text-[18px] font-[700]">
+            {money(total)}
+          </Text>
         </View>
         <Button
           title={count ? 'Xem giỏ hàng và đặt món' : 'Xem giỏ hàng'}

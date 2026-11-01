@@ -13,7 +13,7 @@ import {
   Search,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import { useNow } from '../../shared/hooks/useWaiterCommands';
 import { matches, minutes, tableStatus } from '../../shared/utils/rules';
 function DemoTablesScreen() {
@@ -48,27 +48,18 @@ function DemoTablesScreen() {
         secondary
         onPress={() => router.push('/waiter/orders')}
       />
-      <View style={ui.hero}>
-        <View style={ui.between}>
-          <Text style={{ color: '#DCECE3', fontSize: 12 }}>NHÀ HÀNG MỘC</Text>
-          <View style={ui.row}>
-            <View
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: '#9DD6B0',
-              }}
-            />
-            <Text style={{ color: '#C3DECD', fontSize: 10 }}>
-              Đang dùng thử
-            </Text>
+      <View className="bg-[#093E30] rounded-[20px] p-[21px] gap-[12px]">
+        <View className="flex-row items-center justify-between gap-[10px]">
+          <Text className="text-[#DCECE3] text-[12px]">NHÀ HÀNG MỘC</Text>
+          <View className="flex-row items-center gap-[10px]">
+            <View className="w-[6px] h-[6px] rounded-[3px] bg-[#9DD6B0]" />
+            <Text className="text-[#C3DECD] text-[10px]">Đang dùng thử</Text>
           </View>
         </View>
-        <Text style={{ color: '#fff', fontWeight: '700', fontSize: 21 }}>
+        <Text className="text-[#fff] font-[700] text-[21px]">
           Mỗi bàn ăn, một trải nghiệm.
         </Text>
-        <View style={{ flexDirection: 'row', marginTop: 5 }}>
+        <View className="flex-row mt-[5px]">
           {[
             {
               value: activeTables.filter((t) => t.sessionId).length,
@@ -82,18 +73,17 @@ function DemoTablesScreen() {
           ].map((x, i) => (
             <View
               key={x.label}
+              className="gap-[5px] border-[#ffffff20]"
               style={{
                 flex: 1,
-                gap: 5,
                 borderLeftWidth: i ? 1 : 0,
-                borderColor: '#ffffff20',
                 paddingLeft: i ? 15 : 0,
               }}
             >
-              <Text style={{ color: '#fff', fontSize: 26, fontWeight: '700' }}>
+              <Text className="text-[#fff] text-[26px] font-[700]">
                 {String(x.value).padStart(2, '0')}
               </Text>
-              <Text style={{ color: '#BDD7C9', fontSize: 10 }}>{x.label}</Text>
+              <Text className="text-[#BDD7C9] text-[10px]">{x.label}</Text>
             </View>
           ))}
         </View>
@@ -103,40 +93,35 @@ function DemoTablesScreen() {
           accessibilityRole="button"
           accessibilityLabel="Xem món chờ phục vụ"
           onPress={() => router.push('/waiter/ready')}
-          style={[
-            ui.between,
-            {
-              padding: 13,
-              borderRadius: 12,
-              backgroundColor: '#FFF4DF',
-              borderWidth: 1,
-              borderColor: '#F2E5CB',
-            },
-          ]}
+          className="flex-row items-center justify-between gap-[10px] p-[13px] rounded-[12px] bg-[#FFF4DF] border-[1px] border-[#F2E5CB]"
         >
-          <View style={[ui.row, { flex: 1 }]}>
+          <View
+            className="flex-row items-center gap-[10px]"
+            style={{ flex: 1 }}
+          >
             <Icon name="restaurant-outline" color={colors.amber} size={20} />
-            <Text style={{ fontSize: 12, color: '#8B6428', flex: 1 }}>
-              <Text style={{ fontWeight: '700' }}>
-                {ready} phần món đã sẵn sàng.
-              </Text>{' '}
+            <Text className="text-[12px] text-[#8B6428]" style={{ flex: 1 }}>
+              <Text className="font-[700]">{ready} phần món đã sẵn sàng.</Text>{' '}
               Mang đến khách ngay nhé!
             </Text>
           </View>
           <Icon name="chevron-forward" size={16} color={colors.amber} />
         </Pressable>
       )}
-      <View style={ui.between}>
-        <Text accessibilityRole="header" style={ui.h2}>
+      <View className="flex-row items-center justify-between gap-[10px]">
+        <Text
+          accessibilityRole="header"
+          className="text-[17px] font-[700] text-[#183B32]"
+        >
           Sơ đồ bàn
         </Text>
-        <Text style={ui.small}>
+        <Text className="text-[11px] leading-[16px] text-[#7C8983]">
           {activeTables.length} bàn · {areas.length} khu vực
         </Text>
       </View>
       <Chips options={['Tất cả', ...areas]} value={area} onChange={setArea} />
       <Search value={query} onChange={setQuery} placeholder="Tìm số bàn…" />
-      <View style={[ui.wrap, { gap: 12 }]}>
+      <View className="flex-row flex-wrap gap-[12px]">
         {[
           'Tất cả',
           'Trống',
@@ -150,13 +135,11 @@ function DemoTablesScreen() {
             accessibilityRole="button"
             accessibilityLabel={`Lọc ${s}`}
             onPress={() => setStatus(s)}
-            style={ui.row}
+            className="flex-row items-center gap-[10px]"
           >
             <View
+              className="w-[6px] h-[6px] rounded-[3px]"
               style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
                 backgroundColor:
                   s === 'Trống'
                     ? '#9BAEA1'
@@ -168,8 +151,8 @@ function DemoTablesScreen() {
               }}
             />
             <Text
+              className="text-[11px]"
               style={{
-                fontSize: 11,
                 color: status === s ? colors.green : colors.muted,
                 fontWeight: status === s ? '700' : '400',
                 textDecorationLine: status === s ? 'underline' : 'none',
@@ -182,7 +165,7 @@ function DemoTablesScreen() {
       </View>
       <View
         onLayout={({ nativeEvent }) => setGridWidth(nativeEvent.layout.width)}
-        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}
+        className="flex-row flex-wrap gap-[12px]"
       >
         {rows.map((table) => {
           const label = tableStatus(state, table, now);
@@ -208,25 +191,21 @@ function DemoTablesScreen() {
                   params: { id: table.id },
                 })
               }
-              style={({ pressed }) => ({
+              className="p-[15px] rounded-[17px] border-[1px] gap-[12px] opacity-[1] active:opacity-[0.75]"
+              style={{
                 width: gridWidth > 0 ? (gridWidth - 12) / 2 : '47.8%',
                 flexGrow: 0,
                 flexShrink: 0,
-                padding: 15,
-                borderRadius: 17,
                 backgroundColor: label === 'Chờ trả món' ? '#FFFAEF' : '#fff',
-                borderWidth: 1,
                 borderColor:
                   label === 'Chờ trả món'
                     ? '#EED9AE'
                     : label === 'Có khách'
                       ? '#BEDCCB'
                       : colors.line,
-                gap: 12,
-                opacity: pressed ? 0.75 : 1,
-              })}
+              }}
             >
-              <View style={ui.between}>
+              <View className="flex-row items-center justify-between gap-[10px]">
                 <Icon
                   name="restaurant-outline"
                   size={25}
@@ -238,22 +217,16 @@ function DemoTablesScreen() {
                         : colors.green
                   }
                 />
-                <Text style={ui.small}>{table.capacity} chỗ</Text>
+                <Text className="text-[11px] leading-[16px] text-[#7C8983]">
+                  {table.capacity} chỗ
+                </Text>
               </View>
-              <Text
-                style={{ fontSize: 20, fontWeight: '700', color: colors.text }}
-              >
+              <Text className="text-[20px] font-[700] text-[#183B32]">
                 {table.name}
               </Text>
               <Badge text={label} tone={tone} />
-              <View
-                style={{
-                  borderTopWidth: 1,
-                  borderColor: colors.line,
-                  paddingTop: 10,
-                }}
-              >
-                <Text style={ui.small}>
+              <View className="border-t-[1px] border-[#E5EBE7] pt-[10px]">
+                <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                   {session
                     ? `${session.guests} khách · ${minutes(session.openedAt, now)} phút`
                     : table.area}
@@ -264,7 +237,7 @@ function DemoTablesScreen() {
         })}
       </View>
       {!rows.length && <Empty text="Không tìm thấy bàn phù hợp với bộ lọc." />}
-      <Text style={[ui.small, { textAlign: 'center' }]}>
+      <Text className="text-[11px] leading-[16px] text-[#7C8983] text-center">
         Dữ liệu mẫu · Trạng thái cập nhật theo thao tác trong ứng dụng
       </Text>
     </Page>

@@ -16,7 +16,7 @@ import {
 } from '../../shared/components/UI';
 import { runCommand, useNow } from '../../shared/hooks/useWaiterCommands';
 import { minutes, time } from '../../shared/utils/rules';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import { kitchenReady } from '../../shared/store/waiterSlice';
 
 function DemoNotificationsScreen() {
@@ -60,20 +60,19 @@ function DemoNotificationsScreen() {
         const table = state.tables.find((t) => t.sessionId === item.sessionId);
         return (
           <Card key={item.id}>
-            <View style={ui.between}>
-              <View style={[ui.row, { flex: 1 }]}>
-                <View
-                  style={{
-                    backgroundColor: colors.mint,
-                    padding: 10,
-                    borderRadius: 12,
-                  }}
-                >
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <View
+                className="flex-row items-center gap-[10px]"
+                style={{ flex: 1 }}
+              >
+                <View className="bg-[#EAF5EF] p-[10px] rounded-[12px]">
                   <Icon name="restaurant-outline" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={ui.h2}>{table?.name || 'Phiên đã đóng'}</Text>
-                  <Text style={ui.small}>
+                  <Text className="text-[17px] font-[700] text-[#183B32]">
+                    {table?.name || 'Phiên đã đóng'}
+                  </Text>
+                  <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                     {time(item.readyAt!)} · {minutes(item.readyAt!, now)} phút
                     trước
                   </Text>
@@ -84,11 +83,11 @@ function DemoNotificationsScreen() {
                 tone={item.seen ? 'gray' : 'amber'}
               />
             </View>
-            <Text style={[ui.body, { fontWeight: '700' }]}>
+            <Text className="text-[14px] leading-[21px] text-[#183B32] font-[700]">
               {item.quantity} × {item.name}
             </Text>
             {!!item.note && <Notice text={`Ghi chú: ${item.note}`} />}
-            <Text style={ui.muted}>
+            <Text className="text-[12px] leading-[19px] text-[#7C8983]">
               {item.status === 'Served'
                 ? 'Đã lên đủ món.'
                 : `Còn ${item.quantity - item.served} phần cần mang ra bàn.`}
@@ -125,8 +124,10 @@ function DemoNotificationsScreen() {
         />
       )}
       <Card>
-        <Text style={ui.h2}>Thử thông báo từ bếp</Text>
-        <Text style={ui.muted}>
+        <Text className="text-[17px] font-[700] text-[#183B32]">
+          Thử thông báo từ bếp
+        </Text>
+        <Text className="text-[12px] leading-[19px] text-[#7C8983]">
           Dữ liệu mẫu: chuyển một món đang chờ/đang chế biến sang Ready để thử
           thông báo. Không gửi yêu cầu tới bếp thật.
         </Text>
@@ -157,7 +158,7 @@ function DemoNotificationsScreen() {
           }}
         />
       </Card>
-      <Text style={[ui.small, { textAlign: 'center' }]}>
+      <Text className="text-[11px] leading-[16px] text-[#7C8983] text-center">
         Thông báo trong ứng dụng · Chưa kết nối push hoặc sự kiện bếp thật
       </Text>
     </Page>

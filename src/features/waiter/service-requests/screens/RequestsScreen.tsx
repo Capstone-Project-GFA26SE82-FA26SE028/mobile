@@ -14,7 +14,7 @@ import {
   Page,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import { runCommand, useNow } from '../../shared/hooks/useWaiterCommands';
 import { minutes, time } from '../../shared/utils/rules';
 function DemoRequestsScreen() {
@@ -37,7 +37,7 @@ function DemoRequestsScreen() {
         subtitle="Một chút quan tâm, thêm nhiều hài lòng."
       />
       <Chips options={['Đang chờ', 'Đã xong']} value={tab} onChange={setTab} />
-      <Text style={ui.small}>
+      <Text className="text-[11px] leading-[16px] text-[#7C8983]">
         Ưu tiên yêu cầu đến trước · Cảnh báo khi chờ quá 3 phút
       </Text>
       {rows.map((r) => {
@@ -45,14 +45,11 @@ function DemoRequestsScreen() {
         const late = r.status !== 'done' && now - r.createdAt > 180000;
         return (
           <Card key={r.id}>
-            <View style={ui.between}>
-              <View style={ui.row}>
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <View className="flex-row items-center gap-[10px]">
                 <View
-                  style={{
-                    backgroundColor: late ? '#FDF0ED' : colors.mint,
-                    borderRadius: 12,
-                    padding: 10,
-                  }}
+                  className="rounded-[12px] p-[10px]"
+                  style={{ backgroundColor: late ? '#FDF0ED' : colors.mint }}
                 >
                   <Icon
                     name={
@@ -64,8 +61,10 @@ function DemoRequestsScreen() {
                   />
                 </View>
                 <View>
-                  <Text style={ui.h2}>{table?.name || 'Phiên đã đóng'}</Text>
-                  <Text style={ui.small}>
+                  <Text className="text-[17px] font-[700] text-[#183B32]">
+                    {table?.name || 'Phiên đã đóng'}
+                  </Text>
+                  <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                     {time(r.createdAt)} · {minutes(r.createdAt, now)} phút trước
                   </Text>
                 </View>
@@ -81,8 +80,12 @@ function DemoRequestsScreen() {
                 tone={r.status === 'new' ? 'amber' : 'green'}
               />
             </View>
-            <Text style={[ui.body, { fontWeight: '600' }]}>{r.type}</Text>
-            <Text style={ui.muted}>{r.note}</Text>
+            <Text className="text-[14px] leading-[21px] text-[#183B32] font-[600]">
+              {r.type}
+            </Text>
+            <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+              {r.note}
+            </Text>
             {late && (
               <Notice
                 text="Đã quá 3 phút · Cần Manager chú ý. Cảnh báo đang hiển thị trong bản dùng thử."

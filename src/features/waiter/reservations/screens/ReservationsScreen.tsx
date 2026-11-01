@@ -16,7 +16,7 @@ import {
   Sheet,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import { runCommand, useNow } from '../../shared/hooks/useWaiterCommands';
 import { matches, time } from '../../shared/utils/rules';
 import { inHoldWindow, reservationTableError } from '../utils/rules';
@@ -65,26 +65,34 @@ function DemoReservationsScreen() {
         const inWindow = inHoldWindow(r, now);
         return (
           <Card key={r.id}>
-            <View style={ui.between}>
-              <Text style={ui.h2}>{r.name}</Text>
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <Text className="text-[17px] font-[700] text-[#183B32]">
+                {r.name}
+              </Text>
               <Badge text={`${r.guests} khách`} />
             </View>
-            <Text style={ui.body}>
+            <Text className="text-[14px] leading-[21px] text-[#183B32]">
               {new Date(r.time).toLocaleDateString('vi-VN')} · {time(r.time)}–
               {time(r.endTime)} · {r.phone}
             </Text>
-            <Text style={ui.muted}>{r.note}</Text>
+            <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+              {r.note}
+            </Text>
             {table && (
               <Badge text={`${table.name} · ${table.area}`} tone="blue" />
             )}
-            {!!r.reason && <Text style={ui.muted}>Lý do: {r.reason}</Text>}
+            {!!r.reason && (
+              <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+                Lý do: {r.reason}
+              </Text>
+            )}
             {!!r.customerMessage && (
               <Notice
                 text={`Nội dung thông báo cho khách (mẫu): ${r.customerMessage}`}
               />
             )}
             {r.status === 'pending' && (
-              <View style={ui.row}>
+              <View className="flex-row items-center gap-[10px]">
                 <View style={{ flex: 1 }}>
                   <Button
                     title={`Duyệt ${r.name}`}
@@ -110,7 +118,7 @@ function DemoReservationsScreen() {
             )}
             {r.status === 'confirmed' && (
               <>
-                <Text style={ui.small}>
+                <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                   {inWindow
                     ? 'Đang trong thời gian giữ bàn'
                     : now >= r.endTime
@@ -160,17 +168,17 @@ function DemoReservationsScreen() {
           }
           onClose={() => setSelectedId('')}
         >
-          <Text style={ui.h2}>
+          <Text className="text-[17px] font-[700] text-[#183B32]">
             {selected.name} · {selected.guests} khách
           </Text>
-          <Text style={ui.muted}>
+          <Text className="text-[12px] leading-[19px] text-[#7C8983]">
             Khung giờ {time(selected.time)}–{time(selected.endTime)} ·{' '}
             {selected.phone}
           </Text>
           {mode === 'confirm' ? (
             <>
               <Notice text="Chọn bàn đang trống, đủ chỗ và không trùng lịch. Bàn được giữ từ 30 phút trước giờ hẹn đến hết khung giờ đặt." />
-              <View style={ui.wrap}>
+              <View className="flex-row flex-wrap gap-[10px]">
                 {available.map((t) => (
                   <Pressable
                     key={t.id}
@@ -178,17 +186,17 @@ function DemoReservationsScreen() {
                     accessibilityLabel={`Chọn ${t.name}`}
                     accessibilityState={{ selected: tableId === t.id }}
                     onPress={() => setTableId(t.id)}
+                    className="p-[14px] rounded-[12px] border-[1px]"
                     style={{
-                      padding: 14,
-                      borderRadius: 12,
-                      borderWidth: 1,
                       borderColor:
                         tableId === t.id ? colors.green : colors.line,
                       backgroundColor: tableId === t.id ? colors.mint : '#fff',
                     }}
                   >
-                    <Text style={ui.body}>{t.name}</Text>
-                    <Text style={ui.small}>
+                    <Text className="text-[14px] leading-[21px] text-[#183B32]">
+                      {t.name}
+                    </Text>
+                    <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                       {t.capacity} chỗ · {t.area}
                     </Text>
                   </Pressable>

@@ -16,7 +16,7 @@ import {
   Sheet,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import { time } from '../../shared/utils/rules';
 import { authError, authService } from '@/features/auth/api/authApi';
 export default function AccountScreen() {
@@ -48,20 +48,9 @@ export default function AccountScreen() {
     <Page>
       <Title title="Cá nhân" subtitle="Thông tin và thiết lập ca phục vụ." />
       <Card>
-        <View style={ui.row}>
-          <View
-            style={{
-              width: 56,
-              height: 56,
-              backgroundColor: colors.mint,
-              borderRadius: 28,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text
-              style={{ color: colors.green, fontSize: 20, fontWeight: '700' }}
-            >
+        <View className="flex-row items-center gap-[10px]">
+          <View className="w-[56px] h-[56px] bg-[#EAF5EF] rounded-[28px] items-center justify-center">
+            <Text className="text-[#12664C] text-[20px] font-[700]">
               {(state.waiter?.name || 'NV')
                 .split(/\s+/)
                 .slice(-2)
@@ -70,12 +59,14 @@ export default function AccountScreen() {
                 .toUpperCase()}
             </Text>
           </View>
-          <View style={{ gap: 5 }}>
-            <Text style={ui.h2}>
+          <View className="gap-[5px]">
+            <Text className="text-[17px] font-[700] text-[#183B32]">
               {state.waiter?.name || 'Nhân viên phục vụ'}
             </Text>
-            <Text style={ui.muted}>Nhân viên phục vụ</Text>
-            <Text style={ui.small}>
+            <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+              Nhân viên phục vụ
+            </Text>
+            <Text className="text-[11px] leading-[16px] text-[#7C8983]">
               {state.authMode === 'api'
                 ? state.waiter?.email
                 : 'Tài khoản dùng thử'}
@@ -84,10 +75,12 @@ export default function AccountScreen() {
         </View>
       </Card>
       <Card>
-        <View style={ui.between}>
-          <View style={{ flex: 1, gap: 5 }}>
-            <Text style={ui.body}>Rung nhắc món chưa xem</Text>
-            <Text style={ui.small}>
+        <View className="flex-row items-center justify-between gap-[10px]">
+          <View className="gap-[5px]" style={{ flex: 1 }}>
+            <Text className="text-[14px] leading-[21px] text-[#183B32]">
+              Rung nhắc món chưa xem
+            </Text>
+            <Text className="text-[11px] leading-[16px] text-[#7C8983]">
               Khi có món mới và mỗi 30 giây nếu chưa xem, trên thiết bị hỗ trợ
               rung.
             </Text>
@@ -111,23 +104,24 @@ export default function AccountScreen() {
           }
         />
       </Card>
-      <View style={ui.between}>
-        <Text style={ui.h2}>Hoạt động trong phiên</Text>
+      <View className="flex-row items-center justify-between gap-[10px]">
+        <Text className="text-[17px] font-[700] text-[#183B32]">
+          Hoạt động trong phiên
+        </Text>
         <Icon name="time-outline" size={19} />
       </View>
       <Card>
         {state.logs.slice(0, 12).map((log) => (
           <View
             key={log.id}
-            style={{
-              gap: 4,
-              paddingBottom: 12,
-              borderBottomWidth: 1,
-              borderColor: colors.line,
-            }}
+            className="gap-[4px] pb-[12px] border-b-[1px] border-[#E5EBE7]"
           >
-            <Text style={ui.body}>{log.text}</Text>
-            <Text style={ui.small}>{time(log.time)}</Text>
+            <Text className="text-[14px] leading-[21px] text-[#183B32]">
+              {log.text}
+            </Text>
+            <Text className="text-[11px] leading-[16px] text-[#7C8983]">
+              {time(log.time)}
+            </Text>
           </View>
         ))}
         {!state.logs.length && (
@@ -151,7 +145,9 @@ export default function AccountScreen() {
             if (!loading) setConfirm(false);
           }}
         >
-          <Text style={ui.body}>Bạn sẽ quay về màn hình đăng nhập.</Text>
+          <Text className="text-[14px] leading-[21px] text-[#183B32]">
+            Bạn sẽ quay về màn hình đăng nhập.
+          </Text>
           {state.sessions.some((s) => s.payment === 'pending_settlement') && (
             <Notice
               text="Có khoản thu hộ đang chờ bàn giao. Hãy kiểm tra với thu ngân."

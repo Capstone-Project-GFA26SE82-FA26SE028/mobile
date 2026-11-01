@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { clearFeedback } from '@/features/waiter/shared/store/waiterSlice';
 import { Icon, type IconName } from '@/features/waiter/shared/components/UI';
-import { colors, ui } from '@/features/waiter/shared/utils/theme';
+import { colors } from '@/features/waiter/shared/utils/theme';
 import { hasWaiterSession } from '@/features/waiter/auth/utils/session';
 import { useServiceTables } from '@/features/waiter/tables/hooks/useTables';
 import { useSessionOrders } from '@/features/waiter/ordering/hooks/useOrders';
@@ -108,69 +108,34 @@ export default function WaiterLayout() {
       style={{ flex: 1, backgroundColor: '#fff' }}
     >
       <View
-        style={{
-          flex: 1,
-          width: '100%',
-          maxWidth: 820,
-          alignSelf: 'center',
-          backgroundColor: colors.bg,
-        }}
+        className="w-[100%] max-w-[820px] self-center bg-[#F5F7F5]"
+        style={{ flex: 1 }}
       >
-        <View
-          style={[
-            ui.between,
-            {
-              paddingHorizontal: 20,
-              paddingVertical: 14,
-              backgroundColor: '#fff',
-              borderBottomWidth: 1,
-              borderColor: colors.line,
-            },
-          ]}
-        >
-          <View style={ui.row}>
+        <View className="flex-row items-center justify-between gap-[10px] px-[20px] py-[14px] bg-[#fff] border-b-[1px] border-[#E5EBE7]">
+          <View className="flex-row items-center gap-[10px]">
             {isDetail ? (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Quay lại sơ đồ bàn"
                 onPress={() => router.replace('/waiter/tables')}
-                style={{ padding: 7 }}
+                className="p-[7px]"
               >
                 <Icon name="arrow-back" />
               </Pressable>
             ) : (
-              <View
-                style={{
-                  backgroundColor: colors.green,
-                  borderRadius: 13,
-                  padding: 9,
-                }}
-              >
+              <View className="bg-[#12664C] rounded-[13px] p-[9px]">
                 <Icon name="leaf" color="#DDF0B5" size={23} />
               </View>
             )}
             <View>
-              <Text
-                style={{
-                  color: colors.dark,
-                  fontSize: 21,
-                  fontWeight: '800',
-                  letterSpacing: -0.5,
-                }}
-              >
+              <Text className="text-[#093E30] text-[21px] font-[800] tracking-[-0.5px]">
                 Mộc
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: '500',
-                    color: colors.muted,
-                  }}
-                >
+                <Text className="text-[13px] font-[500] text-[#7C8983]">
                   {' '}
                   / phục vụ
                 </Text>
               </Text>
-              <Text style={{ fontSize: 10, color: colors.muted, marginTop: 2 }}>
+              <Text className="text-[10px] text-[#7C8983] mt-[2px]">
                 FOODHUB · KHÔNG GIAN NHÂN VIÊN
               </Text>
             </View>
@@ -179,28 +144,12 @@ export default function WaiterLayout() {
             accessibilityRole="button"
             accessibilityLabel="Mở thông báo món sẵn sàng"
             onPress={() => router.push('/waiter/notifications')}
-            style={{
-              padding: 10,
-              backgroundColor: colors.bg,
-              borderRadius: 14,
-            }}
+            className="p-[10px] bg-[#F5F7F5] rounded-[14px]"
           >
             <Icon name="notifications-outline" color={colors.text} />
             {unread > 0 && (
-              <View
-                style={{
-                  position: 'absolute',
-                  right: 7,
-                  top: 5,
-                  backgroundColor: colors.red,
-                  width: 14,
-                  height: 14,
-                  borderRadius: 7,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ fontSize: 9, color: '#fff', fontWeight: '700' }}>
+              <View className="absolute right-[7px] top-[5px] bg-[#CB534E] w-[14px] h-[14px] rounded-[7px] items-center justify-center">
+                <Text className="text-[9px] text-[#fff] font-[700]">
                   {unread}
                 </Text>
               </View>
@@ -212,18 +161,11 @@ export default function WaiterLayout() {
             accessibilityRole="button"
             accessibilityLabel="Xem thông báo món sẵn sàng"
             onPress={() => router.push('/waiter/notifications')}
-            style={[
-              ui.row,
-              {
-                backgroundColor: '#FFF4DF',
-                paddingHorizontal: 20,
-                paddingVertical: 12,
-              },
-            ]}
+            className="flex-row items-center gap-[10px] bg-[#FFF4DF] px-[20px] py-[12px]"
           >
             <Icon name="notifications-outline" color={colors.amber} />
             <View style={{ flex: 1 }}>
-              <Text style={[ui.body, { fontWeight: '600' }]}>
+              <Text className="text-[14px] leading-[21px] text-[#183B32] font-[600]">
                 {(apiMode
                   ? liveTables.data?.find((t) =>
                       t.openSessionIds.includes(unseenItems[0].sessionId),
@@ -234,9 +176,11 @@ export default function WaiterLayout() {
                 · {unseenItems[0].quantity} × {unseenItems[0].name}
               </Text>
               {!!unseenItems[0].note && (
-                <Text style={ui.small}>{unseenItems[0].note}</Text>
+                <Text className="text-[11px] leading-[16px] text-[#7C8983]">
+                  {unseenItems[0].note}
+                </Text>
               )}
-              <Text style={ui.small}>
+              <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                 {unseenItems.length}{' '}
                 {apiMode ? 'món sẵn sàng' : 'thông báo chưa xem'} · Nhấn để kiểm
                 tra
@@ -252,32 +196,17 @@ export default function WaiterLayout() {
           <Pressable
             accessibilityRole="alert"
             onPress={() => dispatch(clearFeedback())}
+            className="absolute left-[20px] right-[20px] bottom-[80px] p-[15px] rounded-[13px] z-[20]"
             style={{
-              position: 'absolute',
-              left: 20,
-              right: 20,
-              bottom: 80,
-              padding: 15,
-              borderRadius: 13,
               backgroundColor: state.feedback.error ? '#A43F39' : colors.dark,
-              zIndex: 20,
             }}
           >
-            <Text style={{ color: '#fff', fontSize: 13, lineHeight: 20 }}>
+            <Text className="text-[#fff] text-[13px] leading-[20px]">
               {state.feedback.text}
             </Text>
           </Pressable>
         )}
-        <View
-          style={{
-            flexDirection: 'row',
-            paddingTop: 10,
-            paddingBottom: 8,
-            backgroundColor: '#fff',
-            borderTopWidth: 1,
-            borderColor: colors.line,
-          }}
-        >
+        <View className="flex-row pt-[10px] pb-[8px] bg-[#fff] border-t-[1px] border-[#E5EBE7]">
           {tabs.map((t) => {
             const active =
               pathname === t.path || (isDetail && t.path === '/waiter/tables');
@@ -294,12 +223,8 @@ export default function WaiterLayout() {
                 accessibilityLabel={t.title}
                 accessibilityState={{ selected: active }}
                 onPress={() => router.navigate(t.path)}
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  gap: 4,
-                  paddingVertical: 4,
-                }}
+                className="items-center gap-[4px] py-[4px]"
+                style={{ flex: 1 }}
               >
                 <View>
                   <Icon
@@ -308,28 +233,14 @@ export default function WaiterLayout() {
                     color={active ? colors.green : '#99A69D'}
                   />
                   {count > 0 && (
-                    <View
-                      style={{
-                        position: 'absolute',
-                        right: -9,
-                        top: -4,
-                        minWidth: 14,
-                        height: 14,
-                        borderRadius: 7,
-                        backgroundColor: colors.red,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{ color: '#fff', fontSize: 9 }}>
-                        {count}
-                      </Text>
+                    <View className="absolute right-[-9px] top-[-4px] min-w-[14px] h-[14px] rounded-[7px] bg-[#CB534E] items-center justify-center">
+                      <Text className="text-[#fff] text-[9px]">{count}</Text>
                     </View>
                   )}
                 </View>
                 <Text
+                  className="text-[10px]"
                   style={{
-                    fontSize: 10,
                     fontWeight: active ? '700' : '500',
                     color: active ? colors.green : colors.muted,
                   }}

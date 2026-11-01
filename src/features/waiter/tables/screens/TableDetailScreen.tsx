@@ -15,7 +15,7 @@ import {
   Stepper,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import {
   heldReservation,
   money,
@@ -70,8 +70,10 @@ function DemoTableDetailScreen() {
       {session ? (
         <>
           <Card>
-            <View style={ui.between}>
-              <Text style={ui.h2}>Phiên phục vụ</Text>
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <Text className="text-[17px] font-[700] text-[#183B32]">
+                Phiên phục vụ
+              </Text>
               <Badge
                 text={
                   session.payment === 'pending_settlement'
@@ -83,16 +85,16 @@ function DemoTableDetailScreen() {
                 }
               />
             </View>
-            <Text style={ui.body}>
+            <Text className="text-[14px] leading-[21px] text-[#183B32]">
               {session.guests} khách · Mở lúc {time(session.openedAt)}
             </Text>
-            <Text style={ui.muted}>
+            <Text className="text-[12px] leading-[19px] text-[#7C8983]">
               Nhân viên phụ trách: {state.waiter?.name}
             </Text>
             {session.prebillPrinted && (
               <Notice text="Đã in hóa đơn tạm tính. Không thể đổi bàn." />
             )}
-            <View style={ui.row}>
+            <View className="flex-row items-center gap-[10px]">
               <View style={{ flex: 1 }}>
                 <Button
                   title="Gọi thêm món"
@@ -124,20 +126,25 @@ function DemoTableDetailScreen() {
               </View>
             </View>
           </Card>
-          <View style={ui.between}>
-            <Text style={ui.h2}>Món đã gọi</Text>
-            <Text style={ui.muted}>
+          <View className="flex-row items-center justify-between gap-[10px]">
+            <Text className="text-[17px] font-[700] text-[#183B32]">
+              Món đã gọi
+            </Text>
+            <Text className="text-[12px] leading-[19px] text-[#7C8983]">
               {items.filter((i) => i.status !== 'Cancelled').length} dòng món
             </Text>
           </View>
           {items.length ? (
             items.map((item) => (
               <Card key={item.id}>
-                <View style={ui.between}>
-                  <Text style={[ui.body, { fontWeight: '700', flex: 1 }]}>
+                <View className="flex-row items-center justify-between gap-[10px]">
+                  <Text
+                    className="text-[14px] leading-[21px] text-[#183B32] font-[700]"
+                    style={{ flex: 1 }}
+                  >
                     {item.quantity} × {item.name}
                   </Text>
-                  <Text style={ui.link}>
+                  <Text className="text-[#12664C] text-[13px] font-[600]">
                     {money(item.quantity * item.price)}
                   </Text>
                 </View>
@@ -152,15 +159,20 @@ function DemoTableDetailScreen() {
                   }
                 />
                 {!!item.note && (
-                  <Text style={ui.muted}>Ghi chú: {item.note}</Text>
+                  <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+                    Ghi chú: {item.note}
+                  </Text>
                 )}
                 {item.served > 0 && (
-                  <Text style={ui.muted}>
+                  <Text className="text-[12px] leading-[19px] text-[#7C8983]">
                     Đã lên {item.served}/{item.quantity} phần
                   </Text>
                 )}
-                <View style={ui.between}>
-                  <Text style={[ui.small, { flex: 1 }]}>
+                <View className="flex-row items-center justify-between gap-[10px]">
+                  <Text
+                    className="text-[11px] leading-[16px] text-[#7C8983]"
+                    style={{ flex: 1 }}
+                  >
                     {item.status !== 'Pending' && item.status !== 'Sent'
                       ? 'Chỉ hủy món chưa chế biến'
                       : 'Có thể hủy trước khi bếp chế biến'}
@@ -178,8 +190,8 @@ function DemoTableDetailScreen() {
                       setReason('');
                       setModal('cancel');
                     }}
+                    className="p-[10px]"
                     style={{
-                      padding: 10,
                       opacity:
                         (item.status === 'Pending' || item.status === 'Sent') &&
                         session.payment === 'unpaid'
@@ -187,13 +199,7 @@ function DemoTableDetailScreen() {
                           : 0.3,
                     }}
                   >
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: colors.red,
-                        fontWeight: '600',
-                      }}
-                    >
+                    <Text className="text-[12px] text-[#CB534E] font-[600]">
                       Hủy món
                     </Text>
                   </Pressable>
@@ -206,13 +212,15 @@ function DemoTableDetailScreen() {
             </Card>
           )}
           <Card>
-            <View style={ui.between}>
-              <Text style={ui.h2}>Tạm tính</Text>
-              <Text style={ui.money}>
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <Text className="text-[17px] font-[700] text-[#183B32]">
+                Tạm tính
+              </Text>
+              <Text className="text-[#12664C] text-[18px] font-[700]">
                 {money(sessionTotal(state, session.id))}
               </Text>
             </View>
-            <Text style={ui.small}>
+            <Text className="text-[11px] leading-[16px] text-[#7C8983]">
               Tổng tiền món trong bản dùng thử, chưa áp dụng thuế/phí và ưu đãi.
             </Text>
             <Button
@@ -234,14 +242,14 @@ function DemoTableDetailScreen() {
         </>
       ) : (
         <Card>
-          <Text style={ui.h2}>
+          <Text className="text-[17px] font-[700] text-[#183B32]">
             {hold
               ? `Giữ chỗ cho ${hold.name}`
               : table.needsCleaning
                 ? 'Bàn đang chờ dọn'
                 : 'Sẵn sàng đón khách'}
           </Text>
-          <Text style={ui.muted}>
+          <Text className="text-[12px] leading-[19px] text-[#7C8983]">
             {hold
               ? `Lịch hẹn ${time(hold.time)} · ${hold.guests} khách`
               : 'Mở phiên phục vụ trước khi khách gọi món qua mã QR.'}
@@ -269,9 +277,11 @@ function DemoTableDetailScreen() {
           title={`Mở phiên · ${table.name}`}
           onClose={() => setModal(null)}
         >
-          <Text style={ui.body}>Số khách đến bàn</Text>
+          <Text className="text-[14px] leading-[21px] text-[#183B32]">
+            Số khách đến bàn
+          </Text>
           <Stepper value={guests} onChange={setGuests} max={table.capacity} />
-          <Text style={ui.muted}>
+          <Text className="text-[12px] leading-[19px] text-[#7C8983]">
             Tối đa {table.capacity} khách. Kiểm tra lịch giữ chỗ trước khi xác
             nhận.
           </Text>
@@ -286,10 +296,10 @@ function DemoTableDetailScreen() {
       )}
       {modal === 'move' && session && (
         <Sheet title="Đổi bàn cho khách" onClose={() => setModal(null)}>
-          <Text style={ui.muted}>
+          <Text className="text-[12px] leading-[19px] text-[#7C8983]">
             Chọn bàn trống đủ chỗ cho {session.guests} khách.
           </Text>
-          <View style={ui.wrap}>
+          <View className="flex-row flex-wrap gap-[10px]">
             {targets.map((t) => (
               <Pressable
                 accessibilityRole="button"
@@ -297,16 +307,16 @@ function DemoTableDetailScreen() {
                 accessibilityState={{ selected: target === t.id }}
                 key={t.id}
                 onPress={() => setTarget(t.id)}
+                className="p-[14px] rounded-[12px] border-[1px]"
                 style={{
-                  padding: 14,
-                  borderRadius: 12,
-                  borderWidth: 1,
                   borderColor: target === t.id ? colors.green : colors.line,
                   backgroundColor: target === t.id ? colors.mint : '#fff',
                 }}
               >
-                <Text style={ui.body}>{t.name}</Text>
-                <Text style={ui.small}>
+                <Text className="text-[14px] leading-[21px] text-[#183B32]">
+                  {t.name}
+                </Text>
+                <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                   {t.area} · {t.capacity} chỗ
                 </Text>
               </Pressable>
@@ -351,7 +361,7 @@ function DemoTableDetailScreen() {
       )}
       {modal === 'cancel' && (
         <Sheet title="Hủy món chưa chế biến" onClose={() => setModal(null)}>
-          <Text style={ui.body}>
+          <Text className="text-[14px] leading-[21px] text-[#183B32]">
             {state.items.find((i) => i.id === itemId)?.name}
           </Text>
           <Field

@@ -10,7 +10,6 @@ import {
   Page,
   Title,
 } from '../../shared/components/UI';
-import { ui } from '../../shared/utils/theme';
 import { QueryStatus } from '../../shared/components/QueryStatus';
 import { useServiceTables } from '../../tables/hooks/useTables';
 import { useSessionOrders } from '../../ordering/hooks/useOrders';
@@ -52,8 +51,8 @@ export default function LiveReadyScreen() {
         )?.imageUrl;
         return (
           <Card key={line.orderItemId}>
-            <View style={ui.between}>
-              <Text style={ui.h2}>
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <Text className="text-[17px] font-[700] text-[#183B32]">
                 {tables.data
                   ?.filter((t) =>
                     t.openSessionIds.includes(order.tableSessionId),
@@ -66,25 +65,29 @@ export default function LiveReadyScreen() {
                 tone={line.status === 'Ready' ? 'amber' : 'green'}
               />
             </View>
-            <View style={ui.row}>
+            <View className="flex-row items-center gap-[10px]">
               {image ? (
-                <Image source={{ uri: image }} style={ui.image} />
+                <Image
+                  source={{ uri: image }}
+                  className="w-[66px] h-[66px] rounded-[14px] bg-[#EAF5EF]"
+                />
               ) : (
-                <View
-                  style={[
-                    ui.image,
-                    { alignItems: 'center', justifyContent: 'center' },
-                  ]}
-                >
+                <View className="w-[66px] h-[66px] rounded-[14px] bg-[#EAF5EF] items-center justify-center">
                   <Icon name="restaurant-outline" />
                 </View>
               )}
-              <View style={{ flex: 1, gap: 6 }}>
-                <Text style={[ui.body, { fontWeight: '700' }]}>
+              <View className="gap-[6px]" style={{ flex: 1 }}>
+                <Text className="text-[14px] leading-[21px] text-[#183B32] font-[700]">
                   {line.nameSnapshot}
                 </Text>
-                <Text style={ui.muted}>Tổng {line.quantity} phần</Text>
-                {!!line.note && <Text style={ui.muted}>{line.note}</Text>}
+                <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+                  Tổng {line.quantity} phần
+                </Text>
+                {!!line.note && (
+                  <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+                    {line.note}
+                  </Text>
+                )}
               </View>
             </View>
           </Card>

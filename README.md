@@ -26,6 +26,22 @@ npm run web
 Set EXPO_PUBLIC_API_URL in .env.local before calling a backend. Public environment
 variables are bundled into the client; do not put secrets in them.
 
+## Waiter styling
+
+Waiter uses NativeWind 4 with Tailwind CSS 3. Its existing pixel dimensions and
+colors are preserved with explicit utility values. Runtime values such as table
+widths and status colors remain in `style`; press feedback uses `active:` classes.
+Global preflight resets are disabled so other workspaces retain their defaults.
+
+After changing Babel, Metro, or Tailwind configuration, stop Expo and restart:
+
+```sh
+npx expo start --clear
+```
+
+Run `npm run test:waiter-styles` to verify the compiled native styles against the
+previous page, card, heading and input dimensions.
+
 ## Structure
 
 ```text

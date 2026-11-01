@@ -10,7 +10,7 @@ import {
   Title,
 } from '../../shared/components/UI';
 import { QueryStatus } from '../../shared/components/QueryStatus';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import { useServiceTables } from '../../tables/hooks/useTables';
 import { useSessionOrders } from '../../ordering/hooks/useOrders';
 
@@ -39,30 +39,33 @@ export default function LiveNotificationsScreen() {
         );
         return (
           <Card key={item.orderItemId}>
-            <View style={ui.between}>
-              <View style={[ui.row, { flex: 1 }]}>
-                <View
-                  style={{
-                    backgroundColor: colors.mint,
-                    padding: 10,
-                    borderRadius: 12,
-                  }}
-                >
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <View
+                className="flex-row items-center gap-[10px]"
+                style={{ flex: 1 }}
+              >
+                <View className="bg-[#EAF5EF] p-[10px] rounded-[12px]">
                   <Icon name="restaurant-outline" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={ui.h2}>
+                  <Text className="text-[17px] font-[700] text-[#183B32]">
                     {table?.tableCode || 'Phiên phục vụ'}
                   </Text>
-                  <Text style={ui.small}>Món đã sẵn sàng</Text>
+                  <Text className="text-[11px] leading-[16px] text-[#7C8983]">
+                    Món đã sẵn sàng
+                  </Text>
                 </View>
               </View>
               <Badge text="Chờ lên món" tone="amber" />
             </View>
-            <Text style={[ui.body, { fontWeight: '600' }]}>
+            <Text className="text-[14px] leading-[21px] text-[#183B32] font-[600]">
               {item.quantity} × {item.nameSnapshot}
             </Text>
-            {!!item.note && <Text style={ui.muted}>{item.note}</Text>}
+            {!!item.note && (
+              <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+                {item.note}
+              </Text>
+            )}
             <Button
               title="Xem món chờ phục vụ"
               secondary
@@ -75,7 +78,7 @@ export default function LiveNotificationsScreen() {
       {tables.isSuccess &&
         (!ids.length || orders.isSuccess) &&
         !rows.length && <Empty text="Chưa có thông báo món sẵn sàng." />}
-      <Text style={[ui.small, { textAlign: 'center' }]}>
+      <Text className="text-[11px] leading-[16px] text-[#7C8983] text-center">
         Cập nhật trạng thái từ bếp mỗi 5 giây
       </Text>
     </Page>
