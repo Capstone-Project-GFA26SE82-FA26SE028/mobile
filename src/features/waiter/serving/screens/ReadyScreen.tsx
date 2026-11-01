@@ -14,7 +14,6 @@ import {
   Stepper,
   Title,
 } from '../../shared/components/UI';
-import { ui } from '../../shared/utils/theme';
 import { waiterMenu } from '../../ordering/utils/menu';
 import { minutes } from '../../shared/utils/rules';
 import { runCommand, useNow } from '../../shared/hooks/useWaiterCommands';
@@ -57,8 +56,10 @@ function DemoReadyScreen() {
       />
       {items.map((item) => (
         <Card key={item.id}>
-          <View style={ui.between}>
-            <Text style={ui.h2}>{tableName(item.sessionId)}</Text>
+          <View className="flex-row items-center justify-between gap-[10px]">
+            <Text className="text-[17px] font-[700] text-[#183B32]">
+              {tableName(item.sessionId)}
+            </Text>
             <Badge
               text={
                 item.status === 'Ready'
@@ -68,19 +69,28 @@ function DemoReadyScreen() {
               tone={item.status === 'Ready' ? 'amber' : 'green'}
             />
           </View>
-          <View style={ui.row}>
+          <View className="flex-row items-center gap-[10px]">
             <Image
               source={waiterMenu.find((d) => d.id === item.dishId)?.image}
-              style={ui.image}
+              className="w-[66px] h-[66px] rounded-[14px] bg-[#EAF5EF]"
             />
-            <View style={{ flex: 1, gap: 6 }}>
-              <Text style={[ui.body, { fontWeight: '700' }]}>{item.name}</Text>
-              <Text style={ui.muted}>
+            <View className="gap-[6px]" style={{ flex: 1 }}>
+              <Text className="text-[14px] leading-[21px] text-[#183B32] font-[700]">
+                {item.name}
+              </Text>
+              <Text className="text-[12px] leading-[19px] text-[#7C8983]">
                 Tổng {item.quantity} phần · Đã lên {item.served} phần
               </Text>
-              {!!item.note && <Text style={ui.muted}>{item.note}</Text>}
+              {!!item.note && (
+                <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+                  {item.note}
+                </Text>
+              )}
               {item.servings?.map((serving) => (
-                <Text key={serving.id} style={ui.small}>
+                <Text
+                  key={serving.id}
+                  className="text-[11px] leading-[16px] text-[#7C8983]"
+                >
                   {serving.waiterName} · Đã lên {serving.quantity} phần
                 </Text>
               ))}
@@ -115,8 +125,10 @@ function DemoReadyScreen() {
           title={`Lên món · ${tableName(selected.sessionId)}`}
           onClose={() => setSelectedId('')}
         >
-          <Text style={ui.h2}>{selected.name}</Text>
-          <Text style={ui.muted}>
+          <Text className="text-[17px] font-[700] text-[#183B32]">
+            {selected.name}
+          </Text>
+          <Text className="text-[12px] leading-[19px] text-[#7C8983]">
             Chỉ xác nhận số phần bạn đã thực sự mang ra bàn.
           </Text>
           <Stepper
@@ -124,7 +136,7 @@ function DemoReadyScreen() {
             onChange={setQuantity}
             max={Math.max(1, selected.quantity - selected.served)}
           />
-          <Text style={ui.body}>
+          <Text className="text-[14px] leading-[21px] text-[#183B32]">
             Sau xác nhận: {selected.served + quantity}/{selected.quantity} phần
             đã phục vụ.
           </Text>
@@ -156,7 +168,9 @@ function DemoReadyScreen() {
               error
             />
           )}
-          <Text style={ui.small}>Nhân viên xác nhận: {state.waiter?.name}</Text>
+          <Text className="text-[11px] leading-[16px] text-[#7C8983]">
+            Nhân viên xác nhận: {state.waiter?.name}
+          </Text>
         </Sheet>
       )}
     </Page>

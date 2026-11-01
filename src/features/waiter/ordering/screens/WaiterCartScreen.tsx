@@ -14,7 +14,6 @@ import {
   Title,
 } from '../../shared/components/UI';
 import { QueryStatus } from '../../shared/components/QueryStatus';
-import { ui } from '../../shared/utils/theme';
 import { money } from '../../shared/utils/rules';
 import { authError } from '@/features/auth/api/authApi';
 import { useServiceTables } from '../../tables/hooks/useTables';
@@ -123,7 +122,9 @@ export default function WaiterCartScreen() {
           <Card key={line.id}>
             <Title title={line.name} subtitle={`${money(line.price)} / phần`} />
             {!!line.optionNames.length && (
-              <Text style={ui.muted}>{line.optionNames.join(', ')}</Text>
+              <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+                {line.optionNames.join(', ')}
+              </Text>
             )}
             <Field
               label="Ghi chú cho bếp"
@@ -135,7 +136,7 @@ export default function WaiterCartScreen() {
                 dispatch(updateCartLine({ cartId: key, lineId: line.id, note }))
               }
             />
-            <View style={ui.between}>
+            <View className="flex-row items-center justify-between gap-[10px]">
               <Stepper
                 value={line.quantity}
                 min={locked ? line.quantity : 1}
@@ -146,7 +147,9 @@ export default function WaiterCartScreen() {
                   )
                 }
               />
-              <Text style={ui.money}>{money(line.price * line.quantity)}</Text>
+              <Text className="text-[#12664C] text-[18px] font-[700]">
+                {money(line.price * line.quantity)}
+              </Text>
             </View>
             <Button
               title="Xóa món"
@@ -187,10 +190,14 @@ export default function WaiterCartScreen() {
           />
         )}
       </Page>
-      <View style={[ui.card, { borderRadius: 0 }]}>
-        <View style={ui.between}>
-          <Text style={ui.h2}>{count} phần · Tạm tính</Text>
-          <Text style={ui.money}>{money(total)}</Text>
+      <View className="rounded-[0px] bg-[#fff] p-[17px] border-[1px] border-[#E5EBE7] gap-[12px]">
+        <View className="flex-row items-center justify-between gap-[10px]">
+          <Text className="text-[17px] font-[700] text-[#183B32]">
+            {count} phần · Tạm tính
+          </Text>
+          <Text className="text-[#12664C] text-[18px] font-[700]">
+            {money(total)}
+          </Text>
         </View>
         <Button
           title={

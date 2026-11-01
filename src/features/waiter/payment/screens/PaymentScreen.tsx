@@ -15,7 +15,7 @@ import {
   Sheet,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import { runCommand } from '../../shared/hooks/useWaiterCommands';
 import { money, sessionTotal, time } from '../../shared/utils/rules';
 function DemoPaymentScreen() {
@@ -62,23 +62,33 @@ function DemoPaymentScreen() {
         title="Thu hộ tiền mặt"
         subtitle={`${table.name} · Phiên ${session.id}`}
       />
-      <View style={ui.hero}>
-        <Text style={{ color: '#BBD7C9', fontSize: 12 }}>SỐ TIỀN CẦN THU</Text>
-        <Text style={{ color: '#fff', fontSize: 34, fontWeight: '700' }}>
+      <View className="bg-[#093E30] rounded-[20px] p-[21px] gap-[12px]">
+        <Text className="text-[#BBD7C9] text-[12px]">SỐ TIỀN CẦN THU</Text>
+        <Text className="text-[#fff] text-[34px] font-[700]">
           {money(total)}
         </Text>
-        <Text style={{ color: '#BBD7C9', fontSize: 11 }}>
+        <Text className="text-[#BBD7C9] text-[11px]">
           Tổng tiền món trong phiên dùng thử
         </Text>
       </View>
       <Card>
-        <Text style={ui.h2}>Kiểm tra hóa đơn</Text>
+        <Text className="text-[17px] font-[700] text-[#183B32]">
+          Kiểm tra hóa đơn
+        </Text>
         {items.map((i) => (
-          <View key={i.id} style={ui.between}>
-            <Text style={[ui.body, { flex: 1 }]}>
+          <View
+            key={i.id}
+            className="flex-row items-center justify-between gap-[10px]"
+          >
+            <Text
+              className="text-[14px] leading-[21px] text-[#183B32]"
+              style={{ flex: 1 }}
+            >
               {i.quantity} × {i.name}
             </Text>
-            <Text style={ui.body}>{money(i.quantity * i.price)}</Text>
+            <Text className="text-[14px] leading-[21px] text-[#183B32]">
+              {money(i.quantity * i.price)}
+            </Text>
           </View>
         ))}
         {unfinished && (
@@ -95,36 +105,42 @@ function DemoPaymentScreen() {
         </Card>
       ) : pending ? (
         <Card>
-          <View style={ui.row}>
+          <View className="flex-row items-center gap-[10px]">
             <Icon name="time-outline" color={colors.amber} size={30} />
             <View style={{ flex: 1 }}>
-              <Text style={ui.h2}>Chờ bàn giao cho thu ngân</Text>
-              <Text style={ui.muted}>Chưa hoàn tất thanh toán</Text>
+              <Text className="text-[17px] font-[700] text-[#183B32]">
+                Chờ bàn giao cho thu ngân
+              </Text>
+              <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+                Chưa hoàn tất thanh toán
+              </Text>
             </View>
           </View>
           <Badge text="Pending_Settlement" tone="amber" />
           {session.cashCollectedBy && (
-            <Text style={ui.muted}>
+            <Text className="text-[12px] leading-[19px] text-[#7C8983]">
               Nhân viên nhận tiền: {session.cashCollectedBy.name}
               {session.cashCollectedAt
                 ? ` · ${time(session.cashCollectedAt)}`
                 : ''}
             </Text>
           )}
-          <Text style={ui.body}>
+          <Text className="text-[14px] leading-[21px] text-[#183B32]">
             Đã nhận từ khách: {money(session.cashReceived || 0)}
           </Text>
-          <Text style={ui.body}>
+          <Text className="text-[14px] leading-[21px] text-[#183B32]">
             Trả lại khách: {money((session.cashReceived || 0) - total)}
           </Text>
-          <Text style={[ui.body, { fontWeight: '700' }]}>
+          <Text className="text-[14px] leading-[21px] text-[#183B32] font-[700]">
             Giao thu ngân: {money(total)}
           </Text>
           <Notice text="Mang tiền đến thu ngân ngay. Chỉ Cashier xác nhận đã nhận tiền mới chuyển đơn sang Paid. Bản dùng thử không tự thực hiện bước này." />
         </Card>
       ) : (
         <Card>
-          <Text style={ui.h2}>Khách đưa bao nhiêu?</Text>
+          <Text className="text-[17px] font-[700] text-[#183B32]">
+            Khách đưa bao nhiêu?
+          </Text>
           <Field
             label="Số tiền nhận (₫)"
             value={amount}
@@ -133,7 +149,7 @@ function DemoPaymentScreen() {
             placeholder="Nhập số tiền khách đưa"
             maxLength={12}
           />
-          <View style={ui.wrap}>
+          <View className="flex-row flex-wrap gap-[10px]">
             {[
               total,
               Math.ceil(total / 100000) * 100000,
@@ -146,20 +162,21 @@ function DemoPaymentScreen() {
                   accessibilityLabel={`Nhận ${v} đồng`}
                   key={v}
                   onPress={() => setAmount(String(v))}
-                  style={{
-                    padding: 10,
-                    borderRadius: 9,
-                    borderWidth: 1,
-                    borderColor: colors.line,
-                  }}
+                  className="p-[10px] rounded-[9px] border-[1px] border-[#E5EBE7]"
                 >
-                  <Text style={ui.link}>{money(v)}</Text>
+                  <Text className="text-[#12664C] text-[13px] font-[600]">
+                    {money(v)}
+                  </Text>
                 </Pressable>
               ))}
           </View>
-          <View style={[ui.between, { paddingVertical: 12 }]}>
-            <Text style={ui.body}>Tiền thối lại khách</Text>
-            <Text style={ui.money}>{money(Math.max(0, received - total))}</Text>
+          <View className="flex-row items-center justify-between gap-[10px] py-[12px]">
+            <Text className="text-[14px] leading-[21px] text-[#183B32]">
+              Tiền thối lại khách
+            </Text>
+            <Text className="text-[#12664C] text-[18px] font-[700]">
+              {money(Math.max(0, received - total))}
+            </Text>
           </View>
           {amount !== '' && received < total && (
             <Notice text="Tiền nhận chưa đủ tổng tiền cần thu." error />
@@ -178,7 +195,7 @@ function DemoPaymentScreen() {
               });
             }}
           />
-          <Text style={ui.small}>
+          <Text className="text-[11px] leading-[16px] text-[#7C8983]">
             Bước 1: Waiter nhận tiền → Bước 2: Cashier xác nhận bàn giao.
           </Text>
         </Card>
@@ -188,10 +205,10 @@ function DemoPaymentScreen() {
           title="Xác nhận đã nhận tiền mặt"
           onClose={() => setConfirm(null)}
         >
-          <Text style={ui.body}>
+          <Text className="text-[14px] leading-[21px] text-[#183B32]">
             Bạn đã nhận {money(confirm.received)} từ khách tại {table.name}?
           </Text>
-          <Text style={ui.body}>
+          <Text className="text-[14px] leading-[21px] text-[#183B32]">
             Tiền thối: {money(confirm.received - confirm.total)}. Số tiền giao
             thu ngân: {money(confirm.total)}.
           </Text>

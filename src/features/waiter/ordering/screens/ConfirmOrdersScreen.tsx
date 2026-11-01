@@ -18,7 +18,7 @@ import {
 import { waiterMenu } from '../utils/menu';
 import { runCommand, useNow } from '../../shared/hooks/useWaiterCommands';
 import { matches, minutes, money, time } from '../../shared/utils/rules';
-import { colors, ui } from '../../shared/utils/theme';
+import { colors } from '../../shared/utils/theme';
 import type { CustomerOrder } from '../types/types';
 
 const total = (order: CustomerOrder) =>
@@ -81,14 +81,12 @@ function DemoConfirmOrdersScreen() {
         subtitle="Kiểm tra từng lượt gọi trước khi chuyển bếp."
         action={<Badge text={`${pending.length} chờ`} tone="amber" />}
       />
-      <View style={ui.hero}>
-        <Text style={{ color: '#BBD7C9', fontSize: 12 }}>
-          ĐƠN GỌI TỪ QR MENU
-        </Text>
-        <Text style={{ color: '#fff', fontSize: 24, fontWeight: '700' }}>
+      <View className="bg-[#093E30] rounded-[20px] p-[21px] gap-[12px]">
+        <Text className="text-[#BBD7C9] text-[12px]">ĐƠN GỌI TỪ QR MENU</Text>
+        <Text className="text-[#fff] text-[24px] font-[700]">
           {pending.length} lượt gọi cần kiểm tra
         </Text>
-        <Text style={{ color: '#DCECE3', fontSize: 12, lineHeight: 19 }}>
+        <Text className="text-[#DCECE3] text-[12px] leading-[19px]">
           Mỗi lượt gọi thêm cần xác nhận riêng. Đơn chưa xác nhận chưa được
           chuyển bếp hoặc cộng vào hóa đơn.
         </Text>
@@ -108,22 +106,19 @@ function DemoConfirmOrdersScreen() {
         const isPending = order.status === 'awaiting_confirmation';
         return (
           <Card key={order.id}>
-            <View style={ui.between}>
-              <View style={[ui.row, { flex: 1 }]}>
-                <View
-                  style={{
-                    padding: 10,
-                    borderRadius: 12,
-                    backgroundColor: colors.mint,
-                  }}
-                >
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <View
+                className="flex-row items-center gap-[10px]"
+                style={{ flex: 1 }}
+              >
+                <View className="p-[10px] rounded-[12px] bg-[#EAF5EF]">
                   <Icon name="receipt-outline" />
                 </View>
-                <View style={{ flex: 1, gap: 4 }}>
-                  <Text style={ui.h2}>
+                <View className="gap-[4px]" style={{ flex: 1 }}>
+                  <Text className="text-[17px] font-[700] text-[#183B32]">
                     {table?.name || 'Không tìm thấy bàn'}
                   </Text>
-                  <Text style={ui.small}>
+                  <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                     {order.id} · {table?.area || 'Phiên không còn hoạt động'}
                   </Text>
                 </View>
@@ -133,26 +128,35 @@ function DemoConfirmOrdersScreen() {
                 tone={isPending ? 'amber' : 'green'}
               />
             </View>
-            <Text style={ui.muted}>
+            <Text className="text-[12px] leading-[19px] text-[#7C8983]">
               {time(order.createdAt)} · {minutes(order.createdAt, now)} phút
               trước · {order.lines.reduce((n, line) => n + line.quantity, 0)}{' '}
               phần
             </Text>
             {order.lines.map((line, index) => (
-              <Text key={index} style={ui.body}>
+              <Text
+                key={index}
+                className="text-[14px] leading-[21px] text-[#183B32]"
+              >
                 {line.quantity} × {line.name}
               </Text>
             ))}
             {!!order.note && (
-              <Text style={ui.muted}>Khách nhắn: {order.note}</Text>
+              <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+                Khách nhắn: {order.note}
+              </Text>
             )}
-            <View style={ui.divider} />
-            <View style={ui.between}>
-              <Text style={ui.muted}>Tổng lượt gọi</Text>
-              <Text style={ui.money}>{money(total(order))}</Text>
+            <View className="h-[1px] bg-[#E5EBE7] my-[4px]" />
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <Text className="text-[12px] leading-[19px] text-[#7C8983]">
+                Tổng lượt gọi
+              </Text>
+              <Text className="text-[#12664C] text-[18px] font-[700]">
+                {money(total(order))}
+              </Text>
             </View>
             {!isPending && (
-              <Text style={ui.small}>
+              <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                 {order.confirmedBy?.name} · Xác nhận lúc{' '}
                 {time(order.confirmedAt!)} · Đã ghi nhận chuyển bếp trong phiên
                 dùng thử
@@ -190,7 +194,7 @@ function DemoConfirmOrdersScreen() {
           }
         />
       )}
-      <Text style={[ui.small, { textAlign: 'center' }]}>
+      <Text className="text-[11px] leading-[16px] text-[#7C8983] text-center">
         Dữ liệu mẫu · Chưa kết nối QR Menu, bếp và thu ngân
       </Text>
       {review && (
@@ -198,8 +202,8 @@ function DemoConfirmOrdersScreen() {
           title={`Kiểm tra đơn · ${review.id}`}
           onClose={() => setReview(null)}
         >
-          <View style={ui.between}>
-            <Text style={ui.h2}>
+          <View className="flex-row items-center justify-between gap-[10px]">
+            <Text className="text-[17px] font-[700] text-[#183B32]">
               {tableFor(review)?.name || 'Không tìm thấy bàn'}
             </Text>
             <Badge
@@ -209,32 +213,27 @@ function DemoConfirmOrdersScreen() {
               tone={review.status === 'confirmed' ? 'green' : 'amber'}
             />
           </View>
-          <Text style={ui.muted}>
+          <Text className="text-[12px] leading-[19px] text-[#7C8983]">
             {tableFor(review)?.area} · Gửi lúc {time(review.createdAt)}
           </Text>
           {review.lines.map((line, index) => (
             <View
               key={index}
-              style={{
-                gap: 9,
-                paddingBottom: 14,
-                borderBottomWidth: 1,
-                borderColor: colors.line,
-              }}
+              className="gap-[9px] pb-[14px] border-b-[1px] border-[#E5EBE7]"
             >
-              <View style={ui.row}>
+              <View className="flex-row items-center gap-[10px]">
                 <Image
                   source={waiterMenu.find((d) => d.id === line.dishId)?.image}
-                  style={ui.image}
+                  className="w-[66px] h-[66px] rounded-[14px] bg-[#EAF5EF]"
                 />
-                <View style={{ flex: 1, gap: 5 }}>
-                  <Text style={[ui.body, { fontWeight: '700' }]}>
+                <View className="gap-[5px]" style={{ flex: 1 }}>
+                  <Text className="text-[14px] leading-[21px] text-[#183B32] font-[700]">
                     {line.name}
                   </Text>
-                  <Text style={ui.muted}>
+                  <Text className="text-[12px] leading-[19px] text-[#7C8983]">
                     {line.quantity} phần × {money(line.price)}
                   </Text>
-                  <Text style={ui.link}>
+                  <Text className="text-[#12664C] text-[13px] font-[600]">
                     {money(line.price * line.quantity)}
                   </Text>
                 </View>
@@ -243,9 +242,13 @@ function DemoConfirmOrdersScreen() {
             </View>
           ))}
           {!!review.note && <Notice text={`Khách nhắn: ${review.note}`} />}
-          <View style={ui.between}>
-            <Text style={ui.h2}>Tổng lượt gọi</Text>
-            <Text style={ui.money}>{money(total(review))}</Text>
+          <View className="flex-row items-center justify-between gap-[10px]">
+            <Text className="text-[17px] font-[700] text-[#183B32]">
+              Tổng lượt gọi
+            </Text>
+            <Text className="text-[#12664C] text-[18px] font-[700]">
+              {money(total(review))}
+            </Text>
           </View>
           {review.status === 'confirmed' ? (
             <Notice
@@ -276,16 +279,16 @@ function DemoConfirmOrdersScreen() {
                 accessibilityLabel="Đã kiểm tra bàn, món, số lượng và ghi chú"
                 accessibilityState={{ checked }}
                 onPress={() => setChecked(!checked)}
-                style={[
-                  ui.row,
-                  { paddingVertical: 10, alignItems: 'flex-start' },
-                ]}
+                className="flex-row items-start gap-[10px] py-[10px]"
               >
                 <Icon
                   name={checked ? 'checkbox' : 'square-outline'}
                   size={24}
                 />
-                <Text style={[ui.body, { flex: 1 }]}>
+                <Text
+                  className="text-[14px] leading-[21px] text-[#183B32]"
+                  style={{ flex: 1 }}
+                >
                   Tôi đã kiểm tra đúng bàn, món, số lượng và ghi chú của khách.
                 </Text>
               </Pressable>
@@ -309,7 +312,7 @@ function DemoConfirmOrdersScreen() {
                   } else sending.current = false;
                 }}
               />
-              <Text style={ui.small}>
+              <Text className="text-[11px] leading-[16px] text-[#7C8983]">
                 Nhân viên xác nhận: {waiter?.name}. Chỉ lượt gọi này được chuyển
                 bếp và ghi nhận tính tiền sau khi bạn xác nhận.
               </Text>

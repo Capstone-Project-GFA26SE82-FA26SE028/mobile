@@ -9,7 +9,6 @@ import {
   Sheet,
   Title,
 } from '../../shared/components/UI';
-import { ui } from '../../shared/utils/theme';
 import { OrderCard } from '../components/OrderCard';
 import { QueryStatus } from '../../shared/components/QueryStatus';
 import { useServiceTables } from '../../tables/hooks/useTables';
@@ -54,7 +53,7 @@ export default function LiveOrdersScreen() {
       />
       {rows.map((order) => (
         <OrderCard key={order.orderId} order={order}>
-          <Text style={ui.body}>
+          <Text className="text-[14px] leading-[21px] text-[#183B32]">
             {tables.data
               ?.filter((t) => t.openSessionIds.includes(order.tableSessionId))
               .map((t) => t.tableCode)
