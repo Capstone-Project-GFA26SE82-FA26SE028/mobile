@@ -14,10 +14,10 @@ import {
   Stepper,
   Title,
 } from '../../shared/components/UI';
-import { ui } from '../../shared/theme';
-import { waiterMenu } from '../../shared/data/menu';
-import { minutes } from '../../shared/rules';
-import { runCommand, useNow } from '../../shared/hooks';
+import { ui } from '../../shared/utils/theme';
+import { waiterMenu } from '../../ordering/utils/menu';
+import { minutes } from '../../shared/utils/rules';
+import { runCommand, useNow } from '../../shared/hooks/useWaiterCommands';
 function DemoReadyScreen() {
   const state = useAppSelector((s) => s.waiter);
   const now = useNow();
@@ -27,7 +27,9 @@ function DemoReadyScreen() {
   const [reviewedServed, setReviewedServed] = useState(0);
   const sending = useRef(false);
   const selected = state.items.find((i) => i.id === selectedId);
-  const changed = !!selected && (selected.status !== 'Ready' || selected.served !== reviewedServed);
+  const changed =
+    !!selected &&
+    (selected.status !== 'Ready' || selected.served !== reviewedServed);
   const items = state.items
     .filter((i) =>
       tab === 'Chờ lên món' ? i.status === 'Ready' : i.served > 0,
@@ -78,7 +80,9 @@ function DemoReadyScreen() {
               </Text>
               {!!item.note && <Text style={ui.muted}>{item.note}</Text>}
               {item.servings?.map((serving) => (
-                <Text key={serving.id} style={ui.small}>{serving.waiterName} · Đã lên {serving.quantity} phần</Text>
+                <Text key={serving.id} style={ui.small}>
+                  {serving.waiterName} · Đã lên {serving.quantity} phần
+                </Text>
               ))}
             </View>
           </View>
@@ -126,16 +130,32 @@ function DemoReadyScreen() {
           </Text>
           <Button
             title="Xác nhận đã lên bàn"
-            disabled={changed || quantity < 1 || quantity > selected.quantity - selected.served}
+            disabled={
+              changed ||
+              quantity < 1 ||
+              quantity > selected.quantity - selected.served
+            }
             onPress={() => {
               if (sending.current) return;
               sending.current = true;
-              if (runCommand({ type: 'serve', itemId: selected.id, quantity, expectedServed: reviewedServed }))
+              if (
+                runCommand({
+                  type: 'serve',
+                  itemId: selected.id,
+                  quantity,
+                  expectedServed: reviewedServed,
+                })
+              )
                 setSelectedId('');
               else sending.current = false;
             }}
           />
-          {changed && <Notice text="Số phần hoặc trạng thái món đã thay đổi. Đóng bảng này và mở lại để kiểm tra." error />}
+          {changed && (
+            <Notice
+              text="Số phần hoặc trạng thái món đã thay đổi. Đóng bảng này và mở lại để kiểm tra."
+              error
+            />
+          )}
           <Text style={ui.small}>Nhân viên xác nhận: {state.waiter?.name}</Text>
         </Sheet>
       )}
@@ -144,6 +164,6 @@ function DemoReadyScreen() {
 }
 
 export default function ReadyScreen() {
-  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
+  const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
   return apiMode ? <LiveReadyScreen /> : <DemoReadyScreen />;
 }

@@ -16,10 +16,10 @@ import {
   Sheet,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/theme';
-import { runCommand, useNow } from '../../shared/hooks';
-import { matches, time } from '../../shared/rules';
-import { inHoldWindow, reservationTableError } from '../rules';
+import { colors, ui } from '../../shared/utils/theme';
+import { runCommand, useNow } from '../../shared/hooks/useWaiterCommands';
+import { matches, time } from '../../shared/utils/rules';
+import { inHoldWindow, reservationTableError } from '../utils/rules';
 function DemoReservationsScreen() {
   const state = useAppSelector((s) => s.waiter);
   const router = useRouter();
@@ -44,7 +44,9 @@ function DemoReservationsScreen() {
     )
     .sort((a, b) => a.time - b.time);
   const available = selected
-    ? state.tables.filter((t) => !reservationTableError(state, selected, t.id, now))
+    ? state.tables.filter(
+        (t) => !reservationTableError(state, selected, t.id, now),
+      )
     : [];
   return (
     <Page>
@@ -68,15 +70,19 @@ function DemoReservationsScreen() {
               <Badge text={`${r.guests} khách`} />
             </View>
             <Text style={ui.body}>
-              {new Date(r.time).toLocaleDateString('vi-VN')} · {time(r.time)}–{time(r.endTime)} ·{' '}
-              {r.phone}
+              {new Date(r.time).toLocaleDateString('vi-VN')} · {time(r.time)}–
+              {time(r.endTime)} · {r.phone}
             </Text>
             <Text style={ui.muted}>{r.note}</Text>
             {table && (
               <Badge text={`${table.name} · ${table.area}`} tone="blue" />
             )}
             {!!r.reason && <Text style={ui.muted}>Lý do: {r.reason}</Text>}
-            {!!r.customerMessage && <Notice text={`Nội dung thông báo cho khách (mẫu): ${r.customerMessage}`} />}
+            {!!r.customerMessage && (
+              <Notice
+                text={`Nội dung thông báo cho khách (mẫu): ${r.customerMessage}`}
+              />
+            )}
             {r.status === 'pending' && (
               <View style={ui.row}>
                 <View style={{ flex: 1 }}>
@@ -113,7 +119,14 @@ function DemoReservationsScreen() {
                 </Text>
                 <Button
                   title="Khách đã đến · Mở phiên"
-                  disabled={!inWindow || !table?.active || !table.area || !!table.sessionId || table.needsCleaning || table.capacity < r.guests}
+                  disabled={
+                    !inWindow ||
+                    !table?.active ||
+                    !table.area ||
+                    !!table.sessionId ||
+                    table.needsCleaning ||
+                    table.capacity < r.guests
+                  }
                   onPress={() => {
                     if (
                       r.tableId &&
@@ -151,7 +164,8 @@ function DemoReservationsScreen() {
             {selected.name} · {selected.guests} khách
           </Text>
           <Text style={ui.muted}>
-            Khung giờ {time(selected.time)}–{time(selected.endTime)} · {selected.phone}
+            Khung giờ {time(selected.time)}–{time(selected.endTime)} ·{' '}
+            {selected.phone}
           </Text>
           {mode === 'confirm' ? (
             <>
@@ -185,7 +199,10 @@ function DemoReservationsScreen() {
               )}
               <Button
                 title="Xác nhận đặt bàn"
-                disabled={selected.status !== 'pending' || !available.some((t) => t.id === tableId)}
+                disabled={
+                  selected.status !== 'pending' ||
+                  !available.some((t) => t.id === tableId)
+                }
                 onPress={() => {
                   if (
                     runCommand({
@@ -233,6 +250,15 @@ function DemoReservationsScreen() {
 }
 
 export default function ReservationsScreen() {
-  const apiMode = useAppSelector(s => s.waiter.authMode === 'api');
-  return apiMode ? <UnsupportedWaiterScreen title="Đặt bàn trước" subtitle="Chuẩn bị một chỗ ngồi thật chu đáo cho khách." tabs={['Chờ duyệt', 'Đã xác nhận', 'Đã đến', 'Từ chối']} searchable /> : <DemoReservationsScreen />;
+  const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
+  return apiMode ? (
+    <UnsupportedWaiterScreen
+      title="Đặt bàn trước"
+      subtitle="Chuẩn bị một chỗ ngồi thật chu đáo cho khách."
+      tabs={['Chờ duyệt', 'Đã xác nhận', 'Đã đến', 'Từ chối']}
+      searchable
+    />
+  ) : (
+    <DemoReservationsScreen />
+  );
 }

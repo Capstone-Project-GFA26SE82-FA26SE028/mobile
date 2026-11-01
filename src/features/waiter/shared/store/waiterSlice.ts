@@ -1,11 +1,14 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { createWaiterState } from './data/seed';
-import { waiterMenu } from './data/menu';
-import { applyCommand } from './rules';
-import type { Command } from './types';
-import { receiveKitchenReady, type KitchenReadyEvent } from '../notifications/events';
-import { demoWaiter } from '../auth/data/demo';
-import type { WaiterProfile } from '../auth/data/demo';
+import { createWaiterState } from '../utils/seed';
+import { waiterMenu } from '../../ordering/utils/menu';
+import { applyCommand } from '../utils/rules';
+import type { Command } from '../types/types';
+import {
+  receiveKitchenReady,
+  type KitchenReadyEvent,
+} from '../../notifications/utils/events';
+import { demoWaiter } from '../../auth/utils/demo';
+import type { WaiterProfile } from '../../auth/types/types';
 const slice = createSlice({
   name: 'waiter',
   initialState: createWaiterState(),
@@ -28,10 +31,17 @@ const slice = createSlice({
       state.waiter = payload;
       state.feedback = null;
     },
-    kitchenReady(state, { payload }: PayloadAction<KitchenReadyEvent & { now: number }>) {
+    kitchenReady(
+      state,
+      { payload }: PayloadAction<KitchenReadyEvent & { now: number }>,
+    ) {
       const error = receiveKitchenReady(state, payload, payload.now);
       state.feedback = error
-        ? { id: `ready-${payload.itemId}-${payload.now}`, text: error, error: true }
+        ? {
+            id: `ready-${payload.itemId}-${payload.now}`,
+            text: error,
+            error: true,
+          }
         : null;
     },
     enterDemo(state) {
@@ -61,15 +71,25 @@ const slice = createSlice({
       if (payload.type !== 'seen' || error)
         state.feedback = {
           id: payload.id,
-          text: error || (payload.type === 'confirm-order'
-            ? 'Đã xác nhận lượt gọi và ghi nhận chuyển bếp, thu ngân trong phiên dùng thử.'
-            : 'Đã ghi nhận trong phiên dùng thử.'),
+          text:
+            error ||
+            (payload.type === 'confirm-order'
+              ? 'Đã xác nhận lượt gọi và ghi nhận chuyển bếp, thu ngân trong phiên dùng thử.'
+              : 'Đã ghi nhận trong phiên dùng thử.'),
           error: !!error,
         };
       else state.feedback = null;
     },
   },
 });
-export const { setAuthMessage, authenticated, enterDemo, signOut, setAlerts, clearFeedback, execute, kitchenReady } =
-  slice.actions;
+export const {
+  setAuthMessage,
+  authenticated,
+  enterDemo,
+  signOut,
+  setAlerts,
+  clearFeedback,
+  execute,
+  kitchenReady,
+} = slice.actions;
 export default slice.reducer;

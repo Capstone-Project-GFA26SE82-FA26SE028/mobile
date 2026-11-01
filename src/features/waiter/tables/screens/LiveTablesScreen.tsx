@@ -12,25 +12,40 @@ import {
   Search,
   Title,
 } from '../../shared/components/UI';
-import { colors, ui } from '../../shared/theme';
+import { colors, ui } from '../../shared/utils/theme';
 import { useServiceTables } from '../hooks/useTables';
 import { useSessionOrders } from '../../ordering/hooks/useOrders';
 import { QueryStatus } from '../../shared/components/QueryStatus';
-import { matches } from '../../shared/rules';
+import { matches } from '../../shared/utils/rules';
 export default function LiveTablesScreen() {
-  const profile = useAppSelector(s => s.waiter.waiter);
+  const profile = useAppSelector((s) => s.waiter.waiter);
   const router = useRouter();
   const tables = useServiceTables();
   const apiTables = tables.data ?? [];
-  const sessionIds = apiTables.flatMap(t => t.openSessionIds);
+  const sessionIds = apiTables.flatMap((t) => t.openSessionIds);
   const orders = useSessionOrders(sessionIds);
-  const activeTables = apiTables.map(t => ({ id: t.tableId, name: t.tableCode, area: t.areaName, sessionId: t.openSessionIds[0] }));
-  const ready = (orders.data ?? []).flatMap(o => o.items.filter(i => i.status === 'Ready')).reduce((sum, i) => sum + i.quantity, 0);
-  const pending = (orders.data ?? []).filter(o => o.source === 'Guest' && o.status === 'PendingConfirmation').length;
-  const tableStatus = (table: typeof activeTables[number]) => {
-    const source = apiTables.find(t => t.tableId === table.id)!;
+  const activeTables = apiTables.map((t) => ({
+    id: t.tableId,
+    name: t.tableCode,
+    area: t.areaName,
+    sessionId: t.openSessionIds[0],
+  }));
+  const ready = (orders.data ?? [])
+    .flatMap((o) => o.items.filter((i) => i.status === 'Ready'))
+    .reduce((sum, i) => sum + i.quantity, 0);
+  const pending = (orders.data ?? []).filter(
+    (o) => o.source === 'Guest' && o.status === 'PendingConfirmation',
+  ).length;
+  const tableStatus = (table: (typeof activeTables)[number]) => {
+    const source = apiTables.find((t) => t.tableId === table.id)!;
     if (source.openSessionIds.length) {
-      return (orders.data ?? []).some(o => source.openSessionIds.includes(o.tableSessionId) && o.items.some(i => i.status === 'Ready')) ? 'Chờ trả món' : 'Có khách';
+      return (orders.data ?? []).some(
+        (o) =>
+          source.openSessionIds.includes(o.tableSessionId) &&
+          o.items.some((i) => i.status === 'Ready'),
+      )
+        ? 'Chờ trả món'
+        : 'Có khách';
     }
     return source.cleaningStatus === 'Clean' ? 'Trống' : 'Cần dọn';
   };
@@ -38,7 +53,7 @@ export default function LiveTablesScreen() {
   const [status, setStatus] = useState('Tất cả');
   const [query, setQuery] = useState('');
   const [gridWidth, setGridWidth] = useState(0);
-  const areas = [...new Set(activeTables.map(t => t.area).filter(Boolean))];
+  const areas = [...new Set(activeTables.map((t) => t.area).filter(Boolean))];
   const rows = activeTables.filter(
     (t) =>
       (area === 'Tất cả' || t.area === area) &&
@@ -70,9 +85,7 @@ export default function LiveTablesScreen() {
                 backgroundColor: '#9DD6B0',
               }}
             />
-            <Text style={{ color: '#C3DECD', fontSize: 10 }}>
-              Ca phục vụ
-            </Text>
+            <Text style={{ color: '#C3DECD', fontSize: 10 }}>Ca phục vụ</Text>
           </View>
         </View>
         <Text style={{ color: '#fff', fontWeight: '700', fontSize: 21 }}>
@@ -81,10 +94,18 @@ export default function LiveTablesScreen() {
         <View style={{ flexDirection: 'row', marginTop: 5 }}>
           {[
             {
-              value: tables.isSuccess ? activeTables.filter((t) => t.sessionId).length : '—',
+              value: tables.isSuccess
+                ? activeTables.filter((t) => t.sessionId).length
+                : '—',
               label: 'Bàn có khách',
             },
-            { value: orders.isSuccess || (tables.isSuccess && !sessionIds.length) ? ready : '—', label: 'Phần chờ lên' },
+            {
+              value:
+                orders.isSuccess || (tables.isSuccess && !sessionIds.length)
+                  ? ready
+                  : '—',
+              label: 'Phần chờ lên',
+            },
             {
               value: '—',
               label: 'Yêu cầu mới',
@@ -101,7 +122,9 @@ export default function LiveTablesScreen() {
               }}
             >
               <Text style={{ color: '#fff', fontSize: 26, fontWeight: '700' }}>
-                {typeof x.value === 'number' ? String(x.value).padStart(2, '0') : x.value}
+                {typeof x.value === 'number'
+                  ? String(x.value).padStart(2, '0')
+                  : x.value}
               </Text>
               <Text style={{ color: '#BDD7C9', fontSize: 10 }}>{x.label}</Text>
             </View>
@@ -142,22 +165,14 @@ export default function LiveTablesScreen() {
         <Text accessibilityRole="header" style={ui.h2}>
           Sơ đồ bàn
         </Text>
-        <Text style={ui.small}>{activeTables.length} bàn · {areas.length} khu vực</Text>
+        <Text style={ui.small}>
+          {activeTables.length} bàn · {areas.length} khu vực
+        </Text>
       </View>
-      <Chips
-        options={['Tất cả', ...areas]}
-        value={area}
-        onChange={setArea}
-      />
+      <Chips options={['Tất cả', ...areas]} value={area} onChange={setArea} />
       <Search value={query} onChange={setQuery} placeholder="Tìm số bàn…" />
       <View style={[ui.wrap, { gap: 12 }]}>
-        {[
-          'Tất cả',
-          'Trống',
-          'Có khách',
-          'Chờ trả món',
-          'Cần dọn',
-        ].map((s) => (
+        {['Tất cả', 'Trống', 'Có khách', 'Chờ trả món', 'Cần dọn'].map((s) => (
           <Pressable
             key={s}
             accessibilityRole="button"
@@ -193,7 +208,10 @@ export default function LiveTablesScreen() {
           </Pressable>
         ))}
       </View>
-      <View onLayout={({ nativeEvent }) => setGridWidth(nativeEvent.layout.width)} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+      <View
+        onLayout={({ nativeEvent }) => setGridWidth(nativeEvent.layout.width)}
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}
+      >
         {rows.map((table) => {
           const label = tableStatus(table);
           const tone =
@@ -201,9 +219,9 @@ export default function LiveTablesScreen() {
               ? 'amber'
               : label === 'Cần dọn'
                 ? 'red'
-                  : label === 'Trống'
-                    ? 'gray'
-                    : 'green';
+                : label === 'Trống'
+                  ? 'gray'
+                  : 'green';
           return (
             <Pressable
               key={table.id}
@@ -260,15 +278,15 @@ export default function LiveTablesScreen() {
                   paddingTop: 10,
                 }}
               >
-                <Text style={ui.small}>
-                  {table.area}
-                </Text>
+                <Text style={ui.small}>{table.area}</Text>
               </View>
             </Pressable>
           );
         })}
       </View>
-      {tables.isSuccess && !rows.length && <Empty text="Không tìm thấy bàn phù hợp với bộ lọc." />}
+      {tables.isSuccess && !rows.length && (
+        <Empty text="Không tìm thấy bàn phù hợp với bộ lọc." />
+      )}
       <Text style={[ui.small, { textAlign: 'center' }]}>
         Trạng thái cập nhật mỗi 5 giây · —: chưa có dữ liệu
       </Text>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { store } from '@/app/store';
-import { execute } from './waiterSlice';
-import type { Command } from './types';
+import { execute } from '../store/waiterSlice';
+import type { Command } from '../types/types';
 type Input = {
   [K in Command['type']]: Omit<Extract<Command, { type: K }>, 'id' | 'now'>;
 }[Command['type']];

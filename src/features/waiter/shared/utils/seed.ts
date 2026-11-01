@@ -1,5 +1,5 @@
-import type { WaiterState } from '../types';
-import { createCustomerOrders } from '../../ordering/data/seed';
+import type { WaiterState } from '../types/types';
+import { createCustomerOrders } from '../../ordering/utils/seed';
 export function createWaiterState(now = Date.now()): WaiterState {
   return {
     signedIn: false,

@@ -12,8 +12,8 @@ require.extensions['.ts'] = (module, filename) => {
   });
   module._compile(outputText, filename);
 };
-const { createWaiterState } = require('../src/features/waiter/shared/data/seed.ts');
-const { applyCommand, sessionTotal } = require('../src/features/waiter/shared/rules.ts');
+const { createWaiterState } = require('../src/features/waiter/shared/utils/seed.ts');
+const { applyCommand, sessionTotal } = require('../src/features/waiter/shared/utils/rules.ts');
 const now = 1792249200000;
 const menu = [
   { id: 'salmon', name: 'Cá hồi', price: 189000, available: true },
@@ -27,7 +27,7 @@ const confirm = (s, overrides = {}, dishes = menu) => applyCommand(s, {
   orderId: 'QR-001', version: 1, ...overrides,
 }, dishes);
 
-const { receiveKitchenReady } = require('../src/features/waiter/notifications/events.ts');
+const { receiveKitchenReady } = require('../src/features/waiter/notifications/utils/events.ts');
 const event = { tableId: 'T2', itemId: 'I2', quantity: 1, note: 'Sốt để riêng' };
 test('kitchen event makes a dish Ready and unread with timestamp and note', () => {
   const s = fresh();

@@ -12,8 +12,8 @@ require.extensions['.ts'] = (module, filename) => {
   });
   module._compile(outputText, filename);
 };
-const { createWaiterState } = require('../src/features/waiter/shared/data/seed.ts');
-const { applyCommand, sessionTotal } = require('../src/features/waiter/shared/rules.ts');
+const { createWaiterState } = require('../src/features/waiter/shared/utils/seed.ts');
+const { applyCommand, sessionTotal } = require('../src/features/waiter/shared/utils/rules.ts');
 const now = 1792249200000;
 const menu = [
   { id: 'salmon', name: 'Cá hồi', price: 189000, available: true },

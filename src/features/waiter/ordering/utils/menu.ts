@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- Metro needs static require calls for native image assets. */
-import type { Dish } from '../types';
+import type { Dish } from '../../shared/types/types';
 export const waiterMenu: Dish[] = [
   {
     id: 'salmon',
