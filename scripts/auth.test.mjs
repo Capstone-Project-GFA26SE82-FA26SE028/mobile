@@ -35,6 +35,30 @@ function credentials(overrides = {}) {
 }
 const reply = result => ({ data: { isSuccess: true, result } });
 
+test('profile name update keeps session tokens and rejects a stale session update', async () => {
+  const auth = createAuthService({ post: async () => reply(credentials()) });
+  let current;
+  auth.onChange(user => { current = user; });
+  await auth.login('staff', 'password');
+  const identity = auth.identity();
+  const token = await auth.token();
+  auth.updateName('New name', identity);
+  assert.equal(current.name, 'New name');
+  assert.equal(auth.identity(), identity);
+  assert.equal(await auth.token(), token);
+  await auth.clear();
+  assert.throws(() => auth.updateName('Old response', identity), /Phiên đăng nhập đã thay đổi/);
+  assert.equal(current, null);
+});
+
+test('updating waiter profile keeps tables, orders and current workspace state', () => {
+  const { profileUpdated } = require('../src/features/waiter/shared/store/waiterSlice.ts');
+  const original = reducer(undefined, authenticated({ id: 'staff', name: 'Old', email: 'a@example.com', role: 'waiter', active: true }));
+  const updated = reducer(original, profileUpdated({ ...original.waiter, name: 'New' }));
+  assert.equal(updated.waiter.name, 'New');
+  for (const key of ['tables', 'sessions', 'items', 'customerOrders', 'requests', 'reservations', 'logs']) assert.deepEqual(updated[key], original[key]);
+});
+
 test('login uses email contract and the real active waiter profile', async () => {
   const calls = [];
   const auth = createAuthService({ post: async (...args) => { calls.push(args); return reply(credentials()); } });

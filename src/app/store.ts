@@ -3,6 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import waiterReducer from '@/features/waiter/shared/store/waiterSlice';
 import {
   authenticated,
+  profileUpdated,
   signOut,
 } from '@/features/waiter/shared/store/waiterSlice';
 import { authService } from '@/features/auth/api/authApi';
@@ -21,7 +22,7 @@ authService.onChange((user, message) => {
   if (user?.role === 'waiter') {
     if (previous.authMode !== 'api' || previous.waiter?.id !== user.id) {
       store.dispatch(authenticated({ ...user, role: 'waiter' }));
-    }
+    } else store.dispatch(profileUpdated({ ...user, role: 'waiter' }));
   } else store.dispatch(signOut());
   store.dispatch(sessionChanged({ user, message }));
 });

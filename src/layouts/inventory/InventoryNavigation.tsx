@@ -5,6 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 const destinations = [
   { path: '/inventory', label: 'Tồn kho', icon: 'layers-outline' },
   { path: '/goods-receipts', label: 'Nhập kho', icon: 'download-outline' },
+  { path: '/inventory-profile', label: 'Cá nhân', icon: 'person-outline' },
 ] as const;
 
 export function InventoryNavigation({ maxWidth }: { maxWidth: number }) {
