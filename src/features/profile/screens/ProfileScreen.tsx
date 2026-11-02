@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -17,6 +16,7 @@ import { profileError } from '../api/profileApi';
 import { useProfile } from '../hooks/useProfile';
 import { ProfileForm } from '../components/ProfileForm';
 import { PasswordForm } from '../components/PasswordForm';
+import { LogoutModal } from '../components/LogoutModal';
 
 function Avatar({ url, name }: { url: string | null; name: string }) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
@@ -46,18 +46,9 @@ export default function ProfileScreen() {
   const model = useProfile();
   const auth = useAuth();
   const [tab, setTab] = useState<'info' | 'password'>('info');
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const data = model.profile.data;
   const busy = model.save.isPending || model.password.isPending || auth.loading;
-  function logout() {
-    Alert.alert('Đăng xuất?', 'Bạn sẽ quay về màn hình đăng nhập.', [
-      { text: 'Hủy', style: 'cancel' },
-      {
-        text: 'Đăng xuất',
-        style: 'destructive',
-        onPress: () => void auth.logout(),
-      },
-    ]);
-  }
   return (
     <KeyboardAvoidingView
       className="grow-[1] shrink-0 basis-[0px]"
@@ -156,7 +147,7 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Đăng xuất"
           disabled={busy}
-          onPress={logout}
+          onPress={() => setLogoutOpen(true)}
           className="min-h-[50px] rounded-[14px] border border-[#F0DEDA] bg-[#FFF6F4] flex-row items-center justify-center gap-[8px]"
         >
           <Ionicons name="log-out-outline" size={20} color="#B44741" />
@@ -165,6 +156,12 @@ export default function ProfileScreen() {
           </Text>
         </Pressable>
       </ScrollView>
+      <LogoutModal
+        visible={logoutOpen}
+        busy={auth.loading}
+        onClose={() => setLogoutOpen(false)}
+        onConfirm={() => void auth.logout()}
+      />
     </KeyboardAvoidingView>
   );
 }
