@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import {
   FlatList,
   Pressable,
-  StyleSheet,
   Text,
   TextInput,
   useWindowDimensions,
@@ -38,15 +37,15 @@ export default function StockListScreen() {
         numColumns={wide ? 2 : 1}
         data={model.items}
         keyExtractor={(item) => item.ingredientId}
-        contentContainerStyle={s.content}
+        contentContainerClassName="w-[100%] max-w-[1000px] self-center px-[20px] pt-[4px] pb-[28px]"
         columnWrapperStyle={wide ? { gap: 12 } : undefined}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        ItemSeparatorComponent={() => <View className="h-[12px]" />}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         refreshing={ingredients.isRefetching && !ingredients.isFetchingNextPage}
         onRefresh={() => void model.refresh()}
         renderItem={({ item }) => (
-          <View style={{ flex: 1 }}>
+          <View className="grow-[1] shrink-0 basis-[0px]">
             <IngredientCard
               ingredient={item}
               onPress={() =>
@@ -60,18 +59,25 @@ export default function StockListScreen() {
         )}
         ListHeaderComponent={
           <>
-            <View style={s.hero}>
-              <View pointerEvents="none" style={s.heroGlow} />
-              <View style={s.heroTitleRow}>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={s.heroCaption}>KHO NGUYÊN LIỆU</Text>
-                  <Text style={s.title}>Tổng quan tồn kho</Text>
+            <View className="bg-[#153F30] rounded-[22px] p-[20px] mb-[18px] overflow-hidden">
+              <View
+                pointerEvents="none"
+                className="absolute w-[200px] h-[200px] rounded-[100px] right-[-80px] top-[-100px] bg-[rgba(184,223,141,0.07)]"
+              />
+              <View className="flex-row items-center justify-between gap-[8px]">
+                <View className="grow-[1] shrink-0 basis-[0px] min-w-[0px]">
+                  <Text className="text-[#AAC5B2] text-[9px] tracking-[1.5px] font-semibold">
+                    KHO NGUYÊN LIỆU
+                  </Text>
+                  <Text className="text-[#fff] text-[26px] font-bold mt-[5px] tracking-[-0.5px]">
+                    Tổng quan tồn kho
+                  </Text>
                 </View>
-                <View style={s.heroIcon}>
+                <View className="w-[44px] h-[44px] items-center justify-center rounded-[14px] bg-[rgba(255,255,255,0.07)]">
                   <Ionicons name="layers-outline" size={24} color="#C6DBBF" />
                 </View>
               </View>
-              <View style={s.stats}>
+              <View className="flex-row mt-[20px] border-t-[1px] border-[rgba(255,255,255,0.12)] pt-[16px]">
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Xem tất cả nguyên liệu"
@@ -79,14 +85,16 @@ export default function StockListScreen() {
                     model.setSearch('');
                     model.setFilter('all');
                   }}
-                  style={s.stat}
+                  className="grow-[1] shrink-0 basis-[0px]"
                 >
-                  <Text style={s.statValue}>
+                  <Text className="text-[#fff] text-[28px] font-bold">
                     {counts.data && !counts.isError
                       ? formatQuantity(counts.data.all)
                       : '—'}
                   </Text>
-                  <Text style={s.statLabel}>Tổng nguyên liệu</Text>
+                  <Text className="text-[#CBDBCF] text-[11px] mt-[4px]">
+                    Tổng nguyên liệu
+                  </Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
@@ -95,10 +103,10 @@ export default function StockListScreen() {
                     model.setSearch('');
                     model.setFilter('low');
                   }}
-                  style={[s.stat, s.lowStat]}
+                  className="grow-[1] shrink-0 basis-[0px] border-l-[1px] border-[rgba(255,255,255,0.12)] pl-[20px]"
                 >
-                  <View style={s.row}>
-                    <Text style={[s.statValue, { color: '#F4D69A' }]}>
+                  <View className="flex-row gap-[8px] items-center">
+                    <Text className="text-[#F4D69A] text-[28px] font-bold">
                       {counts.data && !counts.isError
                         ? formatQuantity(counts.data.low)
                         : '—'}
@@ -109,7 +117,9 @@ export default function StockListScreen() {
                       color="#F4D69A"
                     />
                   </View>
-                  <Text style={s.statLabel}>Sắp hết</Text>
+                  <Text className="text-[#CBDBCF] text-[11px] mt-[4px]">
+                    Sắp hết
+                  </Text>
                 </Pressable>
               </View>
             </View>
@@ -120,7 +130,7 @@ export default function StockListScreen() {
                 onRetry={() => void counts.refetch()}
               />
             )}
-            <View style={s.search}>
+            <View className="min-h-[48px] bg-[#fff] border-[1px] border-[#E4EBE6] rounded-[14px] flex-row items-center pl-[14px]">
               <Ionicons name="search-outline" size={20} color="#8C9B90" />
               <TextInput
                 accessibilityLabel="Tìm nguyên liệu"
@@ -130,7 +140,7 @@ export default function StockListScreen() {
                 onChangeText={model.setSearch}
                 maxLength={255}
                 autoCorrect={false}
-                style={s.searchInput}
+                className="grow-[1] shrink-0 basis-[0px] min-w-[0px] min-h-[48px] px-[10px] text-[14px] text-[#23382D]"
                 returnKeyType="search"
               />
               {!!model.search && (
@@ -138,36 +148,33 @@ export default function StockListScreen() {
                   accessibilityRole="button"
                   accessibilityLabel="Xóa tìm kiếm"
                   onPress={() => model.setSearch('')}
-                  style={s.clear}
+                  className="p-[12px]"
                 >
                   <Ionicons name="close-circle" size={18} color="#8C9B90" />
                 </Pressable>
               )}
             </View>
-            <View style={s.filters}>
+            <View className="flex-row gap-[4px] mt-[12px] mb-[14px] p-[4px] rounded-[14px] bg-[#E8EEE9]">
               {filters.map((filter) => (
                 <Pressable
                   key={filter.key}
                   accessibilityRole="button"
                   accessibilityState={{ selected: filter.key === model.filter }}
                   onPress={() => model.setFilter(filter.key)}
-                  style={[s.chip, filter.key === model.filter && s.activeChip]}
+                  className={`grow-[1] shrink-0 basis-[0px] items-center min-h-[38px] justify-center px-[8px] rounded-[10px] ${filter.key === model.filter ? 'bg-[#236347]' : ''}`}
                 >
                   <Text
-                    style={[
-                      s.chipLabel,
-                      filter.key === model.filter && { color: '#fff' },
-                    ]}
+                    className={`text-[12px] font-semibold ${filter.key === model.filter ? 'text-[#fff]' : 'text-[#738078]'}`}
                   >
                     {filter.label}
                   </Text>
                 </Pressable>
               ))}
             </View>
-            <View style={s.listHeading}>
-              <Text style={s.listTitle}>
+            <View className="flex-row items-center justify-between mb-[12px]">
+              <Text className="text-[#23382D] text-[16px] font-bold">
                 Nguyên liệu{' '}
-                <Text style={s.count}>
+                <Text className="font-normal text-[#738078] text-[13px]">
                   {model.total === undefined
                     ? ''
                     : '(' + formatQuantity(model.total) + ')'}
@@ -178,10 +185,10 @@ export default function StockListScreen() {
                 accessibilityLabel="Tải lại tồn kho"
                 disabled={ingredients.isFetching || counts.isFetching}
                 onPress={() => void model.refresh()}
-                style={s.refresh}
+                className="flex-row items-center gap-[5px] min-h-[40px] pl-[12px]"
               >
                 <Ionicons name="refresh-outline" size={17} color={'#236347'} />
-                <Text style={{ fontSize: 12, color: '#236347' }}>Tải lại</Text>
+                <Text className="text-[12px] text-[#236347]">Tải lại</Text>
               </Pressable>
             </View>
             {ingredients.isError && (
@@ -227,127 +234,3 @@ export default function StockListScreen() {
     </InventoryLayout>
   );
 }
-const s = StyleSheet.create({
-  content: {
-    width: '100%',
-    maxWidth: 1000,
-    alignSelf: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 4,
-    paddingBottom: 28,
-  },
-  hero: {
-    backgroundColor: '#153F30',
-    borderRadius: 22,
-    padding: 20,
-    marginBottom: 18,
-    overflow: 'hidden',
-  },
-  heroGlow: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    right: -80,
-    top: -100,
-    backgroundColor: 'rgba(184, 223, 141, 0.07)',
-  },
-  heroIcon: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.07)',
-  },
-  heroTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  heroCaption: {
-    color: '#AAC5B2',
-    fontSize: 9,
-    letterSpacing: 1.5,
-    fontWeight: '600',
-  },
-  title: {
-    color: '#fff',
-    fontSize: 26,
-    fontWeight: '700',
-    marginTop: 5,
-    letterSpacing: -0.5,
-  },
-  row: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  stats: {
-    flexDirection: 'row',
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    paddingTop: 16,
-  },
-  stat: {
-    flex: 1,
-  },
-  lowStat: {
-    borderLeftWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    paddingLeft: 20,
-  },
-  statValue: { color: '#fff', fontSize: 28, fontWeight: '700' },
-  statLabel: { color: '#CBDBCF', fontSize: 11, marginTop: 4 },
-  search: {
-    minHeight: 48,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E4EBE6',
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: 14,
-  },
-  searchInput: {
-    flex: 1,
-    minWidth: 0,
-    minHeight: 48,
-    paddingHorizontal: 10,
-    fontSize: 14,
-    color: '#23382D',
-  },
-  clear: { padding: 12 },
-  filters: {
-    flexDirection: 'row',
-    gap: 4,
-    marginTop: 12,
-    marginBottom: 14,
-    padding: 4,
-    borderRadius: 14,
-    backgroundColor: '#E8EEE9',
-  },
-  chip: {
-    flex: 1,
-    alignItems: 'center',
-    minHeight: 38,
-    justifyContent: 'center',
-    paddingHorizontal: 8,
-    borderRadius: 10,
-  },
-  activeChip: { backgroundColor: '#236347' },
-  chipLabel: { color: '#738078', fontSize: 12, fontWeight: '600' },
-  listHeading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  listTitle: { color: '#23382D', fontSize: 16, fontWeight: '700' },
-  count: { fontWeight: '400', color: '#738078', fontSize: 13 },
-  refresh: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    minHeight: 40,
-    paddingLeft: 12,
-  },
-});

@@ -1,7 +1,7 @@
 import { stockError } from '../api/stockApi';
 import { useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, Text, View } from 'react-native';
 import InventoryLayout from '../../../../layouts/inventory/InventoryLayout';
 import { useStockDetail } from '../hooks/useStock';
 import { LoadMoreButton } from '../../../../components/LoadMoreButton/LoadMoreButton';
@@ -49,7 +49,7 @@ function IngredientDetails({ id }: { id: string }) {
       back="/inventory"
     >
       {!model.validId ? (
-        <View style={s.content}>
+        <View className="w-[100%] max-w-[760px] self-center px-[20px] pt-[4px] pb-[28px]">
           <EmptyState title="Nguyên liệu không hợp lệ">
             Quay lại tồn kho và chọn một nguyên liệu.
           </EmptyState>
@@ -57,7 +57,7 @@ function IngredientDetails({ id }: { id: string }) {
       ) : model.ingredient.isPending ? (
         <Loading />
       ) : !ingredient ? (
-        <View style={s.content}>
+        <View className="w-[100%] max-w-[760px] self-center px-[20px] pt-[4px] pb-[28px]">
           <ErrorState
             message={stockError(model.ingredient.error)}
             busy={model.ingredient.isFetching}
@@ -72,8 +72,8 @@ function IngredientDetails({ id }: { id: string }) {
               ? row.item.goodsReceiptItemId
               : row.item.stockMovementId
           }
-          contentContainerStyle={s.content}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          contentContainerClassName="w-[100%] max-w-[760px] self-center px-[20px] pt-[4px] pb-[28px]"
+          ItemSeparatorComponent={() => <View className="h-[12px]" />}
           refreshing={
             model.ingredient.isRefetching ||
             (active.isRefetching && !active.isFetchingNextPage)
@@ -99,9 +99,9 @@ function IngredientDetails({ id }: { id: string }) {
                   onRetry={() => void model.refresh()}
                 />
               )}
-              <View style={s.overview}>
-                <View style={s.overviewTop}>
-                  <View style={s.icon}>
+              <View className="bg-[#fff] rounded-[22px] p-[20px] border-[1px] border-[#E4EBE6]">
+                <View className="flex-row justify-between items-center">
+                  <View className="w-[46px] h-[46px] rounded-[14px] items-center justify-center bg-[#EFF5ED]">
                     <Ionicons name="cube-outline" size={27} color={'#236347'} />
                   </View>
                   <StatusBadge
@@ -121,40 +121,53 @@ function IngredientDetails({ id }: { id: string }) {
                     }
                   />
                 </View>
-                <Text style={s.name}>{ingredient.ingredientName}</Text>
-                <Text selectable style={s.code}>
+                <Text className="text-[#23382D] text-[24px] font-bold mt-[14px] leading-[31px]">
+                  {ingredient.ingredientName}
+                </Text>
+                <Text
+                  selectable
+                  className="text-[#738078] text-[10px] mt-[7px]"
+                >
                   {ingredient.ingredientCode}
                 </Text>
-                <View style={s.stockStats}>
-                  <View style={s.stat}>
-                    <Text style={s.statLabel}>Tồn hiện tại</Text>
-                    <Text style={s.stockValue}>
+                <View className="flex-row mt-[18px] p-[16px] bg-[#F1F6F0] rounded-[15px]">
+                  <View className="grow-[1] shrink-0 basis-[0px] min-w-[0px]">
+                    <Text className="text-[#738078] text-[11px]">
+                      Tồn hiện tại
+                    </Text>
+                    <Text className="text-[#236347] text-[28px] font-bold mt-[8px]">
                       {formatQuantity(ingredient.stockQuantity)}{' '}
-                      <Text style={s.unit}>{ingredient.baseUnit}</Text>
+                      <Text className="text-[#738078] text-[12px] font-normal">
+                        {ingredient.baseUnit}
+                      </Text>
                     </Text>
                   </View>
-                  <View style={[s.stat, s.minimum]}>
-                    <Text style={s.statLabel}>Tồn tối thiểu</Text>
-                    <Text style={s.minimumValue}>
+                  <View className="grow-[1] shrink-0 basis-[0px] min-w-[0px] border-l-[1px] border-[#E4EBE6] pl-[18px]">
+                    <Text className="text-[#738078] text-[11px]">
+                      Tồn tối thiểu
+                    </Text>
+                    <Text className="text-[#23382D] text-[23px] font-semibold mt-[11px]">
                       {formatQuantity(ingredient.lowStockThreshold)}{' '}
-                      <Text style={s.unit}>{ingredient.baseUnit}</Text>
+                      <Text className="text-[#738078] text-[12px] font-normal">
+                        {ingredient.baseUnit}
+                      </Text>
                     </Text>
                   </View>
                 </View>
                 {ingredient.isActive && ingredient.isLowStock && (
-                  <View style={s.lowNotice}>
+                  <View className="bg-[#FFF5E5] flex-row items-center gap-[8px] rounded-[12px] p-[12px] mt-[14px]">
                     <Ionicons
                       name="alert-circle-outline"
                       size={17}
                       color={'#A76A1B'}
                     />
-                    <Text style={s.lowText}>
+                    <Text className="grow-[1] shrink-0 basis-[0px] text-[12px] text-[#A76A1B] leading-[19px]">
                       Tồn kho đã chạm mức tối thiểu. Cần nhập bổ sung.
                     </Text>
                   </View>
                 )}
               </View>
-              <View style={s.tabs}>
+              <View className="flex-row p-[5px] bg-[#E8EEE9] rounded-[15px] mt-[18px]">
                 {(['lots', 'history'] as const).map((tab) => (
                   <Pressable
                     key={tab}
@@ -162,7 +175,7 @@ function IngredientDetails({ id }: { id: string }) {
                     accessibilityState={{ selected: model.tab === tab }}
                     accessibilityLabel={tab === 'lots' ? 'Lô hàng' : 'Lịch sử'}
                     onPress={() => model.setTab(tab)}
-                    style={[s.tab, model.tab === tab && s.selectedTab]}
+                    className={`grow-[1] shrink-0 basis-[0px] min-h-[43px] flex-row items-center justify-center gap-[8px] rounded-[11px] ${model.tab === tab ? 'bg-[#fff]' : ''}`}
                   >
                     <Ionicons
                       name={tab === 'lots' ? 'layers-outline' : 'time-outline'}
@@ -170,22 +183,19 @@ function IngredientDetails({ id }: { id: string }) {
                       color={model.tab === tab ? '#236347' : '#738078'}
                     />
                     <Text
-                      style={[
-                        s.tabText,
-                        model.tab === tab && { color: '#236347' },
-                      ]}
+                      className={`text-[13px] font-semibold ${model.tab === tab ? 'text-[#236347]' : 'text-[#738078]'}`}
                     >
                       {tab === 'lots' ? 'Lô hàng' : 'Lịch sử'}
                     </Text>
                   </Pressable>
                 ))}
               </View>
-              <View style={s.sectionHeading}>
-                <Text style={s.sectionTitle}>
+              <View className="flex-row items-center justify-between mt-[12px] mb-[8px]">
+                <Text className="text-[#23382D] text-[15px] font-bold">
                   {model.tab === 'lots'
                     ? 'Danh sách lô hàng'
                     : 'Biến động tồn kho'}{' '}
-                  <Text style={s.total}>
+                  <Text className="text-[#738078] text-[12px] font-normal">
                     {active.data
                       ? '(' +
                         formatQuantity(active.data.pages[0].totalCount) +
@@ -198,7 +208,7 @@ function IngredientDetails({ id }: { id: string }) {
                   accessibilityLabel="Tải lại nguyên liệu"
                   disabled={active.isFetching || model.ingredient.isFetching}
                   onPress={() => void model.refresh()}
-                  style={s.refresh}
+                  className="w-[42px] h-[42px] justify-center items-center"
                 >
                   <Ionicons
                     name="refresh-outline"
@@ -245,107 +255,3 @@ function IngredientDetails({ id }: { id: string }) {
     </InventoryLayout>
   );
 }
-const s = StyleSheet.create({
-  content: {
-    width: '100%',
-    maxWidth: 760,
-    alignSelf: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 4,
-    paddingBottom: 28,
-  },
-  overview: {
-    backgroundColor: '#fff',
-    borderRadius: 22,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#E4EBE6',
-  },
-  overviewTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  icon: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#EFF5ED',
-  },
-  name: {
-    color: '#23382D',
-    fontSize: 24,
-    fontWeight: '700',
-    marginTop: 14,
-    lineHeight: 31,
-  },
-  code: { color: '#738078', fontSize: 10, marginTop: 7 },
-  stockStats: {
-    flexDirection: 'row',
-    marginTop: 18,
-    padding: 16,
-    backgroundColor: '#F1F6F0',
-    borderRadius: 15,
-  },
-  stat: { flex: 1, minWidth: 0 },
-  minimum: { borderLeftWidth: 1, borderColor: '#E4EBE6', paddingLeft: 18 },
-  statLabel: { color: '#738078', fontSize: 11 },
-  stockValue: {
-    color: '#236347',
-    fontSize: 28,
-    fontWeight: '700',
-    marginTop: 8,
-  },
-  minimumValue: {
-    color: '#23382D',
-    fontSize: 23,
-    fontWeight: '600',
-    marginTop: 11,
-  },
-  unit: { color: '#738078', fontSize: 12, fontWeight: '400' },
-  lowNotice: {
-    backgroundColor: '#FFF5E5',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderRadius: 12,
-    padding: 12,
-    marginTop: 14,
-  },
-  lowText: { flex: 1, fontSize: 12, color: '#A76A1B', lineHeight: 19 },
-  tabs: {
-    flexDirection: 'row',
-    padding: 5,
-    backgroundColor: '#E8EEE9',
-    borderRadius: 15,
-    marginTop: 18,
-  },
-  tab: {
-    flex: 1,
-    minHeight: 43,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderRadius: 11,
-  },
-  selectedTab: { backgroundColor: '#fff' },
-  tabText: { color: '#738078', fontSize: 13, fontWeight: '600' },
-  sectionHeading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  sectionTitle: { color: '#23382D', fontSize: 15, fontWeight: '700' },
-  total: { color: '#738078', fontSize: 12, fontWeight: '400' },
-  refresh: {
-    width: 42,
-    height: 42,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 export function ErrorState({
   message,
@@ -15,12 +15,17 @@ export function ErrorState({
   retryLabel?: string;
 }) {
   return (
-    <View accessibilityRole="alert" style={s.error}>
+    <View
+      accessibilityRole="alert"
+      className="bg-[#FFF6E7] rounded-[14px] p-[14px] flex-row gap-[9px] mb-[12px]"
+    >
       <Ionicons name="alert-circle-outline" size={19} color={'#A76A1B'} />
-      <View style={{ flex: 1 }}>
-        <Text style={s.errorText}>{message}</Text>
+      <View className="grow-[1] shrink-0 basis-[0px]">
+        <Text className="text-[#86591E] text-[13px] leading-[20px]">
+          {message}
+        </Text>
         {stale && (
-          <Text style={[s.errorText, { marginTop: 4 }]}>
+          <Text className="text-[#86591E] text-[13px] leading-[20px] mt-[4px]">
             Đang hiển thị dữ liệu đã tải gần nhất.
           </Text>
         )}
@@ -30,13 +35,9 @@ export function ErrorState({
             accessibilityState={{ disabled: busy }}
             disabled={busy}
             onPress={onRetry}
-            style={{
-              minHeight: 44,
-              justifyContent: 'center',
-              alignSelf: 'flex-start',
-            }}
+            className="min-h-[44px] justify-center self-start"
           >
-            <Text style={{ color: '#153F30', fontWeight: '600', fontSize: 13 }}>
+            <Text className="text-[#153F30] font-semibold text-[13px]">
               {retryLabel}
             </Text>
           </Pressable>
@@ -45,15 +46,3 @@ export function ErrorState({
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  error: {
-    backgroundColor: '#FFF6E7',
-    borderRadius: 14,
-    padding: 14,
-    flexDirection: 'row',
-    gap: 9,
-    marginBottom: 12,
-  },
-  errorText: { color: '#86591E', fontSize: 13, lineHeight: 20 },
-});

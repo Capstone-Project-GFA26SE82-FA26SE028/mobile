@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import type { StockLot, StockMovement } from '../types/types';
 import { formatQuantity } from '../utils/formatQuantity';
 import { StatusBadge } from '../../../../components/StatusBadge/StatusBadge';
@@ -27,43 +27,48 @@ export function StockLotCard({ lot, unit }: { lot: StockLot; unit: string }) {
             ? 'green'
             : 'gray';
   return (
-    <View style={s.card}>
-      <View style={s.row}>
-        <View style={[s.icon, { backgroundColor: '#F0F5EF' }]}>
+    <View className="p-[16px] bg-[#fff] rounded-[16px] border-[1px] border-[#E4EBE6]">
+      <View className="flex-row items-center flex-wrap gap-[10px]">
+        <View className="w-[34px] h-[34px] rounded-[11px] justify-center items-center bg-[#F0F5EF]">
           <Ionicons name="layers-outline" size={20} color={'#236347'} />
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={s.title}>
+        <View className="grow-[1] shrink-0 basis-[0px]">
+          <Text className="text-[#23382D] text-[14px] font-semibold leading-[20px]">
             Nhập ngày {formatStockDate(lot.receivedAt).split(',')[0]}
           </Text>
-          <Text style={s.subtitle}>
+          <Text className="text-[#738078] text-[11px] mt-[4px] leading-[17px]">
             Đã nhập {formatQuantity(lot.receivedQuantity)} {unit}
           </Text>
         </View>
         <StatusBadge label={label} tone={tone} />
       </View>
-      <View style={s.lotBottom}>
-        <View style={{ flex: 1 }}>
-          <Text style={s.label}>CÒN LẠI</Text>
-          <Text style={s.balance}>
+      <View className="flex-row flex-wrap gap-[12px] justify-between items-end mt-[14px] pt-[14px] border-t-[1px] border-[#F0F3F0]">
+        <View className="grow-[1] shrink-0 basis-[0px]">
+          <Text className="text-[#738078] text-[10px] tracking-[0.2px] font-medium">
+            CÒN LẠI
+          </Text>
+          <Text className="text-[#153F30] text-[23px] font-bold mt-[5px]">
             {formatQuantity(lot.remainingQuantity)}{' '}
-            <Text style={s.unit}>{unit}</Text>
+            <Text className="text-[#738078] text-[12px] font-normal">
+              {unit}
+            </Text>
           </Text>
         </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={s.label}>HẠN SỬ DỤNG</Text>
+        <View className="items-end">
+          <Text className="text-[#738078] text-[10px] tracking-[0.2px] font-medium">
+            HẠN SỬ DỤNG
+          </Text>
           <Text
-            style={[
-              s.expiry,
-              lot.expiryStatus === 'Expired' && { color: '#B44741' },
-            ]}
+            className={`text-[13px] font-medium mt-[8px] ${lot.expiryStatus === 'Expired' ? 'text-[#B44741]' : 'text-[#23382D]'}`}
           >
             {formatStockDate(lot.expiryDate, true)}
           </Text>
         </View>
       </View>
       {!lot.canIssue && lot.remainingQuantity > 0 && (
-        <Text style={s.unavailable}>Không thể xuất kho lô này</Text>
+        <Text className="text-[#B44741] text-[11px] mt-[12px]">
+          Không thể xuất kho lô này
+        </Text>
       )}
     </View>
   );
@@ -84,13 +89,10 @@ export function StockMovementCard({
     Adjustment: 'Điều chỉnh tồn kho',
   };
   return (
-    <View style={s.card}>
-      <View style={s.row}>
+    <View className="p-[16px] bg-[#fff] rounded-[16px] border-[1px] border-[#E4EBE6]">
+      <View className="flex-row items-center flex-wrap gap-[10px]">
         <View
-          style={[
-            s.icon,
-            { backgroundColor: positive ? '#EAF4ED' : '#FFF3E4' },
-          ]}
+          className={`w-[34px] h-[34px] rounded-[11px] justify-center items-center ${positive ? 'bg-[#EAF4ED]' : 'bg-[#FFF3E4]'}`}
         >
           <Ionicons
             name={
@@ -104,77 +106,27 @@ export function StockMovementCard({
             color={positive ? '#236347' : '#A76A1B'}
           />
         </View>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.title}>
+        <View className="grow-[1] shrink-0 basis-[0px] min-w-[0px]">
+          <Text className="text-[#23382D] text-[14px] font-semibold leading-[20px]">
             {labels[movement.movementType] || movement.movementType}
           </Text>
-          <Text style={s.subtitle}>{formatStockDate(movement.createdAt)}</Text>
+          <Text className="text-[#738078] text-[11px] mt-[4px] leading-[17px]">
+            {formatStockDate(movement.createdAt)}
+          </Text>
         </View>
       </View>
-      <View style={s.movementBottom}>
-        <Text selectable style={s.reason}>
+      <View className="mt-[14px] border-t-[1px] border-[#F0F3F0] pt-[12px] gap-[10px]">
+        <Text selectable className="text-[#738078] text-[12px] leading-[19px]">
           {movement.reason || 'Chưa có lý do'}
         </Text>
-        <Text style={[s.change, { color: positive ? '#236347' : '#A76A1B' }]}>
+        <Text
+          className={`text-[20px] font-bold text-right ${positive ? 'text-[#236347]' : 'text-[#A76A1B]'}`}
+        >
           {positive ? '+' : ''}
           {formatQuantity(movement.quantityChange)}{' '}
-          <Text style={s.unit}>{unit}</Text>
+          <Text className="text-[#738078] text-[12px] font-normal">{unit}</Text>
         </Text>
       </View>
     </View>
   );
 }
-const s = StyleSheet.create({
-  card: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E4EBE6',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  icon: {
-    width: 34,
-    height: 34,
-    borderRadius: 11,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: { color: '#23382D', fontSize: 14, fontWeight: '600', lineHeight: 20 },
-  subtitle: { color: '#738078', fontSize: 11, marginTop: 4, lineHeight: 17 },
-  lotBottom: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginTop: 14,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderColor: '#F0F3F0',
-  },
-  label: {
-    color: '#738078',
-    fontSize: 10,
-    letterSpacing: 0.2,
-    fontWeight: '500',
-  },
-  balance: { color: '#153F30', fontSize: 23, fontWeight: '700', marginTop: 5 },
-  unit: { color: '#738078', fontSize: 12, fontWeight: '400' },
-  expiry: { color: '#23382D', fontSize: 13, fontWeight: '500', marginTop: 8 },
-  unavailable: { color: '#B44741', fontSize: 11, marginTop: 12 },
-  movementBottom: {
-    marginTop: 14,
-    borderTopWidth: 1,
-    borderColor: '#F0F3F0',
-    paddingTop: 12,
-    gap: 10,
-  },
-  reason: { color: '#738078', fontSize: 12, lineHeight: 19 },
-  change: { fontSize: 20, fontWeight: '700', textAlign: 'right' },
-});

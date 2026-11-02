@@ -5,7 +5,6 @@ import { LoadMoreButton } from '../../../../components/LoadMoreButton/LoadMoreBu
 import { useEffect, useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import {
-  StyleSheet,
   FlatList,
   Modal,
   Pressable,
@@ -52,14 +51,16 @@ export function IngredientPicker({
   ];
   return (
     <Modal visible animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={r.page}>
-        <View style={r.header}>
-          <Text style={[r.title, { flex: 1 }]}>Chọn nguyên liệu</Text>
+      <SafeAreaView className="grow-[1] shrink-0 basis-[0px] bg-[#F5F7F5]">
+        <View className="flex-row items-center gap-[12px] px-[18px] py-[18px] w-[100%] max-w-[760px] self-center">
+          <Text className="text-[21px] font-bold text-[#153F30] mt-[4px] tracking-[-0.5px] grow-[1] shrink-0 basis-[0px]">
+            Chọn nguyên liệu
+          </Text>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Đóng"
             onPress={onClose}
-            style={r.icon}
+            className="w-[42px] h-[44px] items-center justify-center rounded-[14px] bg-[#fff] border-[1px] border-[#E7EDE8]"
           >
             <Ionicons name="close" size={23} color={'#23382D'} />
           </Pressable>
@@ -67,17 +68,17 @@ export function IngredientPicker({
         <FlatList
           data={items}
           keyExtractor={(i) => i.ingredientId}
-          contentContainerStyle={r.content}
+          contentContainerClassName="p-[18px] pt-[8px] gap-[14px] w-[100%] max-w-[760px] self-center"
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
-            <View style={{ gap: 12 }}>
+            <View className="gap-[12px]">
               <TextInput
                 accessibilityLabel="Tìm nguyên liệu"
                 placeholder="Tên hoặc mã nguyên liệu"
                 value={search}
                 onChangeText={setSearch}
                 maxLength={255}
-                style={r.input}
+                className="border-[1px] border-[#E4EBE6] bg-[#F6F9F6] p-[14px] min-h-[50px] rounded-[14px] text-[#23382D] text-[15px]"
               />
               {query.isError && (
                 <ErrorState
@@ -91,11 +92,14 @@ export function IngredientPicker({
             <Pressable
               accessibilityRole="button"
               onPress={() => onSelect(item)}
-              style={[r.card, r.row]}
+              className="p-[18px] rounded-[22px] bg-[#fff] border-[1px] border-[#E8EEE9] gap-[10px] flex-row items-center justify-between"
+              style={{ boxShadow: '0 4px 20px rgba(21,63,48,0.025)' }}
             >
-              <View style={{ flex: 1 }}>
-                <Text style={r.heading}>{item.ingredientName}</Text>
-                <Text style={r.muted}>
+              <View className="grow-[1] shrink-0 basis-[0px]">
+                <Text className="text-[16px] text-[#23382D] font-bold">
+                  {item.ingredientName}
+                </Text>
+                <Text className="text-[#738078] text-[13px] leading-[20px]">
                   {item.ingredientCode} · {item.baseUnit}
                 </Text>
               </View>
@@ -122,69 +126,3 @@ export function IngredientPicker({
     </Modal>
   );
 }
-
-const r = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#F5F7F5' },
-  content: {
-    padding: 18,
-    paddingTop: 8,
-    gap: 14,
-    width: '100%',
-    maxWidth: 760,
-    alignSelf: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 18,
-    width: '100%',
-    maxWidth: 760,
-    alignSelf: 'center',
-  },
-  title: {
-    fontSize: 21,
-    fontWeight: '700',
-    color: '#153F30',
-    marginTop: 4,
-    letterSpacing: -0.5,
-  },
-  icon: {
-    width: 42,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E7EDE8',
-  },
-  card: {
-    padding: 18,
-    borderRadius: 22,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E8EEE9',
-    gap: 14,
-    boxShadow: '0 4px 20px rgba(21,63,48,0.025)',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E4EBE6',
-    backgroundColor: '#F6F9F6',
-    padding: 14,
-    minHeight: 50,
-    borderRadius: 14,
-    color: '#23382D',
-    fontSize: 15,
-  },
-  muted: { color: '#738078', fontSize: 13, lineHeight: 20 },
-  heading: { fontSize: 16, color: '#23382D', fontWeight: '700' },
-});

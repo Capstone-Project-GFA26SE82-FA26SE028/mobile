@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 
 export function InventoryHeader({
@@ -26,38 +26,47 @@ export function InventoryHeader({
       .toUpperCase() || 'FH';
   return (
     <>
-      <View style={[s.header, { maxWidth }]}>
+      <View
+        className="w-[100%] self-center flex-row items-center gap-[12px] px-[20px] py-[16px]"
+        style={{ maxWidth }}
+      >
         {onBack ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Quay lại"
             onPress={onBack}
-            style={s.back}
+            className="w-[44px] h-[44px] rounded-[14px] bg-[#fff] border-[1px] border-[#E4EBE6] items-center justify-center"
           >
             <Ionicons name="chevron-back" size={22} color="#23382D" />
           </Pressable>
         ) : (
-          <View style={s.logo}>
+          <View className="w-[44px] h-[44px] rounded-[14px] bg-[#236347] items-center justify-center">
             <Ionicons name="layers-outline" size={23} color="#fff" />
           </View>
         )}
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={[s.title, !!title && { fontSize: 20 }]}>
+        <View className="grow-[1] shrink-0 basis-[0px] min-w-[0px]">
+          <Text
+            className={`font-extrabold tracking-[-0.5px] text-[#153F30] ${title ? 'text-[20px]' : 'text-[23px]'}`}
+          >
             {title || (
               <>
-                FoodHub<Text style={{ color: '#8DA76A' }}>.</Text>
+                FoodHub<Text className="text-[#8DA76A]">.</Text>
               </>
             )}
           </Text>
-          <Text style={s.caption}>{subtitle || 'Không gian quản lý kho'}</Text>
+          <Text className="text-[11px] leading-[16px] text-[#738078] mt-[3px]">
+            {subtitle || 'Không gian quản lý kho'}
+          </Text>
         </View>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Mở tài khoản"
           onPress={() => setAccountOpen(true)}
-          style={s.avatar}
+          className="w-[44px] h-[44px] rounded-[22px] border-[1px] border-[#D6E5DB] bg-[#E8F0E8] items-center justify-center"
         >
-          <Text style={s.initials}>{initials}</Text>
+          <Text className="text-[#153F30] text-[13px] font-bold">
+            {initials}
+          </Text>
         </Pressable>
       </View>
       <Modal
@@ -66,27 +75,38 @@ export function InventoryHeader({
         animationType="fade"
         onRequestClose={() => setAccountOpen(false)}
       >
-        <View style={s.overlay}>
+        <View className="grow-[1] shrink-0 basis-[0px] justify-center p-[24px] bg-[rgba(12,34,24,0.4)]">
           <Pressable
             accessibilityLabel="Đóng tài khoản"
             onPress={() => setAccountOpen(false)}
-            style={StyleSheet.absoluteFill}
+            className="absolute top-[0px] bottom-[0px] left-[0px] right-[0px]"
           />
-          <View accessibilityViewIsModal style={s.account}>
-            <View style={s.accountHeading}>
-              <Text style={s.accountTitle}>Tài khoản của bạn</Text>
+          <View
+            accessibilityViewIsModal
+            className="w-[100%] max-w-[400px] self-center rounded-[24px] bg-[#fff] p-[24px]"
+          >
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <Text className="grow-[1] shrink-0 basis-[0px] text-[19px] font-bold text-[#23382D]">
+                Tài khoản của bạn
+              </Text>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Đóng"
                 onPress={() => setAccountOpen(false)}
-                style={s.close}
+                className="w-[44px] h-[44px] items-center justify-center"
               >
                 <Ionicons name="close" size={22} color="#738078" />
               </Pressable>
             </View>
-            <Text style={s.name}>{auth.user?.name}</Text>
-            <Text style={s.email}>{auth.user?.email}</Text>
-            <Text style={s.role}>Nhân viên kho</Text>
+            <Text className="mt-[18px] text-[21px] font-semibold text-[#23382D]">
+              {auth.user?.name}
+            </Text>
+            <Text className="mt-[6px] text-[14px] text-[#738078]">
+              {auth.user?.email}
+            </Text>
+            <Text className="mt-[12px] text-[12px] text-[#236347]">
+              Nhân viên kho
+            </Text>
             <Pressable
               accessibilityRole="button"
               disabled={auth.loading}
@@ -94,12 +114,10 @@ export function InventoryHeader({
                 setAccountOpen(false);
                 void auth.logout();
               }}
-              style={s.logout}
+              className="mt-[24px] pt-[16px] min-h-[48px] border-t-[1px] border-[#E4EBE6] flex-row items-center gap-[10px]"
             >
               <Ionicons name="log-out-outline" size={21} color="#B44741" />
-              <Text style={{ color: '#B44741', fontWeight: '600' }}>
-                Đăng xuất
-              </Text>
+              <Text className="text-[#B44741] font-semibold">Đăng xuất</Text>
             </Pressable>
           </View>
         </View>
@@ -107,91 +125,3 @@ export function InventoryHeader({
     </>
   );
 }
-
-const s = StyleSheet.create({
-  header: {
-    width: '100%',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  logo: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#236347',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  back: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E4EBE6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 23,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-    color: '#153F30',
-  },
-  caption: { fontSize: 11, lineHeight: 16, color: '#738078', marginTop: 3 },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#D6E5DB',
-    backgroundColor: '#E8F0E8',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  initials: { color: '#153F30', fontSize: 13, fontWeight: '700' },
-  overlay: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: 'rgba(12,34,24,0.4)',
-  },
-  account: {
-    width: '100%',
-    maxWidth: 400,
-    alignSelf: 'center',
-    borderRadius: 24,
-    backgroundColor: '#fff',
-    padding: 24,
-  },
-  accountHeading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  accountTitle: { flex: 1, fontSize: 19, fontWeight: '700', color: '#23382D' },
-  close: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  name: { marginTop: 18, fontSize: 21, fontWeight: '600', color: '#23382D' },
-  email: { marginTop: 6, fontSize: 14, color: '#738078' },
-  role: { marginTop: 12, fontSize: 12, color: '#236347' },
-  logout: {
-    marginTop: 24,
-    paddingTop: 16,
-    minHeight: 48,
-    borderTopWidth: 1,
-    borderColor: '#E4EBE6',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-});

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { randomUUID } from 'expo-crypto';
 import {
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -66,49 +65,42 @@ export default function ReceiptCreateScreen() {
       maxWidth={760}
     >
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        className="grow-[1] shrink-0 basis-[0px]"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          contentContainerStyle={r.content}
+          contentContainerClassName="p-[18px] pt-[8px] gap-[14px] w-[100%] max-w-[760px] self-center"
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
-          <View style={r.info}>
+          <View className="flex-row gap-[8px] items-center p-[12px] rounded-[12px] bg-[#EAF2EC]">
             <Ionicons
               name="information-circle-outline"
               size={18}
               color={'#236347'}
             />
-            <Text
-              style={[r.muted, { flex: 1, fontSize: 12, color: '#236347' }]}
-            >
+            <Text className="text-[#236347] text-[12px] leading-[20px] grow-[1] shrink-0 basis-[0px]">
               Lưu nháp trước, xác nhận để tăng tồn kho.
             </Text>
           </View>
-          <View style={[r.row, { marginTop: 4 }]}>
-            <Text style={r.heading}>Nguyên liệu</Text>
-            <Text
-              style={[
-                r.badge,
-                {
-                  backgroundColor: '#E6EEE7',
-                  color: '#236347',
-                  fontWeight: '600',
-                  fontSize: 12,
-                },
-              ]}
-            >
+          <View className="flex-row items-center justify-between gap-[10px] mt-[4px]">
+            <Text className="text-[16px] text-[#23382D] font-bold">
+              Nguyên liệu
+            </Text>
+            <Text className="rounded-[20px] px-[10px] py-[6px] self-start bg-[#E6EEE7] text-[#236347] font-semibold text-[12px]">
               {lines.length} dòng
             </Text>
           </View>
           {model.attempt && !model.create.isPending && (
-            <View style={r.error}>
-              <Text style={r.errorText}>
+            <View className="rounded-[14px] p-[14px] bg-[#FFF2DB]">
+              <Text className="text-[#86591E] text-[13px] leading-[21px]">
                 Chưa xác định kết quả. Thử lại sẽ dùng đúng mã phiếu cũ, không
                 tạo thêm phiếu.
               </Text>
-              <Text selectable style={[r.muted, { marginVertical: 10 }]}>
+              <Text
+                selectable
+                className="text-[#738078] text-[13px] leading-[20px] my-[10px]"
+              >
                 {model.attempt.body.goodsReceiptId}
               </Text>
               <Pressable
@@ -120,13 +112,9 @@ export default function ReceiptCreateScreen() {
                     params: { id: model.attempt!.body.goodsReceiptId },
                   })
                 }
-                style={[
-                  r.button,
-                  r.secondaryButton,
-                  (false || false) && { opacity: 0.5 },
-                ]}
+                className={`min-h-[52px] rounded-[16px] bg-[#fff] items-center justify-center p-[12px] border-[1px] border-[#CBDDD1] ${false || false ? 'opacity-[0.5]' : ''}`}
               >
-                <Text style={[r.buttonText, { color: '#236347' }]}>
+                <Text className="text-[#236347] text-[14px] font-bold">
                   Kiểm tra phiếu
                 </Text>
               </Pressable>
@@ -154,22 +142,15 @@ export default function ReceiptCreateScreen() {
           ))}
           {!lines.length && !model.attempt && (
             <View
-              style={[
-                r.card,
-                {
-                  alignItems: 'center',
-                  paddingVertical: 32,
-                  borderStyle: 'dashed',
-                  backgroundColor: '#FAFCFA',
-                },
-              ]}
+              className="p-[18px] rounded-[22px] bg-[#FAFCFA] border-[1px] border-[#E8EEE9] gap-[14px] items-center py-[32px] border-dashed"
+              style={{ boxShadow: '0 4px 20px rgba(21,63,48,0.025)' }}
             >
-              <View
-                style={[r.mark, { width: 56, height: 56, borderRadius: 18 }]}
-              >
+              <View className="w-[56px] h-[56px] rounded-[18px] bg-[#EAF4ED] items-center justify-center">
                 <Ionicons name="cube-outline" size={28} color={'#236347'} />
               </View>
-              <Text style={r.muted}>Chưa chọn nguyên liệu</Text>
+              <Text className="text-[#738078] text-[13px] leading-[20px]">
+                Chưa chọn nguyên liệu
+              </Text>
             </View>
           )}
           {!frozen && (
@@ -177,19 +158,20 @@ export default function ReceiptCreateScreen() {
               accessibilityRole="button"
               disabled={lines.length >= 100 || false}
               onPress={() => setPicker(true)}
-              style={[
-                r.button,
-                r.secondaryButton,
-                (lines.length >= 100 || false) && { opacity: 0.5 },
-              ]}
+              className={`min-h-[52px] rounded-[16px] bg-[#fff] items-center justify-center p-[12px] border-[1px] border-[#CBDDD1] ${lines.length >= 100 || false ? 'opacity-[0.5]' : ''}`}
             >
-              <Text style={[r.buttonText, { color: '#236347' }]}>
+              <Text className="text-[#236347] text-[14px] font-bold">
                 + Thêm nguyên liệu
               </Text>
             </Pressable>
           )}
-          <View style={r.card}>
-            <Text style={r.label}>Ghi chú (không bắt buộc)</Text>
+          <View
+            className="p-[18px] rounded-[22px] bg-[#fff] border-[1px] border-[#E8EEE9] gap-[14px]"
+            style={{ boxShadow: '0 4px 20px rgba(21,63,48,0.025)' }}
+          >
+            <Text className="text-[#607468] font-medium text-[12px] mb-[8px]">
+              Ghi chú (không bắt buộc)
+            </Text>
             <TextInput
               accessibilityLabel="Ghi chú phiếu nhập"
               value={note}
@@ -198,37 +180,37 @@ export default function ReceiptCreateScreen() {
               multiline
               maxLength={1000}
               placeholder="Ví dụ: Nhập bổ sung buổi sáng"
-              style={[r.input, { minHeight: 82, textAlignVertical: 'top' }]}
+              className="border-[1px] border-[#E4EBE6] bg-[#F6F9F6] p-[14px] min-h-[82px] rounded-[14px] text-[#23382D] text-[15px] align-top"
             />
           </View>
           {model.create.isError ? (
             <ErrorState message={receiptError(model.create.error)} />
           ) : (
             !!error && (
-              <View accessibilityRole="alert" style={r.error}>
-                <Text style={r.errorText}>{error}</Text>
+              <View
+                accessibilityRole="alert"
+                className="rounded-[14px] p-[14px] bg-[#FFF2DB]"
+              >
+                <Text className="text-[#86591E] text-[13px] leading-[21px]">
+                  {error}
+                </Text>
               </View>
             )
           )}
         </ScrollView>
-        <View style={r.footer}>
+        <View className="w-[100%] max-w-[760px] self-center px-[20px] py-[14px] gap-[8px] border-t-[1px] border-[#E4EBE6] bg-[#fff]">
           <Pressable
             accessibilityRole="button"
             disabled={
               (!model.attempt && !lines.length) || model.create.isPending
             }
             onPress={() => void submit()}
-            style={[
-              r.button,
-              ((!model.attempt && !lines.length) || model.create.isPending) && {
-                opacity: 0.5,
-              },
-            ]}
+            className={`min-h-[52px] rounded-[16px] bg-[#236347] items-center justify-center p-[12px] ${(!model.attempt && !lines.length) || model.create.isPending ? 'opacity-[0.5]' : ''}`}
           >
             {model.create.isPending ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={[r.buttonText]}>
+              <Text className="text-[#fff] text-[14px] font-bold">
                 {model.attempt ? 'Thử lại cùng phiếu' : 'Lưu phiếu nháp'}
               </Text>
             )}
@@ -259,91 +241,3 @@ export default function ReceiptCreateScreen() {
     </InventoryLayout>
   );
 }
-
-const r = StyleSheet.create({
-  button: {
-    minHeight: 52,
-    borderRadius: 16,
-    backgroundColor: '#236347',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-  },
-  secondaryButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#CBDDD1',
-  },
-  buttonText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  content: {
-    padding: 18,
-    paddingTop: 8,
-    gap: 14,
-    width: '100%',
-    maxWidth: 760,
-    alignSelf: 'center',
-  },
-  mark: {
-    width: 42,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#EAF4ED',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  card: {
-    padding: 18,
-    borderRadius: 22,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E8EEE9',
-    gap: 14,
-    boxShadow: '0 4px 20px rgba(21,63,48,0.025)',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  label: { color: '#607468', fontWeight: '500', fontSize: 12, marginBottom: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E4EBE6',
-    backgroundColor: '#F6F9F6',
-    padding: 14,
-    minHeight: 50,
-    borderRadius: 14,
-    color: '#23382D',
-    fontSize: 15,
-  },
-  muted: { color: '#738078', fontSize: 13, lineHeight: 20 },
-  heading: { fontSize: 16, color: '#23382D', fontWeight: '700' },
-  badge: {
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    alignSelf: 'flex-start',
-  },
-  error: { borderRadius: 14, padding: 14, backgroundColor: '#FFF2DB' },
-  errorText: { color: '#86591E', fontSize: 13, lineHeight: 21 },
-  footer: {
-    width: '100%',
-    maxWidth: 760,
-    alignSelf: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    gap: 8,
-    borderTopWidth: 1,
-    borderColor: '#E4EBE6',
-    backgroundColor: '#fff',
-  },
-  info: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#EAF2EC',
-  },
-});

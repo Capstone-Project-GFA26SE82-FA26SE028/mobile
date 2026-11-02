@@ -2,13 +2,13 @@ import { useRef, useState } from 'react';
 import { Redirect } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
+import { cssInterop } from 'nativewind';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -17,6 +17,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../hooks/useAuth';
 import { getStaffHome } from '../components/RoleGate';
+
+// expo-image needs this mapping to receive NativeWind classes as native styles.
+cssInterop(Image, { className: 'style' });
 
 export default function LoginScreen() {
   const auth = useAuth();
@@ -31,18 +34,18 @@ export default function LoginScreen() {
   const [focused, setFocused] = useState<'email' | 'password' | null>(null);
   if (auth.status === 'loading')
     return (
-      <View style={styles.loading}>
+      <View className="grow-[1] shrink-0 basis-[0px] items-center justify-center">
         <ActivityIndicator color="#236347" />
       </View>
     );
   if (auth.user) return <Redirect href={getStaffHome(auth.user)} />;
   function login() {
     if (!email.trim() || !password) {
-      setValidation('Enter your email or username and password.');
+      setValidation('Vui lòng nhập email hoặc tên đăng nhập và mật khẩu.');
       return;
     }
     if (email.trim().length > 255) {
-      setValidation('Email or username must not exceed 255 characters.');
+      setValidation('Email hoặc tên đăng nhập không được vượt quá 255 ký tự.');
       return;
     }
     setValidation('');
@@ -50,62 +53,60 @@ export default function LoginScreen() {
   }
   const error = validation || auth.error || auth.message;
   return (
-    <SafeAreaView style={styles.page}>
+    <SafeAreaView className="grow-[1] shrink-0 basis-[0px] bg-[#fff]">
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        className="grow-[1] shrink-0 basis-[0px]"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.content}
+          contentContainerClassName="grow-[1] w-[100%]"
         >
-          <View style={[styles.layout, wide && styles.wideLayout]}>
+          <View
+            className={`grow-[1] w-[100%] bg-[#fff] ${wide ? 'flex-row' : ''}`}
+          >
             <View
-              style={[
-                styles.brandPanel,
-                { padding: wide ? 40 : roomy ? 32 : 24 },
-                wide && styles.wideBrandPanel,
-              ]}
+              className={`bg-[#123D30] overflow-hidden ${wide ? 'p-[40px] w-[50%] min-h-[580px]' : roomy ? 'p-[32px]' : 'p-[24px]'}`}
             >
-              <View pointerEvents="none" style={styles.glow} />
-              <Text style={styles.brand}>
-                FoodHub<Text style={{ color: '#B8DF8D' }}>.</Text>
+              <View
+                pointerEvents="none"
+                className="absolute w-[384px] h-[384px] rounded-[192px] right-[-96px] top-[64px] bg-[rgba(110,231,183,0.05)]"
+              />
+              <Text className="text-[#fff] text-[24px] font-bold tracking-[-0.6px]">
+                FoodHub<Text className="text-[#B8DF8D]">.</Text>
               </Text>
               {wide && (
-                <View style={styles.illustrationPanel}>
+                <View className="grow-[1] shrink-0 basis-[0px] items-center justify-center">
                   <Image
                     source={require('../../../assets/images/login-dining.svg')}
-                    accessibilityLabel="Illustration of a salad plate with cutlery"
-                    style={styles.illustration}
+                    accessibilityLabel="Minh họa đĩa salad và bộ dao nĩa"
+                    className="w-[100%] max-w-[380px] aspect-[400/380]"
                     contentFit="contain"
                   />
-                  <View style={styles.illustrationAccent} />
+                  <View className="w-[40px] h-[4px] mt-[24px] rounded-[2px] bg-[rgba(184,223,141,0.7)]" />
                 </View>
               )}
             </View>
             <View
-              style={[
-                styles.formPanel,
-                { padding: roomy ? 40 : 24 },
-                !wide && styles.compactFormPanel,
-              ]}
+              className={`grow-[1] shrink-0 basis-[0px] min-w-[0px] ${wide ? 'justify-center p-[40px]' : roomy ? 'justify-start p-[40px] pt-[32px]' : 'justify-start p-[24px] pt-[32px]'}`}
             >
-              <View style={styles.formContent}>
-                <Text style={styles.title}>Sign In</Text>
-                <Text style={styles.subtitle}>
-                  Enter your account details to continue.
+              <View className="w-[100%] max-w-[440px] self-center">
+                <Text className="text-[24px] font-bold text-[#23382D]">
+                  Đăng nhập
                 </Text>
-                <View style={styles.form}>
-                  <Text style={styles.label}>Email or username</Text>
+                <Text className="text-[#667368] text-[14px] leading-[20px] mt-[8px]">
+                  Nhập thông tin tài khoản để tiếp tục.
+                </Text>
+                <View className="w-[100%] mt-[24px]">
+                  <Text className="text-[#23382D] text-[14px] font-semibold mb-[8px]">
+                    Email hoặc tên đăng nhập
+                  </Text>
                   <TextInput
-                    accessibilityLabel="Email or username"
-                    style={[
-                      styles.field,
-                      focused === 'email' && styles.focusedField,
-                    ]}
+                    accessibilityLabel="Email hoặc tên đăng nhập"
+                    className={`min-h-[48px] border-[1px] rounded-[12px] bg-[#fff] text-[#23382D] text-[16px] px-[16px] py-[12px] ${focused === 'email' ? 'border-[#236347]' : 'border-[#E7E5E4]'}`}
                     value={email}
                     onChangeText={setEmail}
-                    placeholder="Enter your email or username"
+                    placeholder="Nhập email hoặc tên đăng nhập"
                     placeholderTextColor="#8B978F"
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -118,22 +119,19 @@ export default function LoginScreen() {
                     onFocus={() => setFocused('email')}
                     onBlur={() => setFocused(null)}
                   />
-                  <Text style={[styles.label, { marginTop: 18 }]}>
-                    Password
+                  <Text className="text-[#23382D] text-[14px] font-semibold mb-[8px] mt-[18px]">
+                    Mật khẩu
                   </Text>
                   <View
-                    style={[
-                      styles.password,
-                      focused === 'password' && styles.focusedField,
-                    ]}
+                    className={`flex-row items-center border-[1px] rounded-[12px] bg-[#fff] ${focused === 'password' ? 'border-[#236347]' : 'border-[#E7E5E4]'}`}
                   >
                     <TextInput
                       ref={passwordInput}
-                      accessibilityLabel="Password"
-                      style={styles.passwordInput}
+                      accessibilityLabel="Mật khẩu"
+                      className="grow-[1] shrink-0 basis-[0px] min-w-[0px] min-h-[48px] text-[#23382D] text-[16px] px-[16px] py-[12px]"
                       value={password}
                       onChangeText={setPassword}
-                      placeholder="Enter your password"
+                      placeholder="Nhập mật khẩu"
                       placeholderTextColor="#8B978F"
                       secureTextEntry={!visible}
                       autoCapitalize="none"
@@ -149,10 +147,10 @@ export default function LoginScreen() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={
-                        visible ? 'Hide password' : 'Show password'
+                        visible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'
                       }
                       onPress={() => setVisible(!visible)}
-                      style={styles.eye}
+                      className="p-[14px]"
                     >
                       <Ionicons
                         name={visible ? 'eye-off-outline' : 'eye-outline'}
@@ -162,27 +160,32 @@ export default function LoginScreen() {
                     </Pressable>
                   </View>
                   {!!error && (
-                    <Text accessibilityRole="alert" style={styles.error}>
+                    <Text
+                      accessibilityRole="alert"
+                      className="text-[#B33A3A] bg-[#FFF0F0] p-[12px] rounded-[12px] text-[13px] leading-[20px] mt-[16px]"
+                    >
                       {error}
                     </Text>
                   )}
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="Sign in"
+                    accessibilityLabel="Đăng nhập"
                     accessibilityState={{ disabled: auth.loading }}
                     disabled={auth.loading}
                     onPress={login}
-                    style={[styles.button, auth.loading && { opacity: 0.65 }]}
+                    className={`min-h-[48px] rounded-[16px] bg-[#236347] items-center justify-center mt-[20px] ${auth.loading ? 'opacity-[0.65]' : ''}`}
                   >
                     {auth.loading ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text style={styles.buttonText}>Sign in</Text>
+                      <Text className="text-[#fff] text-[14px] font-semibold">
+                        Đăng nhập
+                      </Text>
                     )}
                   </Pressable>
-                  <Text style={styles.footer}>
-                    Use the account provided by your restaurant. Contact your
-                    administrator if you need help.
+                  <Text className="text-center text-[#667368] text-[12px] leading-[20px] mt-[16px]">
+                    Sử dụng tài khoản do nhà hàng cấp. Liên hệ quản trị viên nếu
+                    cần hỗ trợ.
                   </Text>
                 </View>
               </View>
@@ -193,110 +196,3 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#fff' },
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  content: {
-    flexGrow: 1,
-    width: '100%',
-  },
-  layout: {
-    flexGrow: 1,
-    width: '100%',
-    backgroundColor: '#fff',
-  },
-  wideLayout: { flexDirection: 'row' },
-  brandPanel: { backgroundColor: '#123D30', overflow: 'hidden' },
-  wideBrandPanel: { width: '50%', minHeight: 580 },
-  glow: {
-    position: 'absolute',
-    width: 384,
-    height: 384,
-    borderRadius: 192,
-    right: -96,
-    top: 64,
-    backgroundColor: 'rgba(110, 231, 183, 0.05)',
-  },
-  brand: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '700',
-    letterSpacing: -0.6,
-  },
-  illustrationPanel: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  illustration: { width: '100%', maxWidth: 380, aspectRatio: 400 / 380 },
-  illustrationAccent: {
-    width: 40,
-    height: 4,
-    marginTop: 24,
-    borderRadius: 2,
-    backgroundColor: 'rgba(184, 223, 141, 0.7)',
-  },
-  formPanel: { flex: 1, minWidth: 0, justifyContent: 'center' },
-  compactFormPanel: { justifyContent: 'flex-start', paddingTop: 32 },
-  formContent: { width: '100%', maxWidth: 440, alignSelf: 'center' },
-  title: { fontSize: 24, fontWeight: '700', color: '#23382D' },
-  subtitle: { color: '#667368', fontSize: 14, lineHeight: 20, marginTop: 8 },
-  form: { width: '100%', marginTop: 24 },
-  label: { color: '#23382D', fontSize: 14, fontWeight: '600', marginBottom: 8 },
-  field: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: '#E7E5E4',
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    color: '#23382D',
-    fontSize: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  focusedField: { borderColor: '#236347' },
-  password: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E7E5E4',
-    borderRadius: 12,
-    backgroundColor: '#fff',
-  },
-  passwordInput: {
-    flex: 1,
-    minWidth: 0,
-    minHeight: 48,
-    color: '#23382D',
-    fontSize: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  eye: { padding: 14 },
-  error: {
-    color: '#B33A3A',
-    backgroundColor: '#FFF0F0',
-    padding: 12,
-    borderRadius: 12,
-    fontSize: 13,
-    lineHeight: 20,
-    marginTop: 16,
-  },
-  button: {
-    minHeight: 48,
-    borderRadius: 16,
-    backgroundColor: '#236347',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  buttonText: { color: '#fff', fontSize: 14, fontWeight: '600' },
-  footer: {
-    textAlign: 'center',
-    color: '#667368',
-    fontSize: 12,
-    lineHeight: 20,
-    marginTop: 16,
-  },
-});
