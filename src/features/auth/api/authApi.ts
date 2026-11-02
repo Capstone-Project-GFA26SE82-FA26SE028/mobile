@@ -188,6 +188,25 @@ export function createAuthService(
         ? credentials.user.userId + ':' + credentials.sessionId
         : null;
     },
+    updateName(name: string, expectedIdentity: string) {
+      if (
+        !credentials ||
+        expectedIdentity !==
+          credentials.user.userId + ':' + credentials.sessionId
+      )
+        throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng đăng nhập lại.');
+      credentials = {
+        ...credentials,
+        user: { ...credentials.user, fullName: name },
+      };
+      onChange({
+        id: credentials.user.userId,
+        name,
+        email: credentials.user.email,
+        role: credentials.user.roleId as StaffProfile['role'],
+        active: true,
+      });
+    },
     async token(): Promise<string | null> {
       if (!credentials) return null;
       return Date.parse(credentials.expiresAt) <= Date.now() + 30000

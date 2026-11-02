@@ -3,6 +3,7 @@ module.exports = {
   content: [
     './src/components/**/*.{ts,tsx}',
     './src/features/auth/**/*.{ts,tsx}',
+    './src/features/profile/**/*.{ts,tsx}',
     './src/features/waiter/**/*.{ts,tsx}',
     './src/layouts/waiter/**/*.{ts,tsx}',
     './src/layouts/inventory/**/*.{ts,tsx}',

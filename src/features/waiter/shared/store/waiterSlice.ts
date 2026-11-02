@@ -16,6 +16,10 @@ const slice = createSlice({
     setAuthMessage(state, { payload }: PayloadAction<string>) {
       state.authMessage = payload;
     },
+    profileUpdated(state, { payload }: PayloadAction<WaiterProfile>) {
+      if (state.authMode === 'api' && state.waiter?.id === payload.id)
+        state.waiter = payload;
+    },
     authenticated(state, { payload }: PayloadAction<WaiterProfile>) {
       state.tables = [];
       state.sessions = [];
@@ -85,6 +89,7 @@ const slice = createSlice({
 export const {
   setAuthMessage,
   authenticated,
+  profileUpdated,
   enterDemo,
   signOut,
   setAlerts,

@@ -19,7 +19,13 @@ import {
 import { colors } from '../../shared/utils/theme';
 import { time } from '../../shared/utils/rules';
 import { authError, authService } from '@/features/auth/api/authApi';
+import ProfileScreen from '@/features/profile/screens/ProfileScreen';
 export default function AccountScreen() {
+  const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
+  return apiMode ? <ProfileScreen /> : <DemoAccountScreen />;
+}
+
+function DemoAccountScreen() {
   const state = useAppSelector((s) => s.waiter);
   const dispatch = useAppDispatch();
   const [confirm, setConfirm] = useState(false);
