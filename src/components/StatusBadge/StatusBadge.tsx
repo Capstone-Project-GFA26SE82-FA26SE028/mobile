@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 export function StatusBadge({
   label,
@@ -24,30 +24,20 @@ export function StatusBadge({
     blue: '#EDF4FC',
   }[tone];
   return (
-    <View style={[s.badge, { backgroundColor }]}>
+    <View
+      className="flex-row items-center gap-[5px] px-[9px] py-[6px] rounded-[9px] self-start"
+      style={{ backgroundColor }}
+    >
       {dot && (
         <View
-          style={{
-            width: 5,
-            height: 5,
-            borderRadius: 3,
-            backgroundColor: color,
-          }}
+          className="w-[5px] h-[5px] rounded-[3px]"
+          style={{ backgroundColor: color }}
         />
       )}
-      <Text style={{ fontSize: 11, color, fontWeight: '600' }}>{label}</Text>
+      <Text className="text-[11px] font-semibold" style={{ color }}>
+        {label}
+      </Text>
     </View>
   );
 }
 
-const s = StyleSheet.create({
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-    borderRadius: 9,
-    alignSelf: 'flex-start',
-  },
-});

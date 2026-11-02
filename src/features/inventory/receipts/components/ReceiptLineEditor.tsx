@@ -1,10 +1,14 @@
 import { ErrorState } from '../../../../components/ErrorState/ErrorState';
 import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { StyleSheet, Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAppSelector } from '../../../../app/hooks';
-import { getIngredientConversions, getReceiptUnits, receiptError } from '../api/receiptApi';
+import {
+  getIngredientConversions,
+  getReceiptUnits,
+  receiptError,
+} from '../api/receiptApi';
 import type { ReceiptDraftLine } from '../types/types';
 import { updateReceiptExpiry } from '../schemas/receiptSchema';
 
@@ -51,39 +55,40 @@ export function ReceiptLineEditor({
         : [];
     }) || [];
   return (
-    <View style={r.card}>
-      <View style={r.row}>
-        <View style={[r.mark, { width: 38, height: 38, borderRadius: 12 }]}>
-          <Text style={{ fontSize: 14, color: '#236347', fontWeight: '700' }}>
+    <View
+      className="p-[18px] rounded-[22px] bg-[#fff] border-[1px] border-[#E8EEE9] gap-[14px]"
+      style={{ boxShadow: '0 4px 20px rgba(21,63,48,0.025)' }}
+    >
+      <View className="flex-row items-center justify-between gap-[10px]">
+        <View className="w-[38px] h-[38px] rounded-[12px] bg-[#EAF4ED] items-center justify-center">
+          <Text className="text-[14px] text-[#236347] font-bold">
             {String(index + 1).padStart(2, '0')}
           </Text>
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={r.heading}>{line.ingredient.ingredientName}</Text>
-          <Text style={r.muted}>{line.ingredient.ingredientCode}</Text>
+        <View className="grow-[1] shrink-0 basis-[0px]">
+          <Text className="text-[16px] text-[#23382D] font-bold">
+            {line.ingredient.ingredientName}
+          </Text>
+          <Text className="text-[#738078] text-[13px] leading-[20px]">
+            {line.ingredient.ingredientCode}
+          </Text>
         </View>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Xóa dòng ${index + 1}`}
           disabled={disabled}
           onPress={onRemove}
-          style={[
-            r.icon,
-            {
-              borderWidth: 0,
-              backgroundColor: '#FFF4F2',
-              width: 36,
-              height: 40,
-            },
-          ]}
+          className="w-[36px] h-[40px] items-center justify-center rounded-[14px] bg-[#FFF4F2] border-[0px] border-[#E7EDE8]"
         >
           <Ionicons name="trash-outline" size={19} color={'#B44741'} />
         </Pressable>
       </View>
-      <View style={r.divider} />
-      <View style={{ flexDirection: 'row', gap: 12 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={r.label}>Số lượng</Text>
+      <View className="h-[1px] bg-[#EFF3EF]" />
+      <View className="flex-row gap-[12px]">
+        <View className="grow-[1] shrink-0 basis-[0px]">
+          <Text className="text-[#607468] font-medium text-[12px] mb-[8px]">
+            Số lượng
+          </Text>
           <TextInput
             accessibilityLabel={`Số lượng dòng ${index + 1}`}
             value={line.quantity}
@@ -92,25 +97,29 @@ export function ReceiptLineEditor({
             keyboardType="decimal-pad"
             placeholder="0"
             maxLength={20}
-            style={r.input}
+            className="border-[1px] border-[#E4EBE6] bg-[#F6F9F6] p-[14px] min-h-[50px] rounded-[14px] text-[#23382D] text-[15px]"
           />
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={r.label}>Đơn vị</Text>
+        <View className="grow-[1] shrink-0 basis-[0px]">
+          <Text className="text-[#607468] font-medium text-[12px] mb-[8px]">
+            Đơn vị
+          </Text>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`Đơn vị dòng ${index + 1}`}
             disabled={disabled}
             onPress={() => setExpanded(!expanded)}
-            style={[r.input, r.row]}
+            className="border-[1px] border-[#E4EBE6] bg-[#F6F9F6] p-[14px] min-h-[50px] rounded-[14px] text-[#23382D] text-[15px] flex-row items-center justify-between gap-[10px]"
           >
-            <Text style={{ color: '#23382D', flex: 1 }}>{line.unitLabel}</Text>
+            <Text className="text-[#23382D] grow-[1] shrink-0 basis-[0px]">
+              {line.unitLabel}
+            </Text>
             <Ionicons name="chevron-down" size={15} color={'#738078'} />
           </Pressable>
         </View>
       </View>
       {expanded && !disabled && (
-        <View style={{ gap: 6 }}>
+        <View className="gap-[6px]">
           <Pressable
             accessibilityRole="button"
             onPress={() => {
@@ -121,14 +130,16 @@ export function ReceiptLineEditor({
               });
               setExpanded(false);
             }}
-            style={r.input}
+            className="border-[1px] border-[#E4EBE6] bg-[#F6F9F6] p-[14px] min-h-[50px] rounded-[14px] text-[#23382D] text-[15px]"
           >
-            <Text style={{ color: '#236347' }}>
+            <Text className="text-[#236347]">
               {line.ingredient.baseUnit} · Đơn vị gốc
             </Text>
           </Pressable>
           {(units.isPending || conversions.isPending) && (
-            <Text style={r.muted}>Đang tải đơn vị…</Text>
+            <Text className="text-[#738078] text-[13px] leading-[20px]">
+              Đang tải đơn vị…
+            </Text>
           )}
           {(units.isError || conversions.isError) && (
             <ErrorState
@@ -143,7 +154,7 @@ export function ReceiptLineEditor({
             <Pressable
               accessibilityRole="button"
               key={option.id}
-              style={r.input}
+              className="border-[1px] border-[#E4EBE6] bg-[#F6F9F6] p-[14px] min-h-[50px] rounded-[14px] text-[#23382D] text-[15px]"
               onPress={() => {
                 onChange({
                   unitId: option.id,
@@ -153,7 +164,7 @@ export function ReceiptLineEditor({
                 setExpanded(false);
               }}
             >
-              <Text style={{ color: '#23382D' }}>
+              <Text className="text-[#23382D]">
                 {option.name} = {option.factor} {line.ingredient.baseUnit}
               </Text>
             </Pressable>
@@ -161,30 +172,17 @@ export function ReceiptLineEditor({
         </View>
       )}
       <View>
-        <Text style={r.label}>Hạn sử dụng</Text>
-        <View
-          style={[
-            r.input,
-            {
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingVertical: 0,
-              gap: 6,
-            },
-          ]}
-        >
+        <Text className="text-[#607468] font-medium text-[12px] mb-[8px]">
+          Hạn sử dụng
+        </Text>
+        <View className="border-[1px] border-[#E4EBE6] bg-[#F6F9F6] p-[14px] min-h-[50px] rounded-[14px] text-[#23382D] text-[15px] flex-row items-center py-[0px] gap-[6px]">
           {['Ngày', 'Tháng', 'Năm'].map((label, part) => (
             <View
               key={label}
-              style={{
-                flex: part === 2 ? 1.4 : 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-              }}
+              className={`flex-row items-center gap-[6px] ${part === 2 ? 'grow-[1.4] shrink-0 basis-[0px]' : 'grow-[1] shrink-0 basis-[0px]'}`}
             >
               {part > 0 && (
-                <Text style={{ color: '#738078', fontSize: 17 }}>/</Text>
+                <Text className="text-[#738078] text-[17px]">/</Text>
               )}
               <TextInput
                 ref={(input) => {
@@ -213,76 +211,18 @@ export function ReceiptLineEditor({
                   )
                     dateInputs.current[part - 1]?.focus();
                 }}
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  minHeight: 48,
-                  paddingVertical: 12,
-                  color: '#23382D',
-                  fontSize: 15,
-                  textAlign: 'center',
-                  fontVariant: ['tabular-nums'],
-                }}
+                className="grow-[1] shrink-0 basis-[0px] min-w-[0px] min-h-[48px] py-[12px] text-[#23382D] text-[15px] text-center"
+                style={{ fontVariant: ['tabular-nums'] }}
               />
             </View>
           ))}
         </View>
       </View>
       {line.unitId && (
-        <Text style={r.muted}>
+        <Text className="text-[#738078] text-[13px] leading-[20px]">
           1 {line.unitLabel} = {line.factor} {line.ingredient.baseUnit}
         </Text>
       )}
     </View>
   );
 }
-
-const r = StyleSheet.create({
-  icon: {
-    width: 42,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E7EDE8',
-  },
-  mark: {
-    width: 42,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#EAF4ED',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  card: {
-    padding: 18,
-    borderRadius: 22,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E8EEE9',
-    gap: 14,
-    boxShadow: '0 4px 20px rgba(21,63,48,0.025)',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  label: { color: '#607468', fontWeight: '500', fontSize: 12, marginBottom: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E4EBE6',
-    backgroundColor: '#F6F9F6',
-    padding: 14,
-    minHeight: 50,
-    borderRadius: 14,
-    color: '#23382D',
-    fontSize: 15,
-  },
-  muted: { color: '#738078', fontSize: 13, lineHeight: 20 },
-  heading: { fontSize: 16, color: '#23382D', fontWeight: '700' },
-  divider: { height: 1, backgroundColor: '#EFF3EF' },
-});

@@ -8,7 +8,6 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
   ActivityIndicator,
@@ -36,10 +35,12 @@ function ReceiptDetail({ id }: { id: string }) {
       back="/goods-receipts"
       maxWidth={760}
     >
-      <ScrollView contentContainerStyle={r.content}>
+      <ScrollView contentContainerClassName="p-[18px] pt-[8px] gap-[14px] w-[100%] max-w-[760px] self-center">
         {!model.valid ? (
-          <View style={r.error}>
-            <Text style={r.errorText}>Mã phiếu không hợp lệ.</Text>
+          <View className="rounded-[14px] p-[14px] bg-[#FFF2DB]">
+            <Text className="text-[#86591E] text-[13px] leading-[21px]">
+              Mã phiếu không hợp lệ.
+            </Text>
           </View>
         ) : model.detail.isPending ? (
           <Loading />
@@ -53,19 +54,22 @@ function ReceiptDetail({ id }: { id: string }) {
             )}
             {receipt && (
               <>
-                <View style={r.card}>
-                  <View style={r.row}>
-                    <View
-                      style={[r.row, { justifyContent: 'flex-start', flex: 1 }]}
-                    >
-                      <View style={r.mark}>
+                <View
+                  className="p-[18px] rounded-[22px] bg-[#fff] border-[1px] border-[#E8EEE9] gap-[14px]"
+                  style={{ boxShadow: '0 4px 20px rgba(21,63,48,0.025)' }}
+                >
+                  <View className="flex-row items-center justify-between gap-[10px]">
+                    <View className="flex-row items-center justify-start gap-[10px] grow-[1] shrink-0 basis-[0px]">
+                      <View className="w-[42px] h-[44px] rounded-[14px] bg-[#EAF4ED] items-center justify-center">
                         <Ionicons
                           name="document-text-outline"
                           size={23}
                           color={'#236347'}
                         />
                       </View>
-                      <Text style={r.heading}>Phiếu nhập kho</Text>
+                      <Text className="text-[16px] text-[#23382D] font-bold">
+                        Phiếu nhập kho
+                      </Text>
                     </View>
                     <StatusBadge
                       label={
@@ -80,88 +84,76 @@ function ReceiptDetail({ id }: { id: string }) {
                   </View>
                   <Text
                     selectable
-                    style={{ fontSize: 12, color: '#738078', lineHeight: 20 }}
+                    className="text-[12px] text-[#738078] leading-[20px]"
                   >
                     {receipt.receiptCode}
                   </Text>
-                  <View style={r.divider} />
-                  <View style={r.row}>
-                    <Text style={r.muted}>Ngày tạo</Text>
-                    <Text style={{ color: '#23382D', fontSize: 13 }}>
+                  <View className="h-[1px] bg-[#EFF3EF]" />
+                  <View className="flex-row items-center justify-between gap-[10px]">
+                    <Text className="text-[#738078] text-[13px] leading-[20px]">
+                      Ngày tạo
+                    </Text>
+                    <Text className="text-[#23382D] text-[13px]">
                       {receiptDate(receipt.createdAt)}
                     </Text>
                   </View>
                   {!!receipt.confirmAt && (
-                    <View style={r.row}>
-                      <Text style={r.muted}>Đã nhập lúc</Text>
-                      <Text style={{ color: '#23382D', fontSize: 13 }}>
+                    <View className="flex-row items-center justify-between gap-[10px]">
+                      <Text className="text-[#738078] text-[13px] leading-[20px]">
+                        Đã nhập lúc
+                      </Text>
+                      <Text className="text-[#23382D] text-[13px]">
                         {receiptDate(receipt.confirmAt)}
                       </Text>
                     </View>
                   )}
                   {!!receipt.note && (
-                    <Text style={r.muted}>{receipt.note}</Text>
+                    <Text className="text-[#738078] text-[13px] leading-[20px]">
+                      {receipt.note}
+                    </Text>
                   )}
                 </View>
-                <Text style={r.heading}>
+                <Text className="text-[16px] text-[#23382D] font-bold">
                   Nguyên liệu · {receipt.items.length}
                 </Text>
                 {receipt.items.map((item, index) => {
                   const ingredient = model.names.get(item.ingredientId);
                   return (
-                    <View style={r.card} key={item.goodsReceiptItemId}>
-                      <View style={[r.row, { justifyContent: 'flex-start' }]}>
-                        <View
-                          style={[
-                            r.mark,
-                            { width: 32, height: 32, borderRadius: 10 },
-                          ]}
-                        >
-                          <Text
-                            style={{
-                              color: '#236347',
-                              fontSize: 12,
-                              fontWeight: '700',
-                            }}
-                          >
+                    <View
+                      className="p-[18px] rounded-[22px] bg-[#fff] border-[1px] border-[#E8EEE9] gap-[14px]"
+                      style={{ boxShadow: '0 4px 20px rgba(21,63,48,0.025)' }}
+                      key={item.goodsReceiptItemId}
+                    >
+                      <View className="flex-row items-center justify-start gap-[10px]">
+                        <View className="w-[32px] h-[32px] rounded-[10px] bg-[#EAF4ED] items-center justify-center">
+                          <Text className="text-[#236347] text-[12px] font-bold">
                             {String(index + 1).padStart(2, '0')}
                           </Text>
                         </View>
-                        <Text style={[r.heading, { flex: 1 }]}>
+                        <Text className="text-[16px] text-[#23382D] font-bold grow-[1] shrink-0 basis-[0px]">
                           {ingredient?.ingredientName ||
                             `Nguyên liệu ${index + 1}`}
                         </Text>
                       </View>
                       {!ingredient && (
-                        <Text selectable style={r.muted}>
+                        <Text
+                          selectable
+                          className="text-[#738078] text-[13px] leading-[20px]"
+                        >
                           Không tải được tên · {item.ingredientId}
                         </Text>
                       )}
-                      <View
-                        style={[
-                          r.row,
-                          {
-                            backgroundColor: '#F2F7F2',
-                            padding: 14,
-                            borderRadius: 14,
-                            flexWrap: 'wrap',
-                          },
-                        ]}
-                      >
-                        <Text style={r.muted}>Số lượng nhập kho</Text>
-                        <Text
-                          style={{
-                            color: '#236347',
-                            fontSize: 18,
-                            fontWeight: '700',
-                          }}
-                        >
+                      <View className="flex-row items-center justify-between gap-[10px] bg-[#F2F7F2] p-[14px] rounded-[14px] flex-wrap">
+                        <Text className="text-[#738078] text-[13px] leading-[20px]">
+                          Số lượng nhập kho
+                        </Text>
+                        <Text className="text-[#236347] text-[18px] font-bold">
                           +{count(item.receivedQuantity)}{' '}
                           {ingredient?.baseUnit || ''}
                         </Text>
                       </View>
                       {item.unitId && (
-                        <Text style={r.muted}>
+                        <Text className="text-[#738078] text-[13px] leading-[20px]">
                           Số lượng thực nhận: {count(item.inputQuantity)}{' '}
                           {model.units.data?.find(
                             (unit) => unit.unitId === item.unitId,
@@ -169,28 +161,18 @@ function ReceiptDetail({ id }: { id: string }) {
                           {' · '}Hệ số: {count(item.conversionFactorSnapshot)}
                         </Text>
                       )}
-                      <View style={[r.row, { flexWrap: 'wrap' }]}>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 6,
-                          }}
-                        >
+                      <View className="flex-row items-center justify-between gap-[10px] flex-wrap">
+                        <View className="flex-row items-center gap-[6px]">
                           <Ionicons
                             name="calendar-outline"
                             size={15}
                             color={'#738078'}
                           />
-                          <Text style={r.muted}>Hạn sử dụng</Text>
+                          <Text className="text-[#738078] text-[13px] leading-[20px]">
+                            Hạn sử dụng
+                          </Text>
                         </View>
-                        <Text
-                          style={{
-                            fontSize: 13,
-                            color: '#23382D',
-                            fontWeight: '600',
-                          }}
-                        >
+                        <Text className="text-[13px] text-[#23382D] font-semibold">
                           {receiptDate(item.expiryDate, true)}
                         </Text>
                       </View>
@@ -202,7 +184,7 @@ function ReceiptDetail({ id }: { id: string }) {
                 )}
                 {receipt.status === 'Draft' && (
                   <>
-                    <Text style={r.muted}>
+                    <Text className="text-[#738078] text-[13px] leading-[20px]">
                       Phiếu nháp chưa làm thay đổi tồn kho.
                     </Text>
                     <Pressable
@@ -213,24 +195,30 @@ function ReceiptDetail({ id }: { id: string }) {
                         model.confirm.isPending
                       }
                       onPress={() => setConfirmOpen(true)}
-                      style={[
-                        r.button,
-                        (model.detail.isFetching ||
-                          model.detail.isError ||
-                          model.confirm.isPending) && { opacity: 0.5 },
-                      ]}
+                      className={`min-h-[52px] rounded-[16px] bg-[#236347] items-center justify-center p-[12px] ${
+                        model.detail.isFetching ||
+                        model.detail.isError ||
+                        model.confirm.isPending
+                          ? 'opacity-[0.5]'
+                          : ''
+                      }`}
                     >
                       {model.confirm.isPending ? (
                         <ActivityIndicator color="#fff" />
                       ) : (
-                        <Text style={[r.buttonText]}>Xác nhận nhập kho</Text>
+                        <Text className="text-[#fff] text-[14px] font-bold">
+                          Xác nhận nhập kho
+                        </Text>
                       )}
                     </Pressable>
                   </>
                 )}
                 {receipt.status === 'Confirmed' && (
-                  <View style={[r.card, { backgroundColor: '#EAF4ED' }]}>
-                    <Text style={{ color: '#236347', lineHeight: 22 }}>
+                  <View
+                    className="p-[18px] rounded-[22px] bg-[#EAF4ED] border-[1px] border-[#E8EEE9] gap-[14px]"
+                    style={{ boxShadow: '0 4px 20px rgba(21,63,48,0.025)' }}
+                  >
+                    <Text className="text-[#236347] leading-[22px]">
                       Đã cập nhật tồn kho và ghi nhận lịch sử nhập hàng.
                     </Text>
                   </View>
@@ -239,18 +227,12 @@ function ReceiptDetail({ id }: { id: string }) {
                   accessibilityRole="button"
                   disabled={model.confirm.isPending || model.detail.isFetching}
                   onPress={() => void model.detail.refetch()}
-                  style={[
-                    r.button,
-                    r.secondaryButton,
-                    (model.confirm.isPending || model.detail.isFetching) && {
-                      opacity: 0.5,
-                    },
-                  ]}
+                  className={`min-h-[52px] rounded-[16px] bg-[#fff] items-center justify-center p-[12px] border-[1px] border-[#CBDDD1] ${model.confirm.isPending || model.detail.isFetching ? 'opacity-[0.5]' : ''}`}
                 >
                   {model.detail.isFetching ? (
                     <ActivityIndicator color="#236347" />
                   ) : (
-                    <Text style={[r.buttonText, { color: '#236347' }]}>
+                    <Text className="text-[#236347] text-[14px] font-bold">
                       Tải lại phiếu
                     </Text>
                   )}
@@ -268,29 +250,22 @@ function ReceiptDetail({ id }: { id: string }) {
           if (!model.confirm.isPending) setConfirmOpen(false);
         }}
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(12,34,24,0.4)',
-            justifyContent: 'center',
-            padding: 24,
-          }}
-        >
+        <View className="grow-[1] shrink-0 basis-[0px] bg-[rgba(12,34,24,0.4)] justify-center p-[24px]">
           <Pressable
             accessibilityLabel="Đóng xác nhận"
             disabled={model.confirm.isPending}
             onPress={() => setConfirmOpen(false)}
-            style={StyleSheet.absoluteFill}
+            className="absolute top-[0px] bottom-[0px] left-[0px] right-[0px]"
           />
           <View
             accessibilityViewIsModal
-            style={[
-              r.card,
-              { width: '100%', maxWidth: 420, alignSelf: 'center', gap: 18 },
-            ]}
+            className="p-[18px] rounded-[22px] bg-[#fff] border-[1px] border-[#E8EEE9] gap-[18px] w-[100%] max-w-[420px] self-center"
+            style={{ boxShadow: '0 4px 20px rgba(21,63,48,0.025)' }}
           >
-            <Text style={r.heading}>Nhập kho phiếu này?</Text>
-            <Text style={r.muted}>
+            <Text className="text-[16px] text-[#23382D] font-bold">
+              Nhập kho phiếu này?
+            </Text>
+            <Text className="text-[#738078] text-[13px] leading-[20px]">
               Tồn kho sẽ tăng theo {receipt?.items.length} dòng nguyên liệu.
               Phiếu đã xác nhận không thể chỉnh sửa trên ứng dụng.
             </Text>
@@ -306,28 +281,25 @@ function ReceiptDetail({ id }: { id: string }) {
                   onError: () => setConfirmOpen(false),
                 })
               }
-              style={[
-                r.button,
-                (false || model.confirm.isPending) && { opacity: 0.5 },
-              ]}
+              className={`min-h-[52px] rounded-[16px] bg-[#236347] items-center justify-center p-[12px] ${false || model.confirm.isPending ? 'opacity-[0.5]' : ''}`}
             >
               {model.confirm.isPending ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={[r.buttonText]}>Xác nhận nhập kho</Text>
+                <Text className="text-[#fff] text-[14px] font-bold">
+                  Xác nhận nhập kho
+                </Text>
               )}
             </Pressable>
             <Pressable
               accessibilityRole="button"
               disabled={model.confirm.isPending || false}
               onPress={() => setConfirmOpen(false)}
-              style={[
-                r.button,
-                r.secondaryButton,
-                (model.confirm.isPending || false) && { opacity: 0.5 },
-              ]}
+              className={`min-h-[52px] rounded-[16px] bg-[#fff] items-center justify-center p-[12px] border-[1px] border-[#CBDDD1] ${model.confirm.isPending || false ? 'opacity-[0.5]' : ''}`}
             >
-              <Text style={[r.buttonText, { color: '#236347' }]}>Để sau</Text>
+              <Text className="text-[#236347] text-[14px] font-bold">
+                Để sau
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -335,56 +307,3 @@ function ReceiptDetail({ id }: { id: string }) {
     </InventoryLayout>
   );
 }
-
-const r = StyleSheet.create({
-  button: {
-    minHeight: 52,
-    borderRadius: 16,
-    backgroundColor: '#236347',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-  },
-  secondaryButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#CBDDD1',
-  },
-  buttonText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  content: {
-    padding: 18,
-    paddingTop: 8,
-    gap: 14,
-    width: '100%',
-    maxWidth: 760,
-    alignSelf: 'center',
-  },
-  mark: {
-    width: 42,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#EAF4ED',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  card: {
-    padding: 18,
-    borderRadius: 22,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E8EEE9',
-    gap: 14,
-    boxShadow: '0 4px 20px rgba(21,63,48,0.025)',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  muted: { color: '#738078', fontSize: 13, lineHeight: 20 },
-  heading: { fontSize: 16, color: '#23382D', fontWeight: '700' },
-  error: { borderRadius: 14, padding: 14, backgroundColor: '#FFF2DB' },
-  errorText: { color: '#86591E', fontSize: 13, lineHeight: 21 },
-  divider: { height: 1, backgroundColor: '#EFF3EF' },
-});

@@ -7,7 +7,6 @@ import { receiptError } from '../api/receiptApi';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import {
-  StyleSheet,
   FlatList,
   Pressable,
   Text,
@@ -26,52 +25,22 @@ export default function ReceiptListScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => item.goodsReceiptId}
-        contentContainerStyle={r.content}
+        contentContainerClassName="p-[18px] pt-[8px] gap-[14px] w-[100%] max-w-[760px] self-center"
         refreshing={list.isRefetching && !list.isFetchingNextPage}
         onRefresh={() => void list.refetch()}
         ListHeaderComponent={
-          <View style={{ gap: 16 }}>
-            <View
-              style={{
-                borderRadius: 22,
-                backgroundColor: '#153F30',
-                padding: 22,
-                gap: 18,
-                overflow: 'hidden',
-              }}
-            >
+          <View className="gap-[16px]">
+            <View className="rounded-[22px] bg-[#153F30] p-[22px] gap-[18px] overflow-hidden">
               <View
                 pointerEvents="none"
-                style={{
-                  position: 'absolute',
-                  width: 170,
-                  height: 170,
-                  borderRadius: 85,
-                  right: -70,
-                  top: -60,
-                  borderWidth: 1,
-                  borderColor: '#FFFFFF10',
-                }}
+                className="absolute w-[170px] h-[170px] rounded-[85px] right-[-70px] top-[-60px] border-[1px] border-[#FFFFFF10]"
               />
-              <View style={r.row}>
-                <View style={{ gap: 6 }}>
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      color: '#BDD2C5',
-                      fontWeight: '600',
-                    }}
-                  >
+              <View className="flex-row items-center justify-between gap-[10px]">
+                <View className="gap-[6px]">
+                  <Text className="text-[11px] text-[#BDD2C5] font-semibold">
                     QUẢN LÝ NHẬP KHO
                   </Text>
-                  <Text
-                    style={{
-                      fontSize: 26,
-                      color: '#fff',
-                      fontWeight: '700',
-                      letterSpacing: -0.5,
-                    }}
-                  >
+                  <Text className="text-[26px] text-[#fff] font-bold tracking-[-0.5px]">
                     Nhận hàng vào kho
                   </Text>
                 </View>
@@ -80,18 +49,14 @@ export default function ReceiptListScreen() {
                 accessibilityRole="button"
                 disabled={false || false}
                 onPress={() => router.push('/goods-receipt-create')}
-                style={[
-                  r.button,
-                  r.secondaryButton,
-                  (false || false) && { opacity: 0.5 },
-                ]}
+                className={`min-h-[52px] rounded-[16px] bg-[#fff] items-center justify-center p-[12px] border-[1px] border-[#CBDDD1] ${false || false ? 'opacity-[0.5]' : ''}`}
               >
-                <Text style={[r.buttonText, { color: '#236347' }]}>
+                <Text className="text-[#236347] text-[14px] font-bold">
                   + Tạo phiếu nhập
                 </Text>
               </Pressable>
             </View>
-            <Text style={r.heading}>
+            <Text className="text-[16px] text-[#23382D] font-bold">
               Danh sách phiếu
               {list.data ? ` · ${list.data.pages[0].totalCount}` : ''}
             </Text>
@@ -112,18 +77,21 @@ export default function ReceiptListScreen() {
                 params: { id: item.goodsReceiptId },
               })
             }
-            style={[r.card, { gap: 14 }]}
+            className="p-[18px] rounded-[22px] bg-[#fff] border-[1px] border-[#E8EEE9] gap-[14px]"
+            style={{ boxShadow: '0 4px 20px rgba(21,63,48,0.025)' }}
           >
-            <View style={r.row}>
-              <View style={[r.row, { flex: 1, justifyContent: 'flex-start' }]}>
-                <View style={r.mark}>
+            <View className="flex-row items-center justify-between gap-[10px]">
+              <View className="flex-row items-center justify-start gap-[10px] grow-[1] shrink-0 basis-[0px]">
+                <View className="w-[42px] h-[44px] rounded-[14px] bg-[#EAF4ED] items-center justify-center">
                   <Ionicons
                     name="document-text-outline"
                     size={23}
                     color={'#236347'}
                   />
                 </View>
-                <Text style={[r.muted, { fontSize: 12 }]}>Phiếu nhập</Text>
+                <Text className="text-[#738078] text-[12px] leading-[20px]">
+                  Phiếu nhập
+                </Text>
               </View>
               <StatusBadge
                 label={
@@ -137,33 +105,32 @@ export default function ReceiptListScreen() {
               />
             </View>
             <Text
-              style={[r.heading, { fontSize: 14 }]}
+              className="text-[14px] text-[#23382D] font-bold"
               numberOfLines={1}
               ellipsizeMode="middle"
             >
               {item.receiptCode}
             </Text>
-            <View style={r.divider} />
-            <View style={[r.row, { flexWrap: 'wrap' }]}>
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
-              >
+            <View className="h-[1px] bg-[#EFF3EF]" />
+            <View className="flex-row items-center justify-between gap-[10px] flex-wrap">
+              <View className="flex-row items-center gap-[5px]">
                 <Ionicons name="calendar-outline" size={14} color={'#738078'} />
-                <Text style={[r.muted, { fontSize: 12 }]}>
+                <Text className="text-[#738078] text-[12px] leading-[20px]">
                   {receiptDate(item.createdAt)}
                 </Text>
               </View>
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
-              >
-                <Text style={{ fontSize: 12, color: '#236347' }}>
+              <View className="flex-row items-center gap-[5px]">
+                <Text className="text-[12px] text-[#236347]">
                   {item.items.length} nguyên liệu
                 </Text>
                 <Ionicons name="chevron-forward" size={15} color={'#236347'} />
               </View>
             </View>
             {!!item.note && (
-              <Text numberOfLines={1} style={r.muted}>
+              <Text
+                numberOfLines={1}
+                className="text-[#738078] text-[13px] leading-[20px]"
+              >
                 {item.note}
               </Text>
             )}
@@ -190,54 +157,3 @@ export default function ReceiptListScreen() {
     </InventoryLayout>
   );
 }
-
-const r = StyleSheet.create({
-  button: {
-    minHeight: 52,
-    borderRadius: 16,
-    backgroundColor: '#236347',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-  },
-  secondaryButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#CBDDD1',
-  },
-  buttonText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  content: {
-    padding: 18,
-    paddingTop: 8,
-    gap: 14,
-    width: '100%',
-    maxWidth: 760,
-    alignSelf: 'center',
-  },
-  mark: {
-    width: 42,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#EAF4ED',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  card: {
-    padding: 18,
-    borderRadius: 22,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E8EEE9',
-    gap: 14,
-    boxShadow: '0 4px 20px rgba(21,63,48,0.025)',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  muted: { color: '#738078', fontSize: 13, lineHeight: 20 },
-  heading: { fontSize: 16, color: '#23382D', fontWeight: '700' },
-  divider: { height: 1, backgroundColor: '#EFF3EF' },
-});

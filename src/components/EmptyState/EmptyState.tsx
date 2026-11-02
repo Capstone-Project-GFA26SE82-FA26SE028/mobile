@@ -1,6 +1,6 @@
 import type { ComponentProps, PropsWithChildren } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 export function EmptyState({
   title,
@@ -11,46 +11,18 @@ export function EmptyState({
   icon?: ComponentProps<typeof Ionicons>['name'];
 }>) {
   return (
-    <View style={s.empty}>
-      <View style={s.emptyIcon}>
+    <View className="px-[24px] py-[44px] items-center bg-[#fff] border-[1px] border-[#E4EBE6] rounded-[20px]">
+      <View className="w-[58px] h-[58px] rounded-[18px] items-center justify-center bg-[#EAF4ED]">
         <Ionicons name={icon} size={28} color={'#236347'} />
       </View>
-      <Text style={s.emptyTitle}>{title}</Text>
-      {!!children && <Text style={s.emptyDescription}>{children}</Text>}
+      <Text className="text-[#23382D] text-[18px] font-bold text-center mt-[16px]">
+        {title}
+      </Text>
+      {!!children && (
+        <Text className="text-[#738078] text-[13px] leading-[21px] text-center mt-[8px]">
+          {children}
+        </Text>
+      )}
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  empty: {
-    paddingHorizontal: 24,
-    paddingVertical: 44,
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E4EBE6',
-    borderRadius: 20,
-  },
-  emptyIcon: {
-    width: 58,
-    height: 58,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#EAF4ED',
-  },
-  emptyTitle: {
-    color: '#23382D',
-    fontSize: 18,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginTop: 16,
-  },
-  emptyDescription: {
-    color: '#738078',
-    fontSize: 13,
-    lineHeight: 21,
-    textAlign: 'center',
-    marginTop: 8,
-  },
-});

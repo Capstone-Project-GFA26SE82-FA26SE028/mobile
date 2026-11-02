@@ -28,14 +28,16 @@ export default function InventoryLayout({
       ? () => (router.canGoBack() ? router.back() : router.replace(back))
       : undefined);
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <SafeAreaView className="grow-[1] shrink-0 basis-[0px] bg-[#fff]">
       <InventoryHeader
         title={title}
         subtitle={subtitle}
         onBack={goBack}
         maxWidth={maxWidth}
       />
-      <View style={{ flex: 1, backgroundColor: '#F5F7F5' }}>{children}</View>
+      <View className="grow-[1] shrink-0 basis-[0px] bg-[#F5F7F5]">
+        {children}
+      </View>
       {(showNavigation ?? (!back && !onBack)) && (
         <InventoryNavigation maxWidth={maxWidth} />
       )}

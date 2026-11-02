@@ -14,13 +14,19 @@ export const axiosClient = axios.create({
 });
 axiosClient.interceptors.request.use(async (config) => {
   if (!config.baseURL)
-    throw new Error('Set EXPO_PUBLIC_API_URL before making API requests.');
+    throw new Error(
+      'Vui lòng cấu hình EXPO_PUBLIC_API_URL trước khi kết nối máy chủ.',
+    );
   const identity = authService.identity();
   if (config.staffSession && config.staffSession !== identity)
-    throw new Error('The account changed. Reload before trying again.');
+    throw new Error(
+      'Tài khoản đã thay đổi. Vui lòng tải lại trước khi thử lại.',
+    );
   const token = await authService.token();
   if (identity !== authService.identity())
-    throw new Error('The account changed. Reload before trying again.');
+    throw new Error(
+      'Tài khoản đã thay đổi. Vui lòng tải lại trước khi thử lại.',
+    );
   if (token && identity) {
     config.staffSession = identity;
     config.headers.set('Authorization', `Bearer ${token}`);
@@ -36,7 +42,7 @@ axiosClient.interceptors.response.use(
     if (config.staffSession !== authService.identity()) throw error;
     if (config.authRetried) {
       await authService
-        .clear('Your session ended. Please sign in again.')
+        .clear('Phiên đăng nhập đã kết thúc. Vui lòng đăng nhập lại.')
         .catch(() => {});
       throw error;
     }

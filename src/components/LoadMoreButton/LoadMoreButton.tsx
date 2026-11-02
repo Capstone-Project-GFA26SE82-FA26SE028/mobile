@@ -1,4 +1,4 @@
-import { StyleSheet, ActivityIndicator, Pressable, Text } from 'react-native';
+import { ActivityIndicator, Pressable, Text } from 'react-native';
 
 export function LoadMoreButton({
   busy,
@@ -16,7 +16,7 @@ export function LoadMoreButton({
       accessibilityState={{ disabled: busy }}
       disabled={busy}
       onPress={onPress}
-      style={s.loadMore}
+      className="min-h-[48px] border-[1px] border-[#CCDCD1] rounded-[14px] items-center justify-center mt-[16px]"
     >
       {busy ? (
         <ActivityIndicator
@@ -24,22 +24,10 @@ export function LoadMoreButton({
           color={'#236347'}
         />
       ) : (
-        <Text style={{ color: '#236347', fontWeight: '600', fontSize: 14 }}>
+        <Text className="text-[#236347] font-semibold text-[14px]">
           {label}
         </Text>
       )}
     </Pressable>
   );
 }
-
-const s = StyleSheet.create({
-  loadMore: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: '#CCDCD1',
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
-  },
-});

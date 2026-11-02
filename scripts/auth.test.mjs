@@ -58,7 +58,7 @@ test('unsupported roles and inactive accounts cannot enter and their sessions ar
       calls.push(args);
       return reply(credentials({ user }));
     } });
-    await assert.rejects(auth.login('x', '123'), /active Waiter or Inventory/);
+    await assert.rejects(auth.login('x', '123'), /tài khoản phục vụ hoặc nhân viên kho/);
     assert.equal(await auth.token(), null);
     assert.equal(calls[1][0], '/api/auth/logout');
     assert.equal(calls[1][2].headers.Authorization, 'Bearer access');
@@ -100,7 +100,7 @@ test('logout revokes the server session and clears local credentials on network 
     throw new Error('offline');
   } });
   await auth.login('x', '123');
-  await assert.rejects(auth.logout(), /Server sign-out/);
+  await assert.rejects(auth.logout(), /chưa xác nhận được việc đăng xuất trên máy chủ/);
   assert.equal(calls[1][0], '/api/auth/logout');
   assert.equal(calls[1][2].headers.Authorization, 'Bearer access');
   assert.equal(await auth.token(), null);
@@ -117,7 +117,7 @@ test('late refresh cannot restore credentials after logout', async () => {
   const pending = auth.unauthorized('access');
   auth.clear();
   resolveRefresh(reply(credentials({ accessToken: 'late-token' })));
-  await assert.rejects(pending, /session changed/);
+  await assert.rejects(pending, /Phiên đăng nhập đã thay đổi/);
   assert.equal(await auth.token(), null);
 });
 
@@ -194,7 +194,7 @@ test('late login cannot restore a session after sign out and revokes its returne
   await new Promise(resolve => setTimeout(resolve, 0));
   await auth.clear();
   resolveLogin(reply(credentials()));
-  await assert.rejects(pending, /session changed/);
+  await assert.rejects(pending, /Phiên đăng nhập đã thay đổi/);
   assert.equal(await auth.token(), null);
   assert.equal(calls.at(-1)[0], '/api/auth/logout');
 });
@@ -209,7 +209,7 @@ test('overlapping logins cannot let an older response overwrite a newer account'
   resolvers[1](reply(credentials({ accessToken: 'second', user: { ...credentials().user, roleId: 'inventory', userId: 'second' } })));
   await second;
   resolvers[0](reply(credentials()));
-  await assert.rejects(first, /session changed/);
+  await assert.rejects(first, /Phiên đăng nhập đã thay đổi/);
   assert.equal(await auth.token(), 'second');
 });
 
@@ -221,7 +221,7 @@ test('sign out removes device credentials even if the server is offline', async 
   } }, storage);
   await auth.login('waiter@example.com', 'secret');
   assert(await storage.read());
-  await assert.rejects(auth.logout(), /Server sign-out/);
+  await assert.rejects(auth.logout(), /chưa xác nhận được việc đăng xuất trên máy chủ/);
   assert.equal(await storage.read(), null);
   assert.equal(await auth.token(), null);
 });
@@ -247,7 +247,7 @@ test('a late failed logout cannot replace a newly signed-in profile', async () =
   const pending = auth.logout();
   await auth.login('second@example.com', 'secret');
   failLogout(new Error('offline'));
-  await assert.rejects(pending, /Server sign-out/);
+  await assert.rejects(pending, /chưa xác nhận được việc đăng xuất trên máy chủ/);
   assert.equal(current.id, 'waiter-id');
   assert.equal(await auth.token(), 'access');
 });

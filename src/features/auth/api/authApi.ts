@@ -13,12 +13,12 @@ type Envelope<T> = { isSuccess: boolean; message?: string; result: T };
 export function authError(error: unknown): string {
   if (axios.isAxiosError(error)) {
     if (!error.response)
-      return 'Unable to connect. Check your connection and API address.';
+      return 'Không kết nối được máy chủ. Vui lòng kiểm tra kết nối và địa chỉ API.';
     return typeof error.response.data?.message === 'string'
       ? error.response.data.message
-      : 'Unable to complete the authentication request.';
+      : 'Không thể hoàn tất yêu cầu xác thực.';
   }
-  return error instanceof Error ? error.message : 'Unable to sign in.';
+  return error instanceof Error ? error.message : 'Không thể đăng nhập.';
 }
 
 export function createAuthService(
@@ -53,7 +53,7 @@ export function createAuthService(
       !['waiter', 'inventory'].includes(value.user.roleId)
     )
       throw new Error(
-        'Only active Waiter or Inventory accounts can access this app.',
+        'Chỉ tài khoản phục vụ hoặc nhân viên kho đang hoạt động mới có thể sử dụng ứng dụng.',
       );
     if (
       !value.user.userId ||
@@ -64,7 +64,9 @@ export function createAuthService(
       !(Date.parse(value.expiresAt) > Date.now()) ||
       !(Date.parse(value.sessionExpiresAt) > Date.now())
     )
-      throw new Error('Invalid session response. Please sign in again.');
+      throw new Error(
+        'Thông tin phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.',
+      );
     return {
       id: value.user.userId,
       name:
@@ -85,7 +87,7 @@ export function createAuthService(
   async function accept(value: AuthCredentials, expectedRevision: number) {
     if (expectedRevision !== revision) {
       await revoke(value);
-      throw new Error('The session changed. Please sign in again.');
+      throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng đăng nhập lại.');
     }
     let profile: StaffProfile;
     try {
@@ -100,7 +102,7 @@ export function createAuthService(
     }
     if (expectedRevision !== revision) {
       await revoke(value);
-      throw new Error('The session changed. Please sign in again.');
+      throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng đăng nhập lại.');
     }
     credentials = value;
     onChange(profile);
@@ -108,33 +110,33 @@ export function createAuthService(
   }
   async function refreshSession(saved: SavedSession, expectedRevision: number) {
     if (!(Date.parse(saved.sessionExpiresAt) > Date.now()))
-      throw new Error('Your session expired. Please sign in again.');
+      throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
     const { data } = await client.post<Envelope<AuthCredentials>>(
       '/api/auth/refresh',
       { refreshToken: saved.refreshToken },
     );
     if (!data.isSuccess)
-      throw new Error(data.message || 'Please sign in again.');
+      throw new Error(data.message || 'Vui lòng đăng nhập lại.');
     if (
       credentials &&
       (data.result.user.userId !== credentials.user.userId ||
         data.result.sessionId !== credentials.sessionId)
     )
-      throw new Error('The session changed. Please sign in again.');
+      throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng đăng nhập lại.');
     await accept(data.result, expectedRevision);
     return data.result.accessToken;
   }
   async function refresh(): Promise<string> {
     if (refreshing) return refreshing;
-    if (!credentials) throw new Error('Please sign in again.');
+    if (!credentials) throw new Error('Vui lòng đăng nhập lại.');
     const previous = credentials;
     const expectedRevision = revision;
     const task = refreshSession(previous, expectedRevision).catch(
       async (error) => {
         if (expectedRevision === revision)
-          await clear('Your session ended. Please sign in again.').catch(
-            () => {},
-          );
+          await clear(
+            'Phiên đăng nhập đã kết thúc. Vui lòng đăng nhập lại.',
+          ).catch(() => {});
         throw error;
       },
     );
@@ -178,7 +180,7 @@ export function createAuthService(
         { email: email.trim(), password },
       );
       if (!data.isSuccess)
-        throw new Error(data.message || 'Unable to sign in.');
+        throw new Error(data.message || 'Không thể đăng nhập.');
       return accept(data.result, expectedRevision);
     },
     identity() {
@@ -193,7 +195,7 @@ export function createAuthService(
         : credentials.accessToken;
     },
     async unauthorized(rejectedToken: string) {
-      if (!credentials) throw new Error('Please sign in again.');
+      if (!credentials) throw new Error('Vui lòng đăng nhập lại.');
       return credentials.accessToken !== rejectedToken
         ? credentials.accessToken
         : refresh();
@@ -218,13 +220,13 @@ export function createAuthService(
       await clearing;
       if (storageError) {
         const message =
-          'Signed out. Unable to remove the saved session from device storage.';
+          'Đã đăng xuất nhưng chưa xóa được phiên đã lưu trên thiết bị.';
         if (expectedRevision === revision) onChange(null, message);
         throw new Error(message);
       }
       if (error) {
         const message =
-          'Signed out on this device. Server sign-out could not be confirmed.';
+          'Đã đăng xuất trên thiết bị nhưng chưa xác nhận được việc đăng xuất trên máy chủ.';
         if (expectedRevision === revision) onChange(null, message);
         throw new Error(message);
       }
@@ -235,7 +237,9 @@ export function createAuthService(
 const client = axios.create({ baseURL: apiConfig.baseURL, timeout: 15000 });
 client.interceptors.request.use((config) => {
   if (!config.baseURL)
-    throw new Error('Set EXPO_PUBLIC_API_URL before signing in.');
+    throw new Error(
+      'Vui lòng cấu hình EXPO_PUBLIC_API_URL trước khi đăng nhập.',
+    );
   return config;
 });
 export const authService = createAuthService(client, authStorage);

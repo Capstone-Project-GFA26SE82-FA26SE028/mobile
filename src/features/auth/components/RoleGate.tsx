@@ -15,7 +15,7 @@ export function RoleGate({
   const auth = useAppSelector((state) => state.auth);
   if (auth.status === 'loading')
     return (
-      <View style={{ flex: 1, justifyContent: 'center' }}>
+      <View className="grow-[1] shrink-0 basis-[0px] justify-center">
         <ActivityIndicator color="#236347" />
       </View>
     );

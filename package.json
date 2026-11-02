@@ -51,6 +51,7 @@
     "typecheck": "tsc --noEmit",
     "test:auth": "node --experimental-strip-types --test scripts/auth.test.mjs",
     "test:inventory": "node --test scripts/inventory.test.mjs",
+    "test:inventory-styles": "node --test scripts/inventory-nativewind.test.mjs",
     "test:receipts": "node --test scripts/receipts.test.mjs",
     "test:waiter-api": "node --test scripts/waiter-api.test.mjs",
     "test:waiter-cart": "node --test scripts/waiter-cart.test.mjs",

@@ -8,7 +8,7 @@ export function Loading({
   compact?: boolean;
 }) {
   return (
-    <View style={{ paddingVertical: compact ? 12 : 48 }}>
+    <View className={` ${compact ? 'py-[12px]' : 'py-[48px]'}`}>
       <ActivityIndicator accessibilityLabel={label} color={'#236347'} />
     </View>
   );
