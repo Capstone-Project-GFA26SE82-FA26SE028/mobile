@@ -70,6 +70,7 @@ export default function LiveTableDetailScreen() {
           )}
           {sessions.length > 0 && (
             <>
+              <Button title="Yêu cầu thanh toán / Thu hộ tiền mặt" icon="wallet-outline" onPress={() => router.push('/waiter/requests')} />
               <Card>
                 <View className="flex-row items-center justify-between gap-[10px]">
                   <Text className="text-[17px] font-[700] text-[#183B32]">
@@ -138,7 +139,7 @@ export default function LiveTableDetailScreen() {
               )}
             </>
           )}
-          <Notice text="Đổi bàn, sửa/hủy món và thu hộ tiền chưa được hỗ trợ. Tổng món chưa bao gồm thuế/phí hoặc xác nhận thanh toán." />
+          <Notice text="Đổi bàn và sửa/hủy món chưa được hỗ trợ. Tổng món chưa bao gồm thuế/phí hoặc xác nhận thanh toán." />
         </>
       )}
     </Page>
