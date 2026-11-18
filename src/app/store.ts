@@ -1,3 +1,4 @@
+import waiterCollectionReducer from '@/features/waiter/cash-collection/store/collectionSlice';
 import { configureStore } from '@reduxjs/toolkit';
 
 import waiterReducer from '@/features/waiter/shared/store/waiterSlice';
@@ -14,6 +15,7 @@ export const store = configureStore({
     auth: authReducer,
     waiter: waiterReducer,
     waiterCart: waiterCartReducer,
+    waiterCollection: waiterCollectionReducer,
   },
 });
 authService.onChange((user, message) => {

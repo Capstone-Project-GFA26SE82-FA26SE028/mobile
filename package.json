@@ -60,7 +60,8 @@
     "test:notifications": "node --test scripts/notifications.test.mjs",
     "test:waiter-ui": "node --test scripts/waiter-ui-rules.test.mjs",
     "test:waiter-styles": "node --test scripts/waiter-nativewind.test.mjs",
-    "test:reservations": "node --test scripts/reservations.test.mjs"
+    "test:reservations": "node --test scripts/reservations.test.mjs",
+    "test:cash-collection": "node --test scripts/cash-collection.test.mjs"
   },
   "private": true
 }

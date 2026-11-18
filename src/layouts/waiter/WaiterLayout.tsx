@@ -9,6 +9,7 @@ import { colors } from '@/features/waiter/shared/utils/theme';
 import { hasWaiterSession } from '@/features/waiter/auth/utils/session';
 import { useServiceTables } from '@/features/waiter/tables/hooks/useTables';
 import { useSessionOrders } from '@/features/waiter/ordering/hooks/useOrders';
+import { usePaymentRequests } from '@/features/waiter/cash-collection/hooks/useCollection';
 const tabs: {
   path:
     | '/waiter/tables'
@@ -52,7 +53,8 @@ export default function WaiterLayout() {
   const unread = apiMode
     ? liveReady.length
     : state.items.filter((i) => i.status === 'Ready' && !i.seen).length;
-  const requests = state.requests.filter((r) => r.status !== 'done').length;
+  const paymentRequests = usePaymentRequests();
+  const requests = apiMode ? paymentRequests.data?.length ?? 0 : state.requests.filter((r) => r.status !== 'done').length;
   const announced = useRef(new Set<string>());
   const unseenItems = apiMode
     ? liveReady

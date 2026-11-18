@@ -1,4 +1,4 @@
-import UnsupportedWaiterScreen from '../../shared/components/UnsupportedWaiterScreen';
+import CashCollectionScreen from '../../cash-collection/screens/CashCollectionScreen';
 import { useRef, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
@@ -245,12 +245,5 @@ function DemoPaymentScreen() {
 
 export default function PaymentScreen() {
   const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
-  return apiMode ? (
-    <UnsupportedWaiterScreen
-      title="Thu hộ tiền"
-      subtitle="Kiểm tra hóa đơn trước khi nhận tiền từ khách."
-    />
-  ) : (
-    <DemoPaymentScreen />
-  );
+  return apiMode ? <CashCollectionScreen /> : <DemoPaymentScreen />;
 }

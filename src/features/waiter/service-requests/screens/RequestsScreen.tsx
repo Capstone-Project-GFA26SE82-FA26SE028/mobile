@@ -1,4 +1,4 @@
-import UnsupportedWaiterScreen from '../../shared/components/UnsupportedWaiterScreen';
+import CollectionRequestsScreen from '../../cash-collection/screens/CollectionRequestsScreen';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -146,13 +146,5 @@ function DemoRequestsScreen() {
 
 export default function RequestsScreen() {
   const apiMode = useAppSelector((s) => s.waiter.authMode === 'api');
-  return apiMode ? (
-    <UnsupportedWaiterScreen
-      title="Yêu cầu của khách"
-      subtitle="Một chút quan tâm, thêm nhiều hài lòng."
-      tabs={['Đang chờ', 'Đã xong']}
-    />
-  ) : (
-    <DemoRequestsScreen />
-  );
+  return apiMode ? <CollectionRequestsScreen /> : <DemoRequestsScreen />;
 }
