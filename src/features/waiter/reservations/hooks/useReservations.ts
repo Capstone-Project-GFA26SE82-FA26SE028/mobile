@@ -1,9 +1,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useAppSelector } from '@/app/hooks';
 import { reservationApi } from '../api/reservationApi';
 import {
   useRefreshWaiterData,
   useWaiterScope,
+  useWaiterApiEnabled,
 } from '../../shared/hooks/useWaiterScope';
 import type {
   AvailabilityQuery,
@@ -13,9 +13,7 @@ import type {
 
 export function useReservations(status: ReservationStatus) {
   const scope = useWaiterScope();
-  const enabled = useAppSelector(
-    (s) => s.waiter.authMode === 'api' && s.waiter.signedIn,
-  );
+  const enabled = useWaiterApiEnabled();
   return useQuery({
     queryKey: [...scope, 'reservations', status],
     queryFn: ({ signal }) => reservationApi.list(status, signal),
@@ -27,10 +25,11 @@ export function useReservations(status: ReservationStatus) {
 
 export function useReservation(id: string) {
   const scope = useWaiterScope();
+  const apiEnabled = useWaiterApiEnabled();
   return useQuery({
     queryKey: [...scope, 'reservation', id],
     queryFn: ({ signal }) => reservationApi.detail(id, signal),
-    enabled: !!id,
+    enabled: apiEnabled && !!id,
     refetchInterval: 5000,
     retry: 1,
   });
@@ -38,10 +37,11 @@ export function useReservation(id: string) {
 
 export function useReservationAvailability(params: AvailabilityQuery | null) {
   const scope = useWaiterScope();
+  const apiEnabled = useWaiterApiEnabled();
   return useQuery({
     queryKey: [...scope, 'reservation-availability', params],
     queryFn: ({ signal }) => reservationApi.availability(params!, signal),
-    enabled: !!params,
+    enabled: apiEnabled && !!params,
     staleTime: 0,
     refetchInterval: 5000,
     retry: 1,

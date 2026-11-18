@@ -16,6 +16,7 @@ import { useSessionOrders } from '../../ordering/hooks/useOrders';
 import { OrderCard } from '../../ordering/components/OrderCard';
 import { QueryStatus } from '../../shared/components/QueryStatus';
 import { cartId } from '../../ordering/store/cartSlice';
+import { confirmedOrderTotal } from '../../ordering/utils/orderStatus';
 
 export default function LiveTableDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -70,7 +71,11 @@ export default function LiveTableDetailScreen() {
           )}
           {sessions.length > 0 && (
             <>
-              <Button title="Yêu cầu thanh toán / Thu hộ tiền mặt" icon="wallet-outline" onPress={() => router.push('/waiter/requests')} />
+              <Button
+                title="Yêu cầu thanh toán / Thu hộ tiền mặt"
+                icon="wallet-outline"
+                onPress={() => router.push('/waiter/requests')}
+              />
               <Card>
                 <View className="flex-row items-center justify-between gap-[10px]">
                   <Text className="text-[17px] font-[700] text-[#183B32]">
@@ -129,12 +134,7 @@ export default function LiveTableDetailScreen() {
               )}
               {orders.isSuccess && (
                 <Text className="text-[#12664C] text-[18px] font-[700]">
-                  Tổng món đã xác nhận:{' '}
-                  {money(
-                    rows
-                      .filter((o) => o.status === 'Confirmed')
-                      .reduce((sum, o) => sum + o.totalAmount, 0),
-                  )}
+                  Tổng món đã xác nhận: {money(confirmedOrderTotal(rows))}
                 </Text>
               )}
             </>

@@ -10,8 +10,7 @@ import {
 } from '../../shared/components/UI';
 import { QueryStatus } from '../../shared/components/QueryStatus';
 import { useServiceTables } from '../../tables/hooks/useTables';
-import { useCollectionQuery } from '../hooks/useCollection';
-import { collectionApi } from '../api/collectionApi';
+import { usePaymentRequests } from '../hooks/useCollection';
 export default function CollectionRequestsScreen() {
   const router = useRouter();
   const user = useAppSelector((s) => s.waiter.waiter?.id);
@@ -20,18 +19,7 @@ export default function CollectionRequestsScreen() {
   const restaurants = [
     ...new Set(tables.data?.map((t) => t.restaurantId) ?? []),
   ].sort();
-  const query = useCollectionQuery(
-    'requests:' + restaurants.join(','),
-    async (signal) =>
-      (
-        await Promise.all(
-          restaurants.map((id) => collectionApi.list(id, signal)),
-        )
-      )
-        .flat()
-        .sort((a, b) => Date.parse(a.requestedAt) - Date.parse(b.requestedAt)),
-    restaurants.length > 0,
-  );
+  const query = usePaymentRequests();
   return (
     <Page>
       <Title

@@ -27,6 +27,15 @@ import { readCollection, saveCollection } from '../store/collectionStorage';
 import { useServiceTables } from '../../tables/hooks/useTables';
 import { BillCard } from '../components/BillCard';
 export default function CashCollectionScreen() {
+  const { sessionId = '', requestId = '' } = useLocalSearchParams<{
+    sessionId: string;
+    requestId: string;
+  }>();
+  const user = useAppSelector((s) => s.waiter.waiter?.id);
+  return <CashCollectionFlow key={`${user}:${sessionId}:${requestId}`} />;
+}
+
+function CashCollectionFlow() {
   const {
     id = '',
     sessionId = '',

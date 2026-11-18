@@ -3,14 +3,16 @@ import { tablesApi } from '../api/tablesApi';
 import {
   useRefreshWaiterData,
   useWaiterScope,
+  useWaiterApiEnabled,
 } from '../../shared/hooks/useWaiterScope';
 
 export function useServiceTables(enabled = true) {
   const scope = useWaiterScope();
+  const apiEnabled = useWaiterApiEnabled();
   return useQuery({
     queryKey: [...scope, 'tables'],
     queryFn: ({ signal }) => tablesApi.tables(signal),
-    enabled,
+    enabled: enabled && apiEnabled,
     refetchInterval: 5000,
     retry: 1,
   });

@@ -18,6 +18,7 @@ import {
   useOrderDetail,
 } from '../hooks/useOrders';
 import type { Order } from '../types/api';
+import { isConfirmedOrder } from '../utils/orderStatus';
 
 export default function LiveOrdersScreen() {
   const tables = useServiceTables();
@@ -31,8 +32,9 @@ export default function LiveOrdersScreen() {
   const rows = (orders.data ?? []).filter(
     (o) =>
       o.source === 'Guest' &&
-      o.status ===
-        (tab === 'Chờ xác nhận' ? 'PendingConfirmation' : 'Confirmed'),
+      (tab === 'Chờ xác nhận'
+        ? o.status === 'PendingConfirmation'
+        : isConfirmedOrder(o)),
   );
   const changed =
     !!review &&

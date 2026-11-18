@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAppSelector } from '@/app/hooks';
-import { useWaiterScope } from '../../shared/hooks/useWaiterScope';
+import {
+  useWaiterScope,
+  useWaiterApiEnabled,
+} from '../../shared/hooks/useWaiterScope';
 import { notificationApi } from '../api/notificationApi';
 
 export function useNotificationAccess() {
-  const enabled = useAppSelector(
-    (s) => s.waiter.authMode === 'api' && s.waiter.signedIn,
-  );
+  const enabled = useWaiterApiEnabled();
   const [active, setActive] = useState(AppState.currentState === 'active');
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (value) =>

@@ -4,10 +4,12 @@ import type { Order, Selection } from '../types/api';
 import {
   useRefreshWaiterData,
   useWaiterScope,
+  useWaiterApiEnabled,
 } from '../../shared/hooks/useWaiterScope';
 
 export function useSessionOrders(sessionIds: string[]) {
   const scope = useWaiterScope();
+  const apiEnabled = useWaiterApiEnabled();
   const ids = [...new Set(sessionIds)].sort();
   return useQuery({
     queryKey: [...scope, 'orders', ids],
@@ -15,7 +17,7 @@ export function useSessionOrders(sessionIds: string[]) {
       (
         await Promise.all(ids.map((id) => orderingApi.orders(id, signal)))
       ).flat(),
-    enabled: ids.length > 0,
+    enabled: apiEnabled && ids.length > 0,
     refetchInterval: 5000,
     retry: 1,
   });
@@ -23,11 +25,12 @@ export function useSessionOrders(sessionIds: string[]) {
 
 export function useOrderDetail(order: Order | null) {
   const scope = useWaiterScope();
+  const apiEnabled = useWaiterApiEnabled();
   return useQuery({
     queryKey: [...scope, 'order', order?.orderId],
     queryFn: ({ signal }) =>
       orderingApi.order(order!.tableSessionId, order!.orderId, signal),
-    enabled: !!order,
+    enabled: apiEnabled && !!order,
     staleTime: 0,
   });
 }

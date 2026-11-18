@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   useWaiterScope,
   useRefreshWaiterData,
+  useWaiterApiEnabled,
 } from '../../shared/hooks/useWaiterScope';
 import { useServiceTables } from '../../tables/hooks/useTables';
 import { collectionApi } from '../api/collectionApi';
@@ -17,7 +18,9 @@ export function usePaymentRequests() {
         await Promise.all(
           restaurants.map((id) => collectionApi.list(id, signal)),
         )
-      ).flat(),
+      )
+        .flat()
+        .sort((a, b) => Date.parse(a.requestedAt) - Date.parse(b.requestedAt)),
     restaurants.length > 0,
   );
 }
@@ -27,10 +30,11 @@ export function useCollectionQuery<T>(
   enabled = true,
 ) {
   const scope = useWaiterScope();
+  const apiEnabled = useWaiterApiEnabled();
   return useQuery({
     queryKey: [...scope, 'cash-collection', key],
     queryFn: ({ signal }) => fetch(signal),
-    enabled,
+    enabled: enabled && apiEnabled,
     refetchInterval: 5000,
     retry: false,
   });
