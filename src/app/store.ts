@@ -10,12 +10,14 @@ import {
 import { authService } from '@/features/auth/api/authApi';
 import authReducer, { sessionChanged } from '@/features/auth/authSlice';
 import waiterCartReducer from '@/features/waiter/ordering/store/cartSlice';
+import waiterNotificationsReducer from '@/features/waiter/notifications/store/notificationSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     waiter: waiterReducer,
     waiterCart: waiterCartReducer,
     waiterCollection: waiterCollectionReducer,
+    waiterNotifications: waiterNotificationsReducer,
   },
 });
 authService.onChange((user, message) => {

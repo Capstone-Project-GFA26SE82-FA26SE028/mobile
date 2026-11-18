@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SoundControls } from '../../notifications/components/SoundControls';
 import { Switch, Text, View } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import {
@@ -80,36 +81,37 @@ function DemoAccountScreen() {
           </View>
         </View>
       </Card>
-      <Card>
-        <View className="flex-row items-center justify-between gap-[10px]">
-          <View className="gap-[5px]" style={{ flex: 1 }}>
-            <Text className="text-[14px] leading-[21px] text-[#183B32]">
-              Rung nhắc món chưa xem
-            </Text>
-            <Text className="text-[11px] leading-[16px] text-[#7C8983]">
-              Khi có món mới và mỗi 30 giây nếu chưa xem, trên thiết bị hỗ trợ
-              rung.
-            </Text>
+      {state.authMode === 'api' ? (
+        <SoundControls />
+      ) : (
+        <Card>
+          <View className="flex-row items-center justify-between gap-[10px]">
+            <View className="gap-[5px]" style={{ flex: 1 }}>
+              <Text className="text-[14px] leading-[21px] text-[#183B32]">
+                Rung nhắc món chưa xem
+              </Text>
+              <Text className="text-[11px] leading-[16px] text-[#7C8983]">
+                Khi có món mới và mỗi 30 giây nếu chưa xem, trên thiết bị hỗ trợ
+                rung.
+              </Text>
+            </View>
+            <Switch
+              accessibilityLabel="Rung nhắc món chưa xem"
+              value={state.alerts}
+              onValueChange={(v) => {
+                dispatch(setAlerts(v));
+              }}
+              trackColor={{ false: '#DDE5DF', true: '#92C5AC' }}
+              thumbColor={state.alerts ? colors.green : '#fff'}
+            />
           </View>
-          <Switch
-            accessibilityLabel="Rung nhắc món chưa xem"
-            value={state.alerts}
-            disabled={state.authMode === 'api'}
-            onValueChange={(v) => {
-              dispatch(setAlerts(v));
-            }}
-            trackColor={{ false: '#DDE5DF', true: '#92C5AC' }}
-            thumbColor={state.alerts ? colors.green : '#fff'}
+          <Notice
+            text={
+              'Chưa kết nối push notification hoặc đồng bộ bếp. Dữ liệu dùng thử được đặt lại khi tải lại ứng dụng.'
+            }
           />
-        </View>
-        <Notice
-          text={
-            state.authMode === 'api'
-              ? 'Bàn, thực đơn và order được lấy từ backend. Chưa hỗ trợ push notification. Mở lại ứng dụng cần đăng nhập lại.'
-              : 'Chưa kết nối push notification hoặc đồng bộ bếp. Dữ liệu dùng thử được đặt lại khi tải lại ứng dụng.'
-          }
-        />
-      </Card>
+        </Card>
+      )}
       <View className="flex-row items-center justify-between gap-[10px]">
         <Text className="text-[17px] font-[700] text-[#183B32]">
           Hoạt động trong phiên

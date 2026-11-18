@@ -7,6 +7,9 @@ import { clearFeedback } from '@/features/waiter/shared/store/waiterSlice';
 import { Icon, type IconName } from '@/features/waiter/shared/components/UI';
 import { colors } from '@/features/waiter/shared/utils/theme';
 import { hasWaiterSession } from '@/features/waiter/auth/utils/session';
+import { NotificationListener } from '@/features/waiter/notifications/components/NotificationListener';
+import { NotificationBanner } from '@/features/waiter/notifications/components/NotificationBanner';
+import { useUnreadNotifications } from '@/features/waiter/notifications/hooks/useNotifications';
 import { useServiceTables } from '@/features/waiter/tables/hooks/useTables';
 import { useSessionOrders } from '@/features/waiter/ordering/hooks/useOrders';
 import { usePaymentRequests } from '@/features/waiter/cash-collection/hooks/useCollection';
@@ -33,34 +36,31 @@ export default function WaiterLayout() {
   const pathname = usePathname();
   const signedIn = hasWaiterSession(state);
   const apiMode = state.authMode === 'api';
+  const notificationCount = useUnreadNotifications();
   const liveTables = useServiceTables(signedIn && apiMode);
   const liveOrders = useSessionOrders(
     signedIn && apiMode
       ? (liveTables.data ?? []).flatMap((t) => t.openSessionIds)
       : [],
   );
-  const liveReady = (liveOrders.data ?? []).flatMap((order) =>
-    order.items
-      .filter((item) => item.status === 'Ready')
-      .map((item) => ({
-        id: item.orderItemId,
-        sessionId: order.tableSessionId,
-        name: item.nameSnapshot,
-        quantity: item.quantity,
-        note: item.note,
-      })),
-  );
+  const readyCount = apiMode
+    ? (liveOrders.data ?? [])
+        .flatMap((order) => order.items)
+        .filter((item) => item.status === 'Ready').length
+    : state.items.filter((i) => i.status === 'Ready' && !i.seen).length;
   const unread = apiMode
-    ? liveReady.length
+    ? (notificationCount.data ?? 0)
     : state.items.filter((i) => i.status === 'Ready' && !i.seen).length;
   const paymentRequests = usePaymentRequests();
-  const requests = apiMode ? paymentRequests.data?.length ?? 0 : state.requests.filter((r) => r.status !== 'done').length;
+  const requests = apiMode
+    ? (paymentRequests.data?.length ?? 0)
+    : state.requests.filter((r) => r.status !== 'done').length;
   const announced = useRef(new Set<string>());
-  const unseenItems = apiMode
-    ? liveReady
-    : state.items.filter((i) => i.status === 'Ready' && !i.seen);
+  const unseenItems = state.items.filter(
+    (i) => i.status === 'Ready' && !i.seen,
+  );
   useEffect(() => {
-    if (!signedIn || !state.alerts) {
+    if (apiMode || !signedIn || !state.alerts) {
       announced.current.clear();
       return;
     }
@@ -83,9 +83,9 @@ export default function WaiterLayout() {
     announce();
     const subscription = AppState.addEventListener('change', announce);
     return () => subscription.remove();
-  }, [state.items, state.alerts, signedIn]);
+  }, [state.items, state.alerts, signedIn, apiMode]);
   useEffect(() => {
-    if (!state.alerts || !unread || !signedIn) return;
+    if (apiMode || !state.alerts || !unread || !signedIn) return;
     const timer = setInterval(() => {
       if (AppState.currentState === 'active') Vibration.vibrate(250);
     }, 30000);
@@ -93,7 +93,7 @@ export default function WaiterLayout() {
       clearInterval(timer);
       Vibration.cancel();
     };
-  }, [state.alerts, unread, signedIn]);
+  }, [state.alerts, unread, signedIn, apiMode]);
   useEffect(() => {
     if (!state.feedback) return;
     const timer = setTimeout(
@@ -144,7 +144,7 @@ export default function WaiterLayout() {
           </View>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Mở thông báo món sẵn sàng"
+            accessibilityLabel="Mở thông báo"
             onPress={() => router.push('/waiter/notifications')}
             className="p-[10px] bg-[#F5F7F5] rounded-[14px]"
           >
@@ -158,39 +158,41 @@ export default function WaiterLayout() {
             )}
           </Pressable>
         </View>
-        {unseenItems.length > 0 && pathname !== '/waiter/notifications' && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Xem thông báo món sẵn sàng"
-            onPress={() => router.push('/waiter/notifications')}
-            className="flex-row items-center gap-[10px] bg-[#FFF4DF] px-[20px] py-[12px]"
-          >
-            <Icon name="notifications-outline" color={colors.amber} />
-            <View style={{ flex: 1 }}>
-              <Text className="text-[14px] leading-[21px] text-[#183B32] font-[600]">
-                {(apiMode
-                  ? liveTables.data?.find((t) =>
-                      t.openSessionIds.includes(unseenItems[0].sessionId),
-                    )?.tableCode
-                  : state.tables.find(
-                      (t) => t.sessionId === unseenItems[0].sessionId,
-                    )?.name) || 'Món sẵn sàng'}{' '}
-                · {unseenItems[0].quantity} × {unseenItems[0].name}
-              </Text>
-              {!!unseenItems[0].note && (
-                <Text className="text-[11px] leading-[16px] text-[#7C8983]">
-                  {unseenItems[0].note}
-                </Text>
-              )}
-              <Text className="text-[11px] leading-[16px] text-[#7C8983]">
-                {unseenItems.length}{' '}
-                {apiMode ? 'món sẵn sàng' : 'thông báo chưa xem'} · Nhấn để kiểm
-                tra
-              </Text>
-            </View>
-            <Icon name="chevron-forward" size={16} color={colors.amber} />
-          </Pressable>
+        {apiMode && <NotificationListener />}
+        {apiMode && pathname !== '/waiter/notifications' && (
+          <NotificationBanner />
         )}
+        {!apiMode &&
+          unseenItems.length > 0 &&
+          pathname !== '/waiter/notifications' && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Xem thông báo món sẵn sàng"
+              onPress={() => router.push('/waiter/notifications')}
+              className="flex-row items-center gap-[10px] bg-[#FFF4DF] px-[20px] py-[12px]"
+            >
+              <Icon name="notifications-outline" color={colors.amber} />
+              <View style={{ flex: 1 }}>
+                <Text className="text-[14px] leading-[21px] text-[#183B32] font-[600]">
+                  {state.tables.find(
+                    (t) => t.sessionId === unseenItems[0].sessionId,
+                  )?.name || 'Món sẵn sàng'}{' '}
+                  · {unseenItems[0].quantity} × {unseenItems[0].name}
+                </Text>
+                {!!unseenItems[0].note && (
+                  <Text className="text-[11px] leading-[16px] text-[#7C8983]">
+                    {unseenItems[0].note}
+                  </Text>
+                )}
+                <Text className="text-[11px] leading-[16px] text-[#7C8983]">
+                  {unseenItems.length}{' '}
+                  {apiMode ? 'món sẵn sàng' : 'thông báo chưa xem'} · Nhấn để
+                  kiểm tra
+                </Text>
+              </View>
+              <Icon name="chevron-forward" size={16} color={colors.amber} />
+            </Pressable>
+          )}
         <View style={{ flex: 1 }}>
           <Slot />
         </View>
@@ -214,7 +216,7 @@ export default function WaiterLayout() {
               pathname === t.path || (isDetail && t.path === '/waiter/tables');
             const count =
               t.path === '/waiter/ready'
-                ? unread
+                ? readyCount
                 : t.path === '/waiter/requests'
                   ? requests
                   : 0;
