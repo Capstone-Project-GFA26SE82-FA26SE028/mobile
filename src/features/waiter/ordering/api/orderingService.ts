@@ -40,5 +40,10 @@ export function createOrderingService(
         `/api/table-sessions/${order.tableSessionId}/orders/${order.orderId}/confirm`,
         { version: order.version },
       ),
+    serveItem: (order: Order, orderItemId: string) =>
+      post<Order>(
+        `/api/table-sessions/${order.tableSessionId}/orders/${order.orderId}/items/${orderItemId}/serve`,
+        { version: order.version },
+      ),
   };
 }

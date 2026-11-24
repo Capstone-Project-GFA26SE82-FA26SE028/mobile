@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import {
   Badge,
+  Button,
   Card,
   Chips,
   Empty,
@@ -9,11 +10,14 @@ import {
   Notice,
   Page,
   Title,
+  Sheet,
 } from '../../shared/components/UI';
 import { QueryStatus } from '../../shared/components/QueryStatus';
 import { useServiceTables } from '../../tables/hooks/useTables';
-import { useSessionOrders } from '../../ordering/hooks/useOrders';
+import { useSessionOrders, useServeItem } from '../../ordering/hooks/useOrders';
 import { useWaiterMenu } from '../../ordering/hooks/useMenu';
+import type { Order, OrderLine } from '../../ordering/types/api';
+import { authError } from '@/features/auth/api/authApi';
 
 export default function LiveReadyScreen() {
   const tables = useServiceTables();
@@ -21,6 +25,21 @@ export default function LiveReadyScreen() {
   const orders = useSessionOrders(ids);
   const menu = useWaiterMenu();
   const [tab, setTab] = useState('Chờ lên món');
+  const [selected, setSelected] = useState<{ order: Order; line: OrderLine; table: string } | null>(null);
+  const serve = useServeItem();
+  const lock = useRef(false);
+  async function confirmServing() {
+    if (!selected || !selectionCurrent || lock.current) return;
+    lock.current = true;
+    try {
+      await serve.mutateAsync({ order: selected.order, orderItemId: selected.line.orderItemId });
+      setSelected(null);
+    } catch {
+      // Display the API error in the confirmation sheet.
+    } finally {
+      lock.current = false;
+    }
+  }
   const ready = (orders.data ?? []).flatMap((o) =>
     o.items
       .filter((i) => i.status === 'Ready')
@@ -31,6 +50,10 @@ export default function LiveReadyScreen() {
       .filter((i) => i.status === (tab === 'Chờ lên món' ? 'Ready' : 'Served'))
       .map((line) => ({ line, order: o })),
   );
+  const selectionCurrent = !!selected && !!orders.data?.some((order) =>
+    order.orderId === selected.order.orderId &&
+    order.version === selected.order.version &&
+    order.items.some((line) => line.orderItemId === selected.line.orderItemId && line.status === 'Ready'));
   return (
     <Page>
       <Title
@@ -46,6 +69,9 @@ export default function LiveReadyScreen() {
       <QueryStatus query={tables} />
       {!!ids.length && <QueryStatus query={orders} />}
       {rows.map(({ line, order }) => {
+        const table = tables.data
+          ?.filter((t) => t.openSessionIds.includes(order.tableSessionId))
+          .map((t) => t.tableCode).join(', ') || 'Bàn đang phục vụ';
         const image = menu.data?.find(
           (item) => item.itemId === line.itemId,
         )?.imageUrl;
@@ -90,6 +116,17 @@ export default function LiveReadyScreen() {
                 )}
               </View>
             </View>
+            {line.status === 'Ready' && (
+              <Button
+                title="Xác nhận đã lên món"
+                icon="checkmark-circle-outline"
+                disabled={serve.isPending}
+                onPress={() => {
+                  serve.reset();
+                  setSelected({ order, line, table });
+                }}
+              />
+            )}
           </Card>
         );
       })}
@@ -104,7 +141,24 @@ export default function LiveReadyScreen() {
             }
           />
         )}
-      <Notice text="Trạng thái món cập nhật mỗi 5 giây. Hiện chưa thể xác nhận lên món trên ứng dụng." />
+      <Notice text="Chỉ xác nhận sau khi đã mang đủ số phần của món đến đúng bàn. Trạng thái món cập nhật mỗi 5 giây." />
+      {selected && (
+        <Sheet title="Xác nhận đã phục vụ" onClose={() => {
+          if (!serve.isPending) setSelected(null);
+        }}>
+          <Text>Bàn: {selected.table}</Text>
+          <Text>{selected.line.nameSnapshot} · {selected.line.quantity} phần</Text>
+          <Notice text="Xác nhận toàn bộ số phần của món này đã được đưa đến khách." />
+          {serve.isError && <Notice error text={authError(serve.error)} />}
+          {!selectionCurrent && <Notice error text="Đơn hàng đã thay đổi. Hãy đóng và chọn lại món để kiểm tra trước khi xác nhận." />}
+          <Button
+            title={serve.isPending ? 'Đang xác nhận…' : 'Đã đưa món đến khách'}
+            disabled={serve.isPending || !selectionCurrent}
+            onPress={() => void confirmServing()}
+          />
+          <Button title="Đóng" secondary disabled={serve.isPending} onPress={() => setSelected(null)} />
+        </Sheet>
+      )}
     </Page>
   );
 }

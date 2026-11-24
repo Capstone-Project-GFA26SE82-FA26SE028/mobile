@@ -57,3 +57,13 @@ export function useOrderActions() {
   });
   return { create, confirm };
 }
+
+export function useServeItem() {
+  const refresh = useRefreshWaiterData();
+  return useMutation({
+    mutationFn: ({ order, orderItemId }: { order: Order; orderItemId: string }) =>
+      orderingApi.serveItem(order, orderItemId),
+    onSettled: refresh,
+    retry: false,
+  });
+}

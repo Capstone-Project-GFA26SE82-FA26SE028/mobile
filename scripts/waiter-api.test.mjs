@@ -72,3 +72,23 @@ test('API sign-in removes all demo business data; demo mode restores its own dat
   assert.ok(restored.tables.length);
   assert.equal(restored.authMode, 'demo');
 });
+
+test('serving targets the selected session, order and line with the reviewed version', async () => {
+  const calls = [];
+  const order = { tableSessionId: 'session', orderId: 'order', version: 'reviewed-version' };
+  const service = createOrderingService({ post: async (...args) => {
+    calls.push(args);
+    return reply({ ...order, items: [{ orderItemId: 'line', status: 'Served' }] });
+  } });
+  const result = await service.serveItem(order, 'line');
+  assert.equal(calls[0][0], '/api/table-sessions/session/orders/order/items/line/serve');
+  assert.deepEqual(calls[0][1], { version: 'reviewed-version' });
+  assert.equal(result.items[0].status, 'Served');
+});
+
+test('serving propagates stale order rejection without reporting success', async () => {
+  const service = createOrderingService({ post: async () => ({
+    data: { isSuccess: false, message: 'Order changed; reload before serving' },
+  }) });
+  await assert.rejects(service.serveItem({ tableSessionId: 's', orderId: 'o', version: 'old' }, 'line'), /Order changed/);
+});
