@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { Text } from 'react-native';
 import { useAppSelector } from '@/app/hooks';
 import {
   Page,
@@ -12,6 +13,7 @@ import { QueryStatus } from '../../shared/components/QueryStatus';
 import { useServiceTables } from '../../tables/hooks/useTables';
 import { useCollectionQuery } from '../hooks/useCollection';
 import { collectionApi } from '../api/collectionApi';
+import { money } from '../../shared/utils/rules';
 export default function CollectionRequestsScreen() {
   const router = useRouter();
   const user = useAppSelector((s) => s.waiter.waiter?.id);
@@ -35,9 +37,10 @@ export default function CollectionRequestsScreen() {
   return (
     <Page>
       <Title
-        title="Yêu cầu thanh toán"
-        subtitle="Tiếp nhận yêu cầu, đưa bill và thu hộ tiền mặt."
+        title="Thanh toán & tiền mặt"
+        subtitle="Chọn bàn để nhập tiền khách đưa và gửi báo cáo bàn giao cho thu ngân."
       />
+      <Notice text="Tiếp nhận yêu cầu → gửi thu ngân chốt bill → đưa bill cho khách → nhập tiền mặt và gửi thu ngân. Khoản thu hoàn tất khi thu ngân xác nhận đã nhận tiền." />
       <QueryStatus query={tables} />
       {restaurants.length > 0 && <QueryStatus query={query} />}
       {Object.entries(saved)
@@ -52,6 +55,12 @@ export default function CollectionRequestsScreen() {
               title="Giao dịch thu hộ đã ghi nhận"
               subtitle="Xem kết quả xác nhận từ thu ngân"
             />
+            <Text>Số tiền giao thu ngân: {money(draft.received)}</Text>
+            <Notice text={draft.handover?.paymentStatus === 'Paid'
+              ? 'Thu ngân đã xác nhận nhận tiền.'
+              : draft.handover
+                ? 'Đã gửi báo cáo. Chờ thu ngân xác nhận nhận tiền.'
+                : 'Giao dịch cần kiểm tra lại trước khi thu thêm tiền.'} />
             <Button
               title="Theo dõi bàn giao tiền"
               onPress={() =>
@@ -85,7 +94,7 @@ export default function CollectionRequestsScreen() {
             title={
               request.handledByRef && request.handledByRef !== user
                 ? 'Nhân viên khác đang xử lý'
-                : 'Xem và xử lý'
+                : 'Nhập tiền mặt / xử lý thanh toán'
             }
             disabled={!!request.handledByRef && request.handledByRef !== user}
             onPress={() =>

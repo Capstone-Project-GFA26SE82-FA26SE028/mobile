@@ -215,15 +215,30 @@ export default function CashCollectionScreen() {
                 />
               ) : (
                 <Card>
+                  <Title
+                    title="Gửi tiền mặt cho thu ngân"
+                    subtitle="Nhập toàn bộ số tiền đã nhận từ khách để báo bàn giao."
+                  />
                   <Notice text="Nhận toàn bộ tiền khách đưa và giao cho thu ngân. Thu ngân trả tiền thừa để bạn đưa lại khách." />
                   <Field
                     label="Số tiền khách đưa (₫)"
+                    placeholder="Ví dụ: 500000"
                     keyboardType="number-pad"
                     maxLength={15}
                     value={draft ? String(draft.received) : amount}
                     editable={!draft && !action.isPending}
                     onChangeText={(v) => setAmount(v.replace(/[^0-9]/g, ''))}
                   />
+                  <Button
+                    title="Khách đưa vừa đủ tiền hóa đơn"
+                    secondary
+                    disabled={!!draft || action.isPending}
+                    onPress={() => setAmount(String(bill.data!.bill.totalAmount))}
+                  />
+                  <Text>Tiền hóa đơn: {money(bill.data.bill.totalAmount)}</Text>
+                  <Text>
+                    Số tiền giao thu ngân: {money(Number(draft?.received ?? amount))}
+                  </Text>
                   <Text>
                     Tiền thừa:{' '}
                     {money(
@@ -234,6 +249,12 @@ export default function CashCollectionScreen() {
                       ),
                     )}
                   </Text>
+                  {!!amount && !draft && !validCash(amount, bill.data.bill.totalAmount) && (
+                    <Notice
+                      error
+                      text={`Số tiền phải là số nguyên và ít nhất bằng tiền hóa đơn (${money(bill.data.bill.totalAmount)}).`}
+                    />
+                  )}
                   {draft && (
                     <Notice text="Đã bắt đầu ghi nhận. Thử lại dùng cùng số tiền và mã giao dịch; không nhận tiền lần nữa." />
                   )}
@@ -243,7 +264,7 @@ export default function CashCollectionScreen() {
                         ? 'Đang ghi nhận…'
                         : draft
                           ? 'Kiểm tra và thử lại giao dịch'
-                          : 'Ghi nhận đã nhận tiền'
+                          : 'Gửi tiền mặt cho thu ngân'
                     }
                     disabled={
                       action.isPending ||
@@ -294,17 +315,18 @@ export default function CashCollectionScreen() {
       )}
       {review && (
         <Sheet
-          title="Xác nhận thu hộ"
+          title="Xác nhận gửi tiền mặt"
           onClose={() => {
             if (!action.isPending) setReview(null);
           }}
         >
           <Text>Hóa đơn: {money(review.total)}</Text>
           <Text>Đã nhận từ khách: {money(review.received)}</Text>
+          <Text>Giao cho thu ngân: {money(review.received)}</Text>
           <Text>Tiền thừa: {money(review.received - review.total)}</Text>
           <Notice text="Chỉ xác nhận khi đã cầm tiền. Giao toàn bộ số tiền khách đưa cho thu ngân." />
           <Button
-            title="Xác nhận đã nhận tiền"
+            title="Xác nhận và gửi thu ngân"
             disabled={
               action.isPending || bill.data?.bill.totalAmount !== review.total
             }
