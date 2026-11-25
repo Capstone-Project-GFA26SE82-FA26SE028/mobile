@@ -19,7 +19,7 @@ function result<T>(data: Response<T>, identity: string) {
   return data.result;
 }
 
-function checkProfile(profile: Profile, identity: string) {
+function checkProfile<T extends Pick<Profile, 'userId'>>(profile: T, identity: string) {
   if (profile.userId.toLowerCase() !== identity.split(':')[0].toLowerCase())
     throw new Error(
       'Thông tin hồ sơ không khớp với tài khoản. Vui lòng tải lại.',
@@ -43,13 +43,21 @@ export async function updateProfile(values: ProfileValues) {
     {
       fullName: values.fullName.trim(),
       phoneNumber: values.phoneNumber.trim(),
-      avatarUrl: values.avatarUrl.trim(),
     },
     { staffSession: identity },
   );
   const profile = checkProfile(result(data, identity), identity);
   authService.updateName(profile.fullName || profile.userName, identity);
   return profile;
+}
+
+export async function uploadProfileAvatar(file: FormData, identity: string) {
+  const { data } = await axiosClient.post<Response<Pick<Profile, 'userId' | 'avatarUrl'>>>(
+    '/api/users/me/avatar',
+    file,
+    { staffSession: identity, headers: { 'Content-Type': 'multipart/form-data' } },
+  );
+  return checkProfile(result(data, identity), identity);
 }
 
 export async function changePassword(values: PasswordValues) {
