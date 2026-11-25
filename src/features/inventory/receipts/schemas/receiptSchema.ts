@@ -55,6 +55,15 @@ export function updateReceiptExpiry(
   }
   return parts.join('/');
 }
+export function receiptExpiryError(value: string) {
+  const expiry = receiptExpiry(value);
+  if (!expiry) return 'Nhập hạn sử dụng hợp lệ theo ngày/tháng/năm.';
+  const today = new Date(Date.now() + 7 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  return expiry < today ? 'Ngày bạn chọn đã qua. Vui lòng chọn lại.' : '';
+}
+
 export function buildReceipt(
   id: string,
   lines: ReceiptDraftLine[],
@@ -73,10 +82,9 @@ export function buildReceipt(
         `Dòng ${index + 1}: số lượng phải dương, tối đa 6 chữ số thập phân và quy đổi không được làm tròn hoặc vượt giới hạn.`,
       );
     const expiry = receiptExpiry(line.expiry);
-    if (!expiry)
-      throw new Error(
-        `Dòng ${index + 1}: nhập hạn sử dụng hợp lệ theo ngày/tháng/năm.`,
-      );
+    const expiryError = receiptExpiryError(line.expiry);
+    if (!expiry || expiryError)
+      throw new Error(`Dòng ${index + 1}: ${expiryError}`);
     const key = line.ingredient.ingredientId.toLowerCase() + ':' + expiry;
     if (seen.has(key))
       throw new Error(

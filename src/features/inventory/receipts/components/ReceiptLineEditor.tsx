@@ -16,12 +16,14 @@ export function ReceiptLineEditor({
   line,
   index,
   disabled,
+  expiryError,
   onChange,
   onRemove,
 }: {
   line: ReceiptDraftLine;
   index: number;
   disabled: boolean;
+  expiryError?: string;
   onChange: (patch: Partial<ReceiptDraftLine>) => void;
   onRemove: () => void;
 }) {
@@ -175,7 +177,7 @@ export function ReceiptLineEditor({
         <Text className="text-[#607468] font-medium text-[12px] mb-[8px]">
           Hạn sử dụng
         </Text>
-        <View className="border-[1px] border-[#E4EBE6] bg-[#F6F9F6] p-[14px] min-h-[50px] rounded-[14px] text-[#23382D] text-[15px] flex-row items-center py-[0px] gap-[6px]">
+        <View className={`border-[1px] bg-[#F6F9F6] p-[14px] min-h-[50px] rounded-[14px] flex-row items-center py-[0px] gap-[6px] ${expiryError ? 'border-[#A93532]' : 'border-[#E4EBE6]'}`}>
           {['Ngày', 'Tháng', 'Năm'].map((label, part) => (
             <View
               key={label}
@@ -217,6 +219,11 @@ export function ReceiptLineEditor({
             </View>
           ))}
         </View>
+        {!!expiryError && (
+          <Text accessibilityRole="alert" className="mt-[6px] text-[12px] text-[#A93532]">
+            {expiryError}
+          </Text>
+        )}
       </View>
       {line.unitId && (
         <Text className="text-[#738078] text-[13px] leading-[20px]">

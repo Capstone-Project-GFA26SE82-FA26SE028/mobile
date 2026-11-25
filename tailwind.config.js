@@ -9,6 +9,7 @@ module.exports = {
     './src/layouts/inventory/**/*.{ts,tsx}',
     './src/features/inventory/stock/**/*.{ts,tsx}',
     './src/features/inventory/receipts/**/*.{ts,tsx}',
+    './src/features/inventory/stock-out/**/*.{ts,tsx}',
   ],
   presets: [require('nativewind/preset')],
   // Preserve the existing defaults of the app and its other workspaces.

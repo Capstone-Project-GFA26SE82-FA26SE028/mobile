@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import type { StockLot, StockMovement } from '../types/types';
 import { formatQuantity } from '../utils/formatQuantity';
 import { StatusBadge } from '../../../../components/StatusBadge/StatusBadge';
@@ -77,9 +77,11 @@ export function StockLotCard({ lot, unit }: { lot: StockLot; unit: string }) {
 export function StockMovementCard({
   movement,
   unit,
+  onViewIssue,
 }: {
   movement: StockMovement;
   unit: string;
+  onViewIssue?: () => void;
 }) {
   const positive = movement.quantityChange > 0;
   const labels: Record<string, string> = {
@@ -126,6 +128,17 @@ export function StockMovementCard({
           {formatQuantity(movement.quantityChange)}{' '}
           <Text className="text-[#738078] text-[12px] font-normal">{unit}</Text>
         </Text>
+        {onViewIssue && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onViewIssue}
+            className="min-h-[44px] justify-center self-start"
+          >
+            <Text className="text-[13px] font-semibold text-[#12664C]">
+              Xem phiếu xuất
+            </Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );

@@ -1,5 +1,5 @@
 import { stockError } from '../api/stockApi';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import InventoryLayout from '../../../../layouts/inventory/InventoryLayout';
@@ -23,6 +23,7 @@ type Row =
   | { kind: 'history'; item: StockMovement };
 
 function IngredientDetails({ id }: { id: string }) {
+  const router = useRouter();
   const model = useStockDetail(id);
   const ingredient = model.ingredient.data;
   const active = model.tab === 'lots' ? model.lots : model.history;
@@ -86,6 +87,15 @@ function IngredientDetails({ id }: { id: string }) {
               <StockMovementCard
                 movement={item.item}
                 unit={ingredient.baseUnit}
+                onViewIssue={
+                  item.item.movementType === 'Issue' && item.item.stockIssueId
+                    ? () =>
+                        router.push({
+                          pathname: '/stock-issue-detail',
+                          params: { id: item.item.stockIssueId! },
+                        })
+                    : undefined
+                }
               />
             )
           }
