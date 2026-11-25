@@ -16,7 +16,7 @@ import {
 import InventoryLayout from '../../../../layouts/inventory/InventoryLayout';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCreateReceipt } from '../hooks/useReceipts';
-import { buildReceipt } from '../schemas/receiptSchema';
+import { buildReceipt, receiptExpiryError } from '../schemas/receiptSchema';
 import type { ReceiptDraftLine } from '../types/types';
 import { IngredientPicker } from '../components/IngredientPicker';
 import { ReceiptLineEditor } from '../components/ReceiptLineEditor';
@@ -28,6 +28,7 @@ export default function ReceiptCreateScreen() {
   const [note, setNote] = useState('');
   const [picker, setPicker] = useState(false);
   const [error, setError] = useState('');
+  const [showExpiryErrors, setShowExpiryErrors] = useState(false);
   const lock = useRef(false);
   const mounted = useRef(true);
   useEffect(() => {
@@ -41,7 +42,11 @@ export default function ReceiptCreateScreen() {
   async function submit() {
     if (lock.current) return;
     setError('');
-    if (!model.attempt) model.create.reset();
+    if (!model.attempt) {
+      model.create.reset();
+      setShowExpiryErrors(true);
+      if (lines.some((line) => receiptExpiryError(line.expiry))) return;
+    }
     lock.current = true;
     try {
       const body =
@@ -125,6 +130,7 @@ export default function ReceiptCreateScreen() {
               key={line.key}
               line={line}
               index={index}
+              expiryError={showExpiryErrors ? receiptExpiryError(line.expiry) : ''}
               disabled={frozen}
               onChange={(patch) =>
                 setLines((current) =>
