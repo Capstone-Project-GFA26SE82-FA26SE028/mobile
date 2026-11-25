@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import InventoryLayout from '../../../../layouts/inventory/InventoryLayout';
 import { stockError } from '../../stock/api/stockApi';
-import { useStock } from '../../stock/hooks/useStock';
 import type { Ingredient } from '../../stock/types/types';
 import { formatQuantity } from '../../stock/utils/formatQuantity';
 import { useStockIssue } from '../hooks/useStockIssue';
@@ -14,7 +13,6 @@ import { useIssueAvailability } from '../hooks/useIssueAvailability';
 type IssueLine = { ingredient: Ingredient; quantity: string };
 
 export default function StockIssueScreen() {
-  const stock = useStock();
   const { issue, uncertain } = useStockIssue();
   const [lines, setLines] = useState<IssueLine[]>([]);
   const [reason, setReason] = useState('');
@@ -142,17 +140,17 @@ export default function StockIssueScreen() {
             {!locked && lines.length < 100 && (
               <Pressable
                 accessibilityRole="button"
-                onPress={() => setPicking((value) => !value)}
+                onPress={() => setPicking(true)}
                 className="min-h-[44px] justify-center self-start"
               >
                 <Text className="font-semibold text-[#12664C]">
-                  {picking ? 'Đóng danh sách' : '+ Chọn nguyên liệu'}
+                  + Chọn nguyên liệu
                 </Text>
               </Pressable>
             )}
             {picking && !locked && (
               <StockIssueIngredientPicker
-                stock={stock}
+                onClose={() => setPicking(false)}
                 selectedIds={lines.map(
                   ({ ingredient }) => ingredient.ingredientId,
                 )}

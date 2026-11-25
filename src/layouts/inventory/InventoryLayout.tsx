@@ -13,6 +13,7 @@ export default function InventoryLayout({
   onBack,
   maxWidth = 1000,
   showNavigation,
+  showNotifications,
 }: PropsWithChildren<{
   title?: string;
   subtitle?: string;
@@ -20,6 +21,7 @@ export default function InventoryLayout({
   onBack?: () => void;
   maxWidth?: number;
   showNavigation?: boolean;
+  showNotifications?: boolean;
 }>) {
   const router = useRouter();
   const goBack =
@@ -34,6 +36,7 @@ export default function InventoryLayout({
         subtitle={subtitle}
         onBack={goBack}
         maxWidth={maxWidth}
+        showNotifications={showNotifications}
       />
       <View className="grow-[1] shrink-0 basis-[0px] bg-[#F5F7F5]">
         {children}

@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { NotificationState, WaiterNotification } from '../types/api';
+import type { StaffNotification } from '@/features/notifications/types/types';
+import type { NotificationState } from '../types/api';
 const initialState: NotificationState = {
   initialized: false,
   knownIds: {},
@@ -13,7 +14,7 @@ const slice = createSlice({
   reducers: {
     notificationsReceived(
       state,
-      { payload }: PayloadAction<WaiterNotification[]>,
+      { payload }: PayloadAction<StaffNotification[]>,
     ) {
       const hasNew =
         state.initialized &&
