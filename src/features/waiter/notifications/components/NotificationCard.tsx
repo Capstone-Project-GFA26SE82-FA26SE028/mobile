@@ -1,13 +1,13 @@
 import { Text } from 'react-native';
 import { Badge, Button, Card, Title } from '../../shared/components/UI';
-import type { WaiterNotification } from '../types/api';
+import type { StaffNotification } from '@/features/notifications/types/types';
 export function NotificationCard({
   item,
   busy,
   onRead,
   onDetails,
 }: {
-  item: WaiterNotification;
+  item: StaffNotification;
   busy: boolean;
   onRead: () => void;
   onDetails: () => void;

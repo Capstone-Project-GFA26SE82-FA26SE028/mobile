@@ -17,7 +17,7 @@ require.extensions['.ts'] = (module, filename) => {
 };
 const {
   createNotificationService,
-} = require('../src/features/waiter/notifications/api/notificationService.ts');
+} = require('../src/features/notifications/api/notificationService.ts');
 const {
   default: reducer,
   notificationsReceived,

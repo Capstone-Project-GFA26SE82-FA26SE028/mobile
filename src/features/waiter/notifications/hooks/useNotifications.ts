@@ -3,7 +3,7 @@ import { AppState } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAppSelector } from '@/app/hooks';
 import { useWaiterScope } from '../../shared/hooks/useWaiterScope';
-import { notificationApi } from '../api/notificationApi';
+import { notificationApi } from '@/features/notifications/api/notificationApi';
 
 export function useNotificationAccess() {
   const enabled = useAppSelector(

@@ -1,10 +1,12 @@
 import type { AxiosInstance } from 'axios';
-import type { Envelope, PageResult } from '../../shared/types/api';
 import type {
   NotificationDetails,
   NotificationQuery,
-  WaiterNotification,
-} from '../types/api';
+  StaffNotification,
+} from '../types/types';
+
+type Envelope<T> = { isSuccess: boolean; message: string; result: T };
+type NotificationPage = { items: StaffNotification[]; totalCount: number };
 
 export function createNotificationService(
   client: Pick<AxiosInstance, 'get' | 'patch'>,
@@ -16,12 +18,12 @@ export function createNotificationService(
   }
   return {
     async list(query: NotificationQuery = {}, signal?: AbortSignal) {
-      const items = new Map<string, WaiterNotification>();
+      const items = new Map<string, StaffNotification>();
       let loaded = 0;
       for (let page = 1; ; page++) {
         const result = unwrap(
           (
-            await client.get<Envelope<PageResult<WaiterNotification>>>(
+            await client.get<Envelope<NotificationPage>>(
               '/api/notifications',
               { signal, params: { ...query, page, pageSize: 100 } },
             )
