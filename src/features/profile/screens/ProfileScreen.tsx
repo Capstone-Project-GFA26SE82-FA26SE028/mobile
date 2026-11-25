@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {
+  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -11,6 +13,7 @@ import {
 } from 'react-native';
 import { ErrorState } from '../../../components/ErrorState/ErrorState';
 import { Loading } from '../../../components/Loading/Loading';
+import { authService } from '../../auth/api/authApi';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { profileError } from '../api/profileApi';
 import { useProfile } from '../hooks/useProfile';
@@ -48,7 +51,48 @@ export default function ProfileScreen() {
   const [tab, setTab] = useState<'info' | 'password'>('info');
   const [logoutOpen, setLogoutOpen] = useState(false);
   const data = model.profile.data;
-  const busy = model.save.isPending || model.password.isPending || auth.loading;
+  const [changingAvatar, setChangingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const avatarLock = useRef(false);
+  const busy = model.save.isPending || model.password.isPending || auth.loading || changingAvatar;
+
+  async function changeAvatar() {
+    const identity = authService.identity();
+    if (busy || avatarLock.current || !identity) return;
+    avatarLock.current = true;
+    setChangingAvatar(true);
+    setAvatarError('');
+    try {
+      const selection = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'] });
+      if (selection.canceled || identity !== authService.identity()) return;
+
+      const image = selection.assets[0];
+      if (!image) return;
+      const type = image.mimeType || image.file?.type;
+      if (type && !['image/jpeg', 'image/png', 'image/webp'].includes(type)) {
+        setAvatarError('Chọn ảnh JPEG, PNG hoặc WebP.');
+        return;
+      }
+      const size = image.fileSize ?? image.file?.size;
+      if (size !== undefined && (size <= 0 || size > 2 * 1024 * 1024)) {
+        setAvatarError('Chọn ảnh hợp lệ có dung lượng tối đa 2 MB.');
+        return;
+      }
+
+      const file = new FormData();
+      file.append('file', image.file ?? ({
+        uri: image.uri,
+        name: image.fileName || 'avatar',
+        type: type || 'application/octet-stream',
+      } as unknown as Blob));
+      await model.avatar.mutateAsync({ file, identity });
+    } catch (error) {
+      setAvatarError(profileError(error));
+    } finally {
+      avatarLock.current = false;
+      setChangingAvatar(false);
+    }
+  }
   return (
     <KeyboardAvoidingView
       className="grow-[1] shrink-0 basis-[0px]"
@@ -69,10 +113,26 @@ export default function ProfileScreen() {
         ) : (
           <>
             <View className="bg-[#153F30] rounded-[24px] p-[20px] flex-row items-center gap-[16px]">
-              <Avatar
-                url={data.avatarUrl}
-                name={data.fullName || data.userName}
-              />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Đổi ảnh đại diện"
+                accessibilityState={{ busy: changingAvatar, disabled: busy }}
+                disabled={busy}
+                onPress={() => void changeAvatar()}
+                className="relative self-center"
+              >
+                <Avatar
+                  url={data.avatarUrl}
+                  name={data.fullName || data.userName}
+                />
+                <View className="absolute -bottom-1 -right-1 h-7 w-7 items-center justify-center rounded-full border-2 border-[#153F30] bg-white">
+                  {changingAvatar ? (
+                    <ActivityIndicator size="small" color="#236347" />
+                  ) : (
+                    <Ionicons name="camera-outline" size={14} color="#236347" />
+                  )}
+                </View>
+              </Pressable>
               <View className="grow-[1] shrink-0 basis-[0px] min-w-[0px] gap-[5px]">
                 <Text
                   numberOfLines={2}
@@ -90,6 +150,7 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             </View>
+            {!!avatarError && <ErrorState message={avatarError} />}
             <View
               accessibilityRole="tablist"
               className="rounded-[14px] bg-[#E8EEE9] p-[4px] flex-row gap-[4px]"
@@ -133,6 +194,7 @@ export default function ProfileScreen() {
               <ProfileForm
                 key={data.userId}
                 profile={data}
+                changingAvatar={changingAvatar}
                 onSave={(values) => model.save.mutateAsync(values)}
               />
             ) : (

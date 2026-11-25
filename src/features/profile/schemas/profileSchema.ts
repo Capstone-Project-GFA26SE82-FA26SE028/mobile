@@ -9,16 +9,6 @@ export function validateProfile(
     errors.fullName = 'Họ và tên tối đa 255 ký tự.';
   if (values.phoneNumber.trim() && !/^0\d{9}$/.test(values.phoneNumber.trim()))
     errors.phoneNumber = 'Nhập 10 chữ số, bắt đầu bằng 0.';
-  const avatar = values.avatarUrl.trim();
-  if (avatar.length > 2048) errors.avatarUrl = 'Đường dẫn ảnh quá dài.';
-  else if (avatar) {
-    try {
-      if (!['http:', 'https:'].includes(new URL(avatar).protocol))
-        throw new Error();
-    } catch {
-      errors.avatarUrl = 'Nhập đường dẫn ảnh HTTP hoặc HTTPS hợp lệ.';
-    }
-  }
   return errors;
 }
 

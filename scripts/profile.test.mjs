@@ -66,18 +66,16 @@ function reset() {
   respond = async () => ({ data: { isSuccess: true, result: profile } });
 }
 
-test('profile validates editable fields, optional phone and HTTP/HTTPS avatar', () => {
+test('profile validates editable fields, optional phone', () => {
   assert.deepEqual(
-    validateProfile({ fullName: ' An ', phoneNumber: '', avatarUrl: '' }),
+    validateProfile({ fullName: ' An ', phoneNumber: '' }),
     {},
   );
   const errors = validateProfile({
     fullName: ' ',
     phoneNumber: '123abc',
-    avatarUrl: 'file:///secret',
   });
   assert.deepEqual(Object.keys(errors).sort(), [
-    'avatarUrl',
     'fullName',
     'phoneNumber',
   ]);
@@ -85,7 +83,6 @@ test('profile validates editable fields, optional phone and HTTP/HTTPS avatar', 
     validateProfile({
       fullName: 'An',
       phoneNumber: '0901234567',
-      avatarUrl: 'https://example.com/avatar.png',
     }),
     {},
   );
@@ -131,12 +128,11 @@ test('get/update use self-profile endpoint; update sends only editable fields an
   await api.updateProfile({
     fullName: ' Nguyễn An ',
     phoneNumber: ' 0901234567 ',
-    avatarUrl: '',
   });
   assert.deepEqual(calls[1], [
     'put',
     '/api/users/me',
-    { fullName: 'Nguyễn An', phoneNumber: '0901234567', avatarUrl: '' },
+    { fullName: 'Nguyễn An', phoneNumber: '0901234567' },
     { staffSession: 'user-1:session-1' },
   ]);
   assert.deepEqual(updates, [['Nguyễn An', 'user-1:session-1']]);
@@ -153,7 +149,7 @@ test('another user response and a late save after account change are rejected wi
     return { data: { isSuccess: true, result: profile } };
   };
   await assert.rejects(
-    api.updateProfile({ fullName: 'An', phoneNumber: '', avatarUrl: '' }),
+    api.updateProfile({ fullName: 'An', phoneNumber: '' }),
     /Tài khoản đã thay đổi/,
   );
   assert.deepEqual(updates, []);
@@ -186,4 +182,22 @@ test('password success clears current session; failure or stale response does no
   };
   await assert.rejects(api.changePassword(values), /Tài khoản đã thay đổi/);
   assert.deepEqual(cleared, []);
+});
+
+test('avatar uploads the selected file to the signed-in account', async () => {
+  reset();
+  const file = new FormData();
+  file.append('file', new Blob(['sample'], { type: 'image/png' }), 'avatar.png');
+  respond = async () => ({
+    data: { isSuccess: true, result: { userId: profile.userId, avatarUrl: 'https://example.test/avatar.png' } },
+  });
+
+  const uploaded = await api.uploadProfileAvatar(file, identity);
+  assert.equal(uploaded.avatarUrl, 'https://example.test/avatar.png');
+  assert.deepEqual(calls[0], [
+    'post',
+    '/api/users/me/avatar',
+    file,
+    { staffSession: 'user-1:session-1', headers: { 'Content-Type': 'multipart/form-data' } },
+  ]);
 });

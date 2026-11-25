@@ -16,15 +16,16 @@ function valuesFor(profile: Profile): ProfileValues {
   return {
     fullName: profile.fullName || '',
     phoneNumber: profile.phoneNumber || '',
-    avatarUrl: profile.avatarUrl || '',
   };
 }
 
 export function ProfileForm({
   profile,
   onSave,
+  changingAvatar,
 }: {
   profile: Profile;
+  changingAvatar: boolean;
   onSave: (values: ProfileValues) => Promise<Profile>;
 }) {
   const [values, setValues] = useState(() => valuesFor(profile));
@@ -32,7 +33,6 @@ export function ProfileForm({
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [imageOpen, setImageOpen] = useState(false);
   const lock = useRef(false);
   const original = valuesFor(profile);
   const dirty = (Object.keys(values) as (keyof ProfileValues)[]).some(
@@ -135,49 +135,6 @@ export function ProfileForm({
           </Text>
         </View>
       </View>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Thay đổi ảnh đại diện"
-        accessibilityState={{ expanded: imageOpen }}
-        onPress={() => setImageOpen(!imageOpen)}
-        className="min-h-[44px] flex-row items-center gap-[8px]"
-      >
-        <Ionicons name="image-outline" size={19} color="#236347" />
-        <Text className="text-[13px] font-semibold text-[#236347]">
-          Thay đổi ảnh đại diện
-        </Text>
-        <Ionicons
-          name={imageOpen ? 'chevron-up' : 'chevron-down'}
-          size={15}
-          color="#738078"
-        />
-      </Pressable>
-      {imageOpen && (
-        <View className="gap-[7px]">
-          <Text className="text-[12px] text-[#738078]">Đường dẫn ảnh</Text>
-          <TextInput
-            accessibilityLabel="Đường dẫn ảnh đại diện"
-            value={values.avatarUrl}
-            onChangeText={(v) => change('avatarUrl', v)}
-            editable={!busy}
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="url"
-            maxLength={2048}
-            placeholder="https://..."
-            placeholderTextColor="#8B9A90"
-            className="min-h-[50px] rounded-[13px] border border-[#E4EBE6] bg-[#F8FAF8] px-[14px] py-[12px] text-[14px] text-[#23382D]"
-          />
-          {!!errors.avatarUrl && (
-            <Text
-              accessibilityRole="alert"
-              className="text-[12px] text-[#B44741]"
-            >
-              {errors.avatarUrl}
-            </Text>
-          )}
-        </View>
-      )}
       {!!error && <ErrorState message={error} />}
       {!!message && (
         <Text
@@ -190,9 +147,9 @@ export function ProfileForm({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Lưu thay đổi"
-        disabled={busy || !dirty}
+        disabled={busy || changingAvatar || !dirty}
         onPress={() => void submit()}
-        className={`min-h-[50px] rounded-[14px] bg-[#236347] flex-row items-center justify-center gap-[8px] ${busy || !dirty ? 'opacity-[0.5]' : 'active:opacity-[0.8]'}`}
+        className={`min-h-[50px] rounded-[14px] bg-[#236347] flex-row items-center justify-center gap-[8px] ${busy || changingAvatar || !dirty ? 'opacity-[0.5]' : 'active:opacity-[0.8]'}`}
       >
         {busy ? (
           <ActivityIndicator color="#fff" />

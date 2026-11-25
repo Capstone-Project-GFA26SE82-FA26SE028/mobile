@@ -14,7 +14,6 @@ export type Profile = {
 export type ProfileValues = {
   fullName: string;
   phoneNumber: string;
-  avatarUrl: string;
 };
 
 export type PasswordValues = {
