@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import * as Crypto from 'expo-crypto';
@@ -10,7 +11,6 @@ import {
   Card,
   Field,
   Notice,
-  Sheet,
   Empty,
 } from '../../shared/components/UI';
 import { QueryStatus } from '../../shared/components/QueryStatus';
@@ -84,9 +84,26 @@ export default function CashCollectionScreen() {
   const responsible = restored && !!user && request.data?.handledByRef === user;
   const bill = useCollectionQuery(
     'bill:' + requestId,
-    (signal) => collectionApi.bill(sessionId, requestId, signal),
+    async (signal) => {
+      try {
+        return await collectionApi.bill(sessionId, requestId, signal);
+      } catch (error) {
+        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+        const message = authError(error);
+        if (status === 404 && message === 'Không tìm thấy yêu cầu thanh toán.') {
+          return 'needsSubmission' as const;
+        }
+        if (status === 409 && message === 'Thu ngân chưa chốt hóa đơn cho yêu cầu này.') {
+          return 'awaitingBill' as const;
+        }
+        throw error;
+      }
+    },
     responsible && !draft?.handover,
   );
+  const needsSubmission = bill.data === 'needsSubmission';
+  const awaitingBill = bill.data === 'awaitingBill';
+  const preparedBill = typeof bill.data === 'object' ? bill.data : undefined;
   const handover = useCollectionQuery(
     'handover:' + draft?.handover?.paymentId,
     (signal) => collectionApi.handover(draft!.handover!.paymentId, signal),
@@ -105,13 +122,13 @@ export default function CashCollectionScreen() {
     }
   }
   async function collect() {
-    if (!bill.data || !review || review.total !== bill.data.bill.totalAmount)
+    if (!preparedBill || !review || review.total !== preparedBill.bill.totalAmount)
       return;
     const submission = draft ?? {
       key: Crypto.randomUUID(),
       received: review.received,
-      billId: bill.data.bill.billId,
-      checkoutId: bill.data.checkoutId,
+      billId: preparedBill.bill.billId,
+      checkoutId: preparedBill.checkoutId,
       sessionId,
       restaurantId: restaurant,
       tableId: id,
@@ -187,25 +204,25 @@ export default function CashCollectionScreen() {
       )}
       {responsible && !current && (
         <>
-          <Button
-            title="Gửi yêu cầu đến thu ngân"
-            secondary
-            disabled={action.isPending}
-            onPress={() =>
-              void run(() => collectionApi.submit(sessionId, requestId))
-            }
-          />
-          {bill.isError && (
-            <>
-              <Notice text="Đang chờ thu ngân chốt bill. Nếu chưa gửi yêu cầu, hãy gửi đến thu ngân trước." />
-              <QueryStatus query={bill} />
-            </>
+          {needsSubmission && (
+            <Button
+              title={action.isPending ? 'Đang gửi…' : 'Gửi yêu cầu đến thu ngân'}
+              disabled={action.isPending || bill.isError}
+              onPress={() =>
+                void run(async () => {
+                  await collectionApi.submit(sessionId, requestId);
+                  await bill.refetch();
+                })
+              }
+            />
           )}
-          {bill.isPending && <Notice text="Đang tải hóa đơn…" />}
-          {bill.data && (
+          {awaitingBill && <Notice text="Đã gửi yêu cầu. Đang chờ thu ngân lập hóa đơn." />}
+          {bill.isError && <QueryStatus query={bill} />}
+          {bill.isPending && <Notice text="Đang kiểm tra hóa đơn…" />}
+          {preparedBill && (
             <>
-              <BillCard value={bill.data} />
-              {bill.data.checkoutStatus !== 'Presented' ? (
+              <BillCard value={preparedBill} />
+              {preparedBill.checkoutStatus !== 'Presented' ? (
                 <Button
                   title="Xác nhận đã đưa bill cho khách"
                   disabled={action.isPending}
@@ -226,16 +243,16 @@ export default function CashCollectionScreen() {
                     keyboardType="number-pad"
                     maxLength={15}
                     value={draft ? String(draft.received) : amount}
-                    editable={!draft && !action.isPending}
+                    editable={!review && !draft && !action.isPending}
                     onChangeText={(v) => setAmount(v.replace(/[^0-9]/g, ''))}
                   />
                   <Button
                     title="Khách đưa vừa đủ tiền hóa đơn"
                     secondary
-                    disabled={!!draft || action.isPending}
-                    onPress={() => setAmount(String(bill.data!.bill.totalAmount))}
+                    disabled={!!review || !!draft || action.isPending}
+                    onPress={() => setAmount(String(preparedBill!.bill.totalAmount))}
                   />
-                  <Text>Tiền hóa đơn: {money(bill.data.bill.totalAmount)}</Text>
+                  <Text>Tiền hóa đơn: {money(preparedBill.bill.totalAmount)}</Text>
                   <Text>
                     Số tiền giao thu ngân: {money(Number(draft?.received ?? amount))}
                   </Text>
@@ -245,41 +262,58 @@ export default function CashCollectionScreen() {
                       Math.max(
                         0,
                         Number(draft?.received ?? amount) -
-                          bill.data.bill.totalAmount,
+                          preparedBill.bill.totalAmount,
                       ),
                     )}
                   </Text>
-                  {!!amount && !draft && !validCash(amount, bill.data.bill.totalAmount) && (
+                  {!!amount && !draft && !validCash(amount, preparedBill.bill.totalAmount) && (
                     <Notice
                       error
-                      text={`Số tiền phải là số nguyên và ít nhất bằng tiền hóa đơn (${money(bill.data.bill.totalAmount)}).`}
+                      text={`Số tiền phải là số nguyên và ít nhất bằng tiền hóa đơn (${money(preparedBill.bill.totalAmount)}).`}
                     />
                   )}
                   {draft && (
                     <Notice text="Đã bắt đầu ghi nhận. Thử lại dùng cùng số tiền và mã giao dịch; không nhận tiền lần nữa." />
                   )}
-                  <Button
-                    title={
-                      action.isPending
-                        ? 'Đang ghi nhận…'
-                        : draft
-                          ? 'Kiểm tra và thử lại giao dịch'
-                          : 'Gửi tiền mặt cho thu ngân'
-                    }
-                    disabled={
-                      action.isPending ||
-                      !validCash(
-                        String(draft?.received ?? amount),
-                        bill.data.bill.totalAmount,
-                      )
-                    }
-                    onPress={() =>
-                      setReview({
-                        total: bill.data!.bill.totalAmount,
-                        received: Number(draft?.received ?? amount),
-                      })
-                    }
-                  />
+                  {review ? (
+                    <>
+                      <Notice text="Kiểm tra số tiền bên trên trước khi xác nhận gửi thu ngân." />
+                      <Button
+                        title={action.isPending ? 'Đang gửi…' : 'Xác nhận và gửi thu ngân'}
+                        disabled={action.isPending || preparedBill.bill.totalAmount !== review.total}
+                        onPress={() => void collect()}
+                      />
+                      <Button
+                        title="Quay lại"
+                        secondary
+                        disabled={action.isPending}
+                        onPress={() => setReview(null)}
+                      />
+                    </>
+                  ) : (
+                    <Button
+                      title={
+                        action.isPending
+                          ? 'Đang ghi nhận…'
+                          : draft
+                            ? 'Kiểm tra và thử lại giao dịch'
+                            : 'Gửi tiền mặt cho thu ngân'
+                      }
+                      disabled={
+                        action.isPending ||
+                        !validCash(
+                          String(draft?.received ?? amount),
+                          preparedBill.bill.totalAmount,
+                        )
+                      }
+                      onPress={() =>
+                        setReview({
+                          total: preparedBill!.bill.totalAmount,
+                          received: Number(draft?.received ?? amount),
+                        })
+                      }
+                    />
+                  )}
                 </Card>
               )}
             </>
@@ -312,28 +346,6 @@ export default function CashCollectionScreen() {
       )}
       {request.data && request.data.handledByRef && !responsible && (
         <Notice text="Yêu cầu đang do nhân viên khác xử lý." />
-      )}
-      {review && (
-        <Sheet
-          title="Xác nhận gửi tiền mặt"
-          onClose={() => {
-            if (!action.isPending) setReview(null);
-          }}
-        >
-          <Text>Hóa đơn: {money(review.total)}</Text>
-          <Text>Đã nhận từ khách: {money(review.received)}</Text>
-          <Text>Giao cho thu ngân: {money(review.received)}</Text>
-          <Text>Tiền thừa: {money(review.received - review.total)}</Text>
-          <Notice text="Chỉ xác nhận khi đã cầm tiền. Giao toàn bộ số tiền khách đưa cho thu ngân." />
-          <Button
-            title="Xác nhận và gửi thu ngân"
-            disabled={
-              action.isPending || bill.data?.bill.totalAmount !== review.total
-            }
-            onPress={() => void collect()}
-          />
-          {action.isError && <Notice error text={authError(action.error)} />}
-        </Sheet>
       )}
     </Page>
   );
