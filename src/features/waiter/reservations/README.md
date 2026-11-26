@@ -14,7 +14,7 @@ Supported endpoints:
 
 - GET `/api/reservations`: all pages for the selected backend status.
 - GET `/api/reservations/{id}`: fresh detail before actions.
-- GET `/api/reservations/availability`: restaurant, requested area, party size and ISO start time.
+- GET `/api/reservations/availability`: restaurant, staff-selected area, party size and ISO start time.
 - POST `/api/reservations/{id}/confirm`: distinct selected `tableIds`; supports multiple tables.
 - POST `/api/reservations/{id}/reject`, `/check-in`, `/cancel`: no body fields.
 - PUT `/api/reservations/{id}`: `startAt` and `tableIds`.
@@ -24,6 +24,11 @@ access to the employee's assigned restaurants. Every mutation invalidates the
 waiter query scope on success or error because conflicts may persist Expired or
 NoShow. Writes are never automatically retried. A submission guard blocks repeated
 taps and prevents closing the sheet during submission. Errors remain visible.
+
+New customer reservations may have `requestedAreaId: null`. Staff select an area
+from the restaurant's service tables before checking availability and assigning
+tables. Existing assigned areas are preselected when editing. Changing the area
+clears the selected tables and previous availability preview.
 
 Check-in uses Confirmed and the server's `holdUntil`, and opens 30 minutes before
 `startAt`, matching current backend configuration. Check-in records arrival only;
