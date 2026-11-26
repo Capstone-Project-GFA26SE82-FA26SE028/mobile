@@ -6,7 +6,6 @@ import {
   Empty,
   Notice,
   Page,
-  Sheet,
   Title,
 } from '../../shared/components/UI';
 import { OrderCard } from '../components/OrderCard';
@@ -49,83 +48,76 @@ export default function LiveOrdersScreen() {
       <Chips
         options={['Chờ xác nhận', 'Đã xác nhận']}
         value={tab}
-        onChange={setTab}
+        onChange={(value) => {
+          if (confirm.isPending) return;
+          setTab(value);
+          setReview(null);
+        }}
       />
-      {rows.map((order) => (
-        <OrderCard key={order.orderId} order={order}>
-          <Text className="text-[14px] leading-[21px] text-[#183B32]">
-            {tables.data
-              ?.filter((t) => t.openSessionIds.includes(order.tableSessionId))
-              .map((t) => t.tableCode)
-              .join(', ')}
-          </Text>
-          <Button
-            title="Kiểm tra chi tiết"
-            onPress={() => {
-              confirm.reset();
-              setChecked(false);
-              setReview(order);
-            }}
-          />
-        </OrderCard>
-      ))}
+      {rows.map((order) => {
+        const expanded = review?.orderId === order.orderId;
+        const reviewedOrder = expanded ? detail.data ?? order : order;
+        return (
+          <OrderCard key={order.orderId} order={reviewedOrder}>
+            <Text className="text-[14px] leading-[21px] text-[#183B32]">
+              {tables.data
+                ?.filter((table) => table.openSessionIds.includes(order.tableSessionId))
+                .map((table) => table.tableCode)
+                .join(', ')}
+            </Text>
+            <Button
+              title={expanded ? 'Thu gọn' : 'Kiểm tra chi tiết'}
+              secondary={expanded}
+              disabled={confirm.isPending}
+              onPress={() => {
+                confirm.reset();
+                setChecked(false);
+                setReview(expanded ? null : order);
+              }}
+            />
+            {expanded && (
+              <>
+                <QueryStatus query={detail} />
+                {changed && detail.isSuccess && (
+                  <Notice
+                    error
+                    text="Đơn đã thay đổi. Thu gọn rồi mở lại để kiểm tra dữ liệu mới."
+                  />
+                )}
+                {reviewedOrder.status === 'PendingConfirmation' && (
+                  <>
+                    <Button
+                      secondary
+                      title={checked ? '✓ Đã kiểm tra bàn, món và ghi chú' : 'Tôi đã kiểm tra bàn, món và ghi chú'}
+                      disabled={changed || !detail.isSuccess || confirm.isPending}
+                      onPress={() => setChecked(!checked)}
+                    />
+                    <Button
+                      title={confirm.isPending ? 'Đang xác nhận…' : 'Xác nhận và chuyển bếp'}
+                      disabled={!checked || changed || !detail.isSuccess || confirm.isPending}
+                      onPress={() =>
+                        confirm.mutate(reviewedOrder, { onSuccess: () => setReview(null) })
+                      }
+                    />
+                    {confirm.isError && (
+                      <QueryStatus
+                        query={{
+                          error: confirm.error,
+                          isPending: false,
+                          refetch: () => void detail.refetch(),
+                        }}
+                      />
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </OrderCard>
+        );
+      })}
       {tables.isSuccess &&
         (!sessionIds.length || orders.isSuccess) &&
         !rows.length && <Empty text="Không có đơn khách trong mục này." />}
-      {review && (
-        <Sheet
-          title="Kiểm tra order"
-          onClose={() => {
-            if (!confirm.isPending) setReview(null);
-          }}
-        >
-          <QueryStatus query={detail} />
-          <OrderCard order={review} />
-          {changed && detail.isSuccess && (
-            <Notice
-              error
-              text="Order đã thay đổi. Đóng và mở lại để kiểm tra dữ liệu mới."
-            />
-          )}
-          {review.status === 'PendingConfirmation' && (
-            <>
-              <Button
-                secondary
-                title={
-                  checked
-                    ? '✓ Đã kiểm tra bàn, món và ghi chú'
-                    : 'Tôi đã kiểm tra bàn, món và ghi chú'
-                }
-                onPress={() => setChecked(!checked)}
-              />
-              <Button
-                title={
-                  confirm.isPending
-                    ? 'Đang xác nhận…'
-                    : 'Xác nhận và chuyển bếp'
-                }
-                disabled={
-                  !checked || changed || !detail.isSuccess || confirm.isPending
-                }
-                onPress={() =>
-                  confirm.mutate(review, { onSuccess: () => setReview(null) })
-                }
-              />
-              {confirm.isError && (
-                <QueryStatus
-                  query={{
-                    error: confirm.error,
-                    isPending: false,
-                    refetch: () => {
-                      void detail.refetch();
-                    },
-                  }}
-                />
-              )}
-            </>
-          )}
-        </Sheet>
-      )}
     </Page>
   );
 }

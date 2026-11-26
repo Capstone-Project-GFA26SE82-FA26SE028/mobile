@@ -7,7 +7,7 @@ export function BillCard({ value }: { value: PreparedBill }) {
   return (
     <Card>
       <Text className="text-[17px] font-[700] text-[#183B32]">
-        Hóa đơn {bill.billNumber}
+        {bill.billNumber}
       </Text>
       {bill.items.map((line) => (
         <Text key={line.billLineId}>
