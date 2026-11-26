@@ -51,6 +51,7 @@ export function ReservationSheet({
     null,
   );
   const [tableIds, setTableIds] = useState<string[]>([]);
+  const [areaId, setAreaId] = useState('');
   const [preview, setPreview] = useState<AvailabilityQuery | null>(null);
   const availability = useReservationAvailability(preview);
   const sending = useRef(false);
@@ -59,6 +60,7 @@ export function ReservationSheet({
     if (!reservation || fields) return;
     setFields(reservationDateFields(reservation.startAt));
     setTableIds(initialMode === 'update' ? reservation.assignedTableIds : []);
+    setAreaId(reservation.assignedAreaId || reservation.requestedAreaId || '');
   }, [reservation, fields, initialMode]);
 
   const selecting = mode === 'confirm' || mode === 'update';
@@ -69,6 +71,11 @@ export function ReservationSheet({
   const currentStatus =
     mode === 'confirm' || mode === 'reject' ? 'Pending' : 'Confirmed';
   const allowed = reservation?.status === currentStatus;
+  const areas = [...new Map(
+    (tables.data ?? [])
+      .filter((table) => table.restaurantId === reservation?.restaurantId)
+      .map((table) => [table.areaId, { id: table.areaId, name: table.areaName }]),
+  ).values()];
   const candidates = availability.data?.tables ?? [];
   const chosen = candidates.filter((table) => tableIds.includes(table.tableId));
   const capacity = chosen.reduce((sum, table) => sum + table.capacity, 0);
@@ -96,6 +103,7 @@ export function ReservationSheet({
     setFields(reservationDateFields(reservation.startAt));
     setTableIds(next === 'update' ? reservation.assignedTableIds : []);
     setPreview(null);
+    setAreaId(reservation.assignedAreaId || reservation.requestedAreaId || '');
   }
 
   async function submit() {
@@ -260,6 +268,18 @@ export function ReservationSheet({
               )}
               {selecting && fields && (
                 <>
+                  <Text className="text-[14px] font-[600] text-[#183B32]">Chọn khu vực để xếp bàn</Text>
+                  <QueryStatus query={tables} />
+                  <View className="flex-row flex-wrap gap-[10px]">
+                    {areas.map((area) => (
+                      <Button key={area.id} title={`${areaId === area.id ? '✓ ' : ''}${area.name}`} secondary={areaId !== area.id} disabled={mutation.isPending} onPress={() => {
+                        setAreaId(area.id);
+                        setTableIds([]);
+                        setPreview(null);
+                      }} />
+                    ))}
+                  </View>
+                  {tables.isSuccess && !areas.length && <Notice text="Nhà hàng chưa có khu vực với bàn phục vụ để lựa chọn." />}
                   {mode === 'update' && (
                     <>
                       <Field
@@ -295,19 +315,20 @@ export function ReservationSheet({
                     secondary
                     disabled={
                       !startAt ||
+                      !areas.some((area) => area.id === areaId) ||
                       !allowed ||
                       mutation.isPending ||
                       detail.isFetching
                     }
                     onPress={() => {
-                      if (!startAt) return;
+                      if (!startAt || !areaId) return;
                       setPreview({
                         restaurantId: reservation.restaurantId,
-                        areaId: reservation.requestedAreaId,
+                        areaId,
                         partySize: reservation.partySize,
                         startAt,
                       });
-                      if (preview?.startAt === startAt)
+                      if (preview?.startAt === startAt && preview.areaId === areaId)
                         void availability.refetch();
                     }}
                   />

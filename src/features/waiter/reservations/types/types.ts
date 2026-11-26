@@ -10,7 +10,7 @@ export type ReservationStatus =
 export type Reservation = {
   reservationId: string;
   restaurantId: string;
-  requestedAreaId: string;
+  requestedAreaId: string | null;
   contactName: string;
   phone: string;
   partySize: number;
