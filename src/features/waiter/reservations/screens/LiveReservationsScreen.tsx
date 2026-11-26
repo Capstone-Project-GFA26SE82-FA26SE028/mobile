@@ -49,8 +49,8 @@ export default function LiveReservationsScreen() {
   return (
     <Page>
       <Title
-        title="Đặt bàn trước"
-        subtitle="Chuẩn bị một chỗ ngồi thật chu đáo cho khách."
+        title="Tiếp nhận đặt bàn"
+        subtitle="Xem yêu cầu của khách, chọn bàn và xác nhận lịch hẹn."
       />
       <Chips
         options={Object.keys(reservationTabs)}
@@ -63,6 +63,9 @@ export default function LiveReservationsScreen() {
         onChange={setSearch}
       />
       {!!message && <Notice text={message} />}
+      {tab === 'Chờ duyệt' && reservations.isSuccess && !reservations.error && (
+        <Notice text={`Có ${reservations.data.length} yêu cầu chờ duyệt. Mở yêu cầu để kiểm tra thông tin khách và chọn bàn phù hợp.`} />
+      )}
       <QueryStatus query={reservations} />
       <Button
         title={reservations.isFetching ? 'Đang cập nhật…' : 'Làm mới danh sách'}

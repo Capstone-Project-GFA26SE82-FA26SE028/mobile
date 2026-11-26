@@ -13,6 +13,7 @@ import { useUnreadNotifications } from '@/features/waiter/notifications/hooks/us
 import { useServiceTables } from '@/features/waiter/tables/hooks/useTables';
 import { useSessionOrders } from '@/features/waiter/ordering/hooks/useOrders';
 import { usePaymentRequests } from '@/features/waiter/cash-collection/hooks/useCollection';
+import { useReservations } from '@/features/waiter/reservations/hooks/useReservations';
 const tabs: {
   path:
     | '/waiter/tables'
@@ -52,6 +53,10 @@ export default function WaiterLayout() {
     ? (notificationCount.data ?? 0)
     : state.items.filter((i) => i.status === 'Ready' && !i.seen).length;
   const paymentRequests = usePaymentRequests();
+  const pendingReservations = useReservations('Pending');
+  const reservationCount = apiMode
+    ? (pendingReservations.data?.length ?? 0)
+    : state.reservations.filter((r) => r.status === 'pending').length;
   const requests = apiMode
     ? (paymentRequests.data?.length ?? 0)
     : state.requests.filter((r) => r.status !== 'done').length;
@@ -219,7 +224,9 @@ export default function WaiterLayout() {
                 ? readyCount
                 : t.path === '/waiter/requests'
                   ? requests
-                  : 0;
+                  : t.path === '/waiter/reservations'
+                    ? reservationCount
+                    : 0;
             return (
               <Pressable
                 key={t.path}
