@@ -122,7 +122,7 @@ export default function LiveTableDetailScreen() {
                 </Text>
               </View>
               {rows.map((order) => (
-                <OrderCard key={order.orderId} order={order} />
+                <OrderCard key={order.orderId} order={order} allowCancellation />
               ))}
               {orders.isSuccess && !rows.length && (
                 <Empty text="Phiên bàn chưa có order." />
@@ -139,7 +139,7 @@ export default function LiveTableDetailScreen() {
               )}
             </>
           )}
-          <Notice text="Đổi bàn và sửa/hủy món chưa được hỗ trợ. Tổng món chưa bao gồm thuế/phí hoặc xác nhận thanh toán." />
+          <Notice text="Chọn Hủy món tại món đã gọi để hủy phần chưa chế biến. Tổng món chưa bao gồm thuế/phí hoặc xác nhận thanh toán." />
         </>
       )}
     </Page>

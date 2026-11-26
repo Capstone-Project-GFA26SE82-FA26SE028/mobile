@@ -34,6 +34,8 @@ export type OrderLine = {
   nameSnapshot: string;
   quantity: number;
   unitPriceSnapshot: number;
+  cancelledQuantity?: number;
+  remainingQuantity?: number;
   lineTotal: number;
   note?: string;
   status: string;

@@ -18,6 +18,30 @@ const createWaiterService = client => ({ ...createTableService(client), ...creat
 const { default: reducer, authenticated, enterDemo } = require('../src/features/waiter/shared/store/waiterSlice.ts');
 const reply = result => ({ data: { isSuccess: true, result } });
 
+test('staff cancellation targets the session and preserves the request key on retry', async () => {
+  const calls = [];
+  const service = createWaiterService({ post: async (...args) => {
+    calls.push(args);
+    return reply({ status: 'Approved' });
+  } });
+  const key = '9ecf2a47-983b-4ca0-a36f-399a1ca32794';
+  await service.cancelItem('session', 'line', 2, 'Khách gọi nhầm', key);
+  await service.cancelItem('session', 'line', 2, 'Khách gọi nhầm', key);
+  assert.deepEqual(calls[0], [
+    '/api/table-sessions/session/cancellation-requests/staff',
+    { orderItemId: 'line', quantity: 2, reason: 'Khách gọi nhầm' },
+    { headers: { 'Idempotency-Key': key } },
+  ]);
+  assert.deepEqual(calls[0], calls[1]);
+});
+
+test('staff cancellation propagates rejection when the kitchen has started cooking', async () => {
+  const service = createWaiterService({ post: async () => ({
+    data: { isSuccess: false, message: 'Chỉ được hủy số lượng chưa nấu' },
+  }) });
+  await assert.rejects(service.cancelItem('session', 'line', 1, 'Gọi nhầm', 'key'), /chưa nấu/);
+});
+
 test('tables and menu load every page and forward cancellation signals', async () => {
   for (const [method, path] of [['tables', '/api/tables/service'], ['menu', '/api/menu']]) {
     const calls = [];
