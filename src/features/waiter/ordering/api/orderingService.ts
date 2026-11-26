@@ -40,6 +40,12 @@ export function createOrderingService(
         `/api/table-sessions/${order.tableSessionId}/orders/${order.orderId}/confirm`,
         { version: order.version },
       ),
+    cancelItem: (sessionId: string, orderItemId: string, quantity: number, reason: string, key: string) =>
+      post<{ status: string }>(
+        `/api/table-sessions/${sessionId}/cancellation-requests/staff`,
+        { orderItemId, quantity, reason },
+        key,
+      ),
     serveItem: (order: Order, orderItemId: string) =>
       post<Order>(
         `/api/table-sessions/${order.tableSessionId}/orders/${order.orderId}/items/${orderItemId}/serve`,

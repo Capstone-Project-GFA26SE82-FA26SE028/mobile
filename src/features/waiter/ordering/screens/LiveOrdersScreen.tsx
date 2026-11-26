@@ -58,7 +58,7 @@ export default function LiveOrdersScreen() {
         const expanded = review?.orderId === order.orderId;
         const reviewedOrder = expanded ? detail.data ?? order : order;
         return (
-          <OrderCard key={order.orderId} order={reviewedOrder}>
+          <OrderCard key={order.orderId} order={reviewedOrder} allowCancellation>
             <Text className="text-[14px] leading-[21px] text-[#183B32]">
               {tables.data
                 ?.filter((table) => table.openSessionIds.includes(order.tableSessionId))

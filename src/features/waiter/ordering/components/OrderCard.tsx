@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { Badge, Card, Notice, Title } from '../../shared/components/UI';
 import { money } from '../../shared/utils/rules';
 import type { Order } from '../types/api';
+import { CancelItemButton } from './CancelItemButton';
 
 const statuses: Record<string, string> = {
   PendingConfirmation: 'Chờ xác nhận',
@@ -16,9 +17,11 @@ const statuses: Record<string, string> = {
 export function OrderCard({
   order,
   children,
+  allowCancellation = false,
 }: {
   order: Order;
   children?: ReactNode;
+  allowCancellation?: boolean;
 }) {
   return (
     <Card>
@@ -33,7 +36,7 @@ export function OrderCard({
               className="text-[14px] leading-[21px] text-[#183B32] font-[700]"
               style={{ flex: 1 }}
             >
-              {line.quantity} × {line.nameSnapshot}
+              {line.remainingQuantity ?? line.quantity} × {line.nameSnapshot}
             </Text>
             <Text className="text-[#12664C] text-[13px] font-[600]">
               {money(line.lineTotal)}
@@ -48,6 +51,9 @@ export function OrderCard({
             </Text>
           ))}
           {!!line.note && <Notice text={`Ghi chú: ${line.note}`} />}
+          {!!line.cancelledQuantity && (
+            <Text className="text-[11px] leading-[16px] text-[#7C8983]">Đã hủy {line.cancelledQuantity}/{line.quantity} phần</Text>
+          )}
           <Badge
             text={statuses[line.status] || line.status}
             tone={
@@ -58,6 +64,7 @@ export function OrderCard({
                   : 'green'
             }
           />
+          {allowCancellation && <CancelItemButton order={order} line={line} />}
         </View>
       ))}
       <Text className="text-[#12664C] text-[18px] font-[700]">

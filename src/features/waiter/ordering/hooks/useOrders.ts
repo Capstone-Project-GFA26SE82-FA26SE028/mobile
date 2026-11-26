@@ -67,3 +67,19 @@ export function useServeItem() {
     retry: false,
   });
 }
+
+export function useCancelItem(sessionId: string, orderItemId: string) {
+  const refresh = useRefreshWaiterData();
+  return useMutation({
+    mutationFn: (request: { quantity: number; reason: string; key: string }) =>
+      orderingApi.cancelItem(
+        sessionId,
+        orderItemId,
+        request.quantity,
+        request.reason,
+        request.key,
+      ),
+    onSettled: refresh,
+    retry: false,
+  });
+}
