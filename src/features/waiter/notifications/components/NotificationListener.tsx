@@ -40,7 +40,7 @@ export function NotificationListener() {
         if (identity === authService.identity())
           dispatch(
             notificationSoundFailed(
-              'Chưa phát được chuông. Nhấn “Thử chuông” và kiểm tra âm lượng thiết bị.',
+              'Chưa phát được chuông. Vui lòng kiểm tra âm lượng thiết bị.',
             ),
           );
       });

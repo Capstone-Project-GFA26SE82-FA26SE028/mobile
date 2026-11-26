@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { SoundControls } from '../../notifications/components/SoundControls';
 import { Switch, Text, View } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import {
@@ -81,9 +80,7 @@ function DemoAccountScreen() {
           </View>
         </View>
       </Card>
-      {state.authMode === 'api' ? (
-        <SoundControls />
-      ) : (
+      {state.authMode !== 'api' && (
         <Card>
           <View className="flex-row items-center justify-between gap-[10px]">
             <View className="gap-[5px]" style={{ flex: 1 }}>

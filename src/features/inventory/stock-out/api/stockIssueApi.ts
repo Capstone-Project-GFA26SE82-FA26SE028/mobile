@@ -1,20 +1,6 @@
 import { axiosClient } from '../../../../api/axiosClient';
 import { authService } from '../../../auth/api/authApi';
-import type { StockMovement } from '../../stock/types/types';
-
-export type StockIssueRequest = {
-  stockIssueId: string;
-  reason: string;
-  items: { ingredientId: string; quantity: number }[];
-};
-
-type StockIssue = {
-  stockIssueId: string;
-  createdByRef: string;
-  reason: string;
-  createdAt: string;
-  allocations: StockMovement[];
-};
+import type { StockIssue, StockIssueRequest } from '../types/types';
 
 type Response = { isSuccess: boolean; message?: string; result: StockIssue };
 

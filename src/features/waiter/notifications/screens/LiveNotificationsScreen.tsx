@@ -1,16 +1,14 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Text } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { authError } from '@/features/auth/api/authApi';
 import {
-  Badge,
   Button,
   Empty,
   Page,
   Sheet,
   Title,
   Notice,
-  Chips,
 } from '../../shared/components/UI';
 import { QueryStatus } from '../../shared/components/QueryStatus';
 import {
@@ -20,10 +18,11 @@ import {
   useUnreadNotifications,
 } from '../hooks/useNotifications';
 import { NotificationCard } from '../components/NotificationCard';
-import { SoundControls } from '../components/SoundControls';
+
+const tabs = ['Tất cả', 'Chưa xem', 'Đã xem'] as const;
 
 export default function LiveNotificationsScreen() {
-  const [tab, setTab] = useState('Tất cả');
+  const [tab, setTab] = useState<(typeof tabs)[number]>('Tất cả');
   const [selected, setSelected] = useState<string | null>(null);
   const feed = useNotifications();
   const count = useUnreadNotifications();
@@ -47,25 +46,36 @@ export default function LiveNotificationsScreen() {
     }
   }
   const item = details.data?.notification;
+  const unread = count.data ?? feed.data?.filter((row) => !row.readAt).length ?? 0;
   return (
     <Page>
-      <Title
-        title="Thông báo"
-        subtitle="Đơn hàng, món sẵn sàng và yêu cầu của khách."
-        action={<Badge text={`${count.data ?? 0} chưa xem`} tone="amber" />}
-      />
-      <SoundControls />
-      <Chips
-        options={['Tất cả', 'Chưa xem', 'Đã xem']}
-        value={tab}
-        onChange={setTab}
-      />
-      <Button
-        title="Đánh dấu tất cả đã xem"
-        secondary
-        disabled={read.isPending || !count.data}
-        onPress={() => void mark(null)}
-      />
+      <Title title="Thông báo" />
+      <View accessibilityRole="tablist" className="flex-row gap-2 rounded-[16px] bg-[#E8EFEA] p-1">
+        {tabs.map((option) => (
+          <Pressable
+            key={option}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: tab === option }}
+            onPress={() => setTab(option)}
+            className={`min-h-[42px] flex-1 items-center justify-center rounded-[12px] ${tab === option ? 'bg-white' : ''}`}
+          >
+            <Text className={`text-[13px] font-semibold ${tab === option ? 'text-[#12664C]' : 'text-[#53665B]'}`}>
+              {option}
+              {option === 'Chưa xem' && unread > 0 ? ` (${unread})` : ''}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      {unread > 0 && (
+        <Pressable
+          accessibilityRole="button"
+          disabled={read.isPending}
+          onPress={() => void mark(null)}
+          className="min-h-[44px] self-end justify-center rounded-[12px] border border-[#DDE8E0] bg-white px-3 disabled:opacity-50"
+        >
+          <Text className="text-[13px] font-semibold text-[#12664C]">Đánh dấu tất cả đã xem</Text>
+        </Pressable>
+      )}
       <QueryStatus query={feed} />
       <QueryStatus query={count} />
       {read.isError && <Notice error text={authError(read.error)} />}
@@ -81,9 +91,6 @@ export default function LiveNotificationsScreen() {
       {feed.isSuccess && !rows.length && (
         <Empty text="Chưa có thông báo trong mục này." />
       )}
-      <Text className="text-[11px] text-[#7C8983] text-center">
-        Cập nhật mỗi 5 giây khi ứng dụng đang mở.
-      </Text>
       {selected && (
         <Sheet title="Chi tiết thông báo" onClose={() => setSelected(null)}>
           <QueryStatus query={details} />

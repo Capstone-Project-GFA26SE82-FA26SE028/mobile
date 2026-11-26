@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { ExpiredLotModal } from '../../stock-out/components/ExpiredLotModal';
 import { stockError } from '../api/stockApi';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -25,6 +27,8 @@ type Row =
 function IngredientDetails({ id }: { id: string }) {
   const router = useRouter();
   const model = useStockDetail(id);
+  const [lotToDispose, setLotToDispose] = useState<StockLot | null>(null);
+  const [notice, setNotice] = useState('');
   const ingredient = model.ingredient.data;
   const active = model.tab === 'lots' ? model.lots : model.history;
   const data: Row[] =
@@ -82,13 +86,24 @@ function IngredientDetails({ id }: { id: string }) {
           onRefresh={() => void model.refresh()}
           renderItem={({ item }) =>
             item.kind === 'lot' ? (
-              <StockLotCard lot={item.item} unit={ingredient.baseUnit} />
+              <StockLotCard
+                lot={item.item}
+                unit={ingredient.baseUnit}
+                onDispose={
+                  item.item.expiryStatus === 'Expired' && item.item.remainingQuantity > 0
+                    ? () => {
+                        setNotice('');
+                        setLotToDispose(item.item);
+                      }
+                    : undefined
+                }
+              />
             ) : (
               <StockMovementCard
                 movement={item.item}
                 unit={ingredient.baseUnit}
                 onViewIssue={
-                  item.item.movementType === 'Issue' && item.item.stockIssueId
+                  ['Issue', 'Disposal'].includes(item.item.movementType) && item.item.stockIssueId
                     ? () =>
                         router.push({
                           pathname: '/stock-issue-detail',
@@ -101,6 +116,11 @@ function IngredientDetails({ id }: { id: string }) {
           }
           ListHeaderComponent={
             <>
+              {!!notice && (
+                <Text accessibilityRole="alert" className="mb-[12px] rounded-[12px] bg-[#EAF4ED] p-[12px] text-[#236347]">
+                  {notice}
+                </Text>
+              )}
               {model.ingredient.isError && (
                 <ErrorState
                   message={stockError(model.ingredient.error)}
@@ -260,6 +280,17 @@ function IngredientDetails({ id }: { id: string }) {
               />
             ) : null
           }
+        />
+      )}
+      {ingredient && lotToDispose && (
+        <ExpiredLotModal
+          ingredient={ingredient}
+          lot={lotToDispose}
+          onClose={() => setLotToDispose(null)}
+          onSuccess={() => {
+            setLotToDispose(null);
+            setNotice('Đã ghi nhận hủy nguyên liệu hết hạn.');
+          }}
         />
       )}
     </InventoryLayout>

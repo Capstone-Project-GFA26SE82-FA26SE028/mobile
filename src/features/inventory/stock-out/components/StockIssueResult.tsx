@@ -1,14 +1,14 @@
 import { Pressable, Text, View } from 'react-native';
 import type { Ingredient } from '../../stock/types/types';
 import { formatQuantity } from '../../stock/utils/formatQuantity';
-import type { createStockIssue } from '../api/stockIssueApi';
+import type { StockIssue } from '../types/types';
 
 export function StockIssueResult({
   receipt,
   ingredients,
   onNew,
 }: {
-  receipt: Awaited<ReturnType<typeof createStockIssue>>;
+  receipt: StockIssue;
   ingredients: Ingredient[];
   onNew: () => void;
 }) {
