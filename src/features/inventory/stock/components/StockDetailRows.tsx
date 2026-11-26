@@ -5,7 +5,11 @@ import { formatQuantity } from '../utils/formatQuantity';
 import { StatusBadge } from '../../../../components/StatusBadge/StatusBadge';
 import { formatStockDate } from '../utils/formatStockDate';
 
-export function StockLotCard({ lot, unit }: { lot: StockLot; unit: string }) {
+export function StockLotCard({ lot, unit, onDispose }: {
+  lot: StockLot;
+  unit: string;
+  onDispose?: () => void;
+}) {
   const label =
     lot.remainingQuantity === 0
       ? 'Đã hết'
@@ -70,6 +74,15 @@ export function StockLotCard({ lot, unit }: { lot: StockLot; unit: string }) {
           Không thể xuất kho lô này
         </Text>
       )}
+      {onDispose && (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onDispose}
+          className="mt-[8px] min-h-[44px] self-start justify-center rounded-[10px] bg-[#FFF0ED] px-[12px]"
+        >
+          <Text className="text-[13px] font-semibold text-[#A93532]">Hủy lô hết hạn</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -87,6 +100,7 @@ export function StockMovementCard({
   const labels: Record<string, string> = {
     Receipt: 'Nhập kho',
     Issue: 'Xuất kho thủ công',
+    Disposal: 'Hủy nguyên liệu hết hạn',
     Cooking: 'Sử dụng tại bếp',
     Adjustment: 'Điều chỉnh tồn kho',
   };

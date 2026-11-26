@@ -40,7 +40,6 @@ export default function CollectionRequestsScreen() {
         title="Thanh toán & tiền mặt"
         subtitle="Chọn bàn để nhập tiền khách đưa và gửi báo cáo bàn giao cho thu ngân."
       />
-      <Notice text="Tiếp nhận yêu cầu → gửi thu ngân chốt bill → đưa bill cho khách → nhập tiền mặt và gửi thu ngân. Khoản thu hoàn tất khi thu ngân xác nhận đã nhận tiền." />
       <QueryStatus query={tables} />
       {restaurants.length > 0 && <QueryStatus query={query} />}
       {Object.entries(saved)

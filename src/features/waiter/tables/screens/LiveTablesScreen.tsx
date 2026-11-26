@@ -1,3 +1,4 @@
+import { TableOverview } from '../components/TableOverview';
 import { TableGrid } from '../components/TableGrid';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -5,13 +6,11 @@ import { Pressable, Text, View } from 'react-native';
 import { useAppSelector } from '@/app/hooks';
 import {
   Badge,
-  Button,
   Chips,
   Empty,
   Icon,
   Page,
   Search,
-  Title,
 } from '../../shared/components/UI';
 import { colors } from '../../shared/utils/theme';
 import { useServiceTables } from '../hooks/useTables';
@@ -37,6 +36,7 @@ export default function LiveTablesScreen() {
   const pending = (orders.data ?? []).filter(
     (o) => o.source === 'Guest' && o.status === 'PendingConfirmation',
   ).length;
+  const orderCountsReady = orders.isSuccess || (tables.isSuccess && !sessionIds.length);
   const tableStatus = (table: (typeof activeTables)[number]) => {
     const source = apiTables.find((t) => t.tableId === table.id)!;
     if (source.openSessionIds.length) {
@@ -62,67 +62,13 @@ export default function LiveTablesScreen() {
   );
   return (
     <Page>
-      <Title
-        title={`Xin chào, ${profile?.name || 'bạn'}!`}
-        subtitle="Chúc bạn một ca làm việc thật thuận lợi."
-        action={<Badge text="Ca phục vụ" />}
+      <TableOverview
+        name={profile?.name || 'Nhân viên phục vụ'}
+        occupied={tables.isSuccess ? activeTables.filter((table) => table.sessionId).length : '—'}
+        ready={orderCountsReady ? ready : '—'}
+        pending={orderCountsReady ? pending : '…'}
+        onOpenOrders={() => router.push('/waiter/orders')}
       />
-      <Button
-        title={`Đơn khách chờ xác nhận · ${orders.isSuccess || (tables.isSuccess && !sessionIds.length) ? pending : '…'}`}
-        icon="receipt-outline"
-        secondary
-        onPress={() => router.push('/waiter/orders')}
-      />
-      <View className="bg-[#093E30] rounded-[20px] p-[21px] gap-[12px]">
-        <View className="flex-row items-center justify-between gap-[10px]">
-          <Text className="text-[#DCECE3] text-[12px]">NHÀ HÀNG MỘC</Text>
-          <View className="flex-row items-center gap-[10px]">
-            <View className="w-[6px] h-[6px] rounded-[3px] bg-[#9DD6B0]" />
-            <Text className="text-[#C3DECD] text-[10px]">Ca phục vụ</Text>
-          </View>
-        </View>
-        <Text className="text-[#fff] font-[700] text-[21px]">
-          Mỗi bàn ăn, một trải nghiệm.
-        </Text>
-        <View className="flex-row mt-[5px]">
-          {[
-            {
-              value: tables.isSuccess
-                ? activeTables.filter((t) => t.sessionId).length
-                : '—',
-              label: 'Bàn có khách',
-            },
-            {
-              value:
-                orders.isSuccess || (tables.isSuccess && !sessionIds.length)
-                  ? ready
-                  : '—',
-              label: 'Phần chờ lên',
-            },
-            {
-              value: '—',
-              label: 'Yêu cầu mới',
-            },
-          ].map((x, i) => (
-            <View
-              key={x.label}
-              className="gap-[5px] border-[#ffffff20]"
-              style={{
-                flex: 1,
-                borderLeftWidth: i ? 1 : 0,
-                paddingLeft: i ? 15 : 0,
-              }}
-            >
-              <Text className="text-[#fff] text-[26px] font-[700]">
-                {typeof x.value === 'number'
-                  ? String(x.value).padStart(2, '0')
-                  : x.value}
-              </Text>
-              <Text className="text-[#BDD7C9] text-[10px]">{x.label}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
       {ready > 0 && (
         <Pressable
           accessibilityRole="button"

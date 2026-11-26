@@ -3,7 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
 import { useRef, useState } from 'react';
 import { authService } from '../../../auth/api/authApi';
-import { createStockIssue, type StockIssueRequest } from '../api/stockIssueApi';
+import { createStockIssue } from '../api/stockIssueApi';
+import type { StockIssueRequest } from '../types/types';
 
 export function useStockIssue() {
   const client = useQueryClient();
