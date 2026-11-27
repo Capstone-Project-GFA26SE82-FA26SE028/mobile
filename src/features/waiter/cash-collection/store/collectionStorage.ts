@@ -40,3 +40,9 @@ export async function saveCollection(
       keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     });
 }
+
+export async function removeCollection(user: string, request: string) {
+  const key = keyFor(user, request);
+  if (Platform.OS === 'web') globalThis.localStorage.removeItem(key);
+  else await SecureStore.deleteItemAsync(key);
+}

@@ -7,6 +7,9 @@ const slice = createSlice({
   name: 'waiterCollection',
   initialState,
   reducers: {
+    discardCollection(state, { payload }: PayloadAction<string>) {
+      delete state.drafts[payload];
+    },
     startCollection(
       state,
       {
@@ -41,5 +44,5 @@ const slice = createSlice({
     );
   },
 });
-export const { startCollection, collectionSaved } = slice.actions;
+export const { startCollection, collectionSaved, discardCollection } = slice.actions;
 export default slice.reducer;

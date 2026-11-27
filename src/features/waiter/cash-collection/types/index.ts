@@ -41,6 +41,12 @@ export type Handover = {
   collectedAt: string;
   confirmedAt: string | null;
 };
+export type PayOsPaymentStatus = {
+  status: string;
+  amount: number;
+  paymentConfirmed: boolean;
+  requiresReview: boolean;
+};
 export type CollectionDraft = {
   key: string;
   received: number;

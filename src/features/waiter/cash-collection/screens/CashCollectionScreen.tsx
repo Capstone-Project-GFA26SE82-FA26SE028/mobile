@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import * as Crypto from 'expo-crypto';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import {
   Page,
@@ -20,10 +20,10 @@ import {
   useCollectionQuery,
   useCollectionAction,
 } from '../hooks/useCollection';
-import { startCollection, collectionSaved } from '../store/collectionSlice';
+import { startCollection, collectionSaved, discardCollection } from '../store/collectionSlice';
 import { validCash } from '../utils/money';
 import { authError, authService } from '@/features/auth/api/authApi';
-import { readCollection, saveCollection } from '../store/collectionStorage';
+import { readCollection, saveCollection, removeCollection } from '../store/collectionStorage';
 import { useServiceTables } from '../../tables/hooks/useTables';
 import { BillCard } from '../components/BillCard';
 export default function CashCollectionScreen() {
@@ -104,6 +104,20 @@ export default function CashCollectionScreen() {
   const needsSubmission = bill.data === 'needsSubmission';
   const awaitingBill = bill.data === 'awaitingBill';
   const preparedBill = typeof bill.data === 'object' ? bill.data : undefined;
+  const checkoutId = preparedBill?.checkoutId;
+  const payOs = useCollectionQuery(
+    'payos:' + sessionId + ':' + checkoutId,
+    (signal) => collectionApi.payOsPayments(sessionId, checkoutId!, signal),
+    !!sessionId && !!checkoutId &&
+      ['Presented', 'Paid'].includes(preparedBill?.checkoutStatus ?? '') &&
+      !draft?.handover,
+  );
+  const paidByPayOs = payOs.data?.find((payment) => payment.paymentConfirmed);
+  const payOsNeedsReview = payOs.data?.some((payment) => payment.requiresReview);
+  const payOsPending = payOs.data?.some(
+    (payment) => !['Cancelled', 'Expired', 'Failed'].includes(payment.status),
+  );
+  const canCollectCash = payOs.isSuccess && !paidByPayOs && !payOsNeedsReview && !payOsPending;
   const handover = useCollectionQuery(
     'handover:' + draft?.handover?.paymentId,
     (signal) => collectionApi.handover(draft!.handover!.paymentId, signal),
@@ -122,7 +136,7 @@ export default function CashCollectionScreen() {
     }
   }
   async function collect() {
-    if (!preparedBill || !review || review.total !== preparedBill.bill.totalAmount)
+    if (!canCollectCash || !preparedBill || !review || review.total !== preparedBill.bill.totalAmount)
       return;
     const submission = draft ?? {
       key: Crypto.randomUUID(),
@@ -148,10 +162,25 @@ export default function CashCollectionScreen() {
     });
   }
   async function recover() {
-    if (!draft || !user) return;
+    if (!draft || !user || paidByPayOs || payOsNeedsReview || payOsPending) return;
     const identity = authService.identity();
     await run(async () => {
-      const saved = await collectionApi.collect(draft);
+      const saved = await collectionApi.collect(draft).catch(async (error: unknown) => {
+        if (
+          identity === authService.identity() &&
+          axios.isAxiosError(error) &&
+          error.response?.status === 400 &&
+          authError(error) === 'Tiền khách đưa phải đủ toàn bộ giá trị hóa đơn.'
+        ) {
+          await removeCollection(user, requestId);
+          if (identity === authService.identity()) {
+            dispatch(discardCollection(requestId));
+            setReview(null);
+            setAmount(String(draft.received));
+          }
+        }
+        throw error;
+      });
       if (identity !== authService.identity()) return;
       dispatch(collectionSaved({ id: requestId, handover: saved }));
       await saveCollection(user, requestId, { ...draft, handover: saved });
@@ -180,20 +209,26 @@ export default function CashCollectionScreen() {
         subtitle={request.data?.tables.map((t) => t.tableCode).join(', ')}
       />
       <QueryStatus query={tables} />
-      {!current && restaurant && <QueryStatus query={request} />}
-      {action.isError && <Notice error text={authError(action.error)} />}
-      {draft && !current && (
+      {!current && !paidByPayOs && restaurant && <QueryStatus query={request} />}
+      {!paidByPayOs && action.isError && <Notice error text={authError(action.error)} />}
+      {paidByPayOs && (
+        <Card>
+          <Title title="Đã thanh toán qua PayOS" />
+          <Text className="text-xl font-bold text-emerald-900">{money(paidByPayOs.amount)}</Text>
+        </Card>
+      )}
+      {draft && !current && !paidByPayOs && (
         <Card>
           <Notice text="Có giao dịch đang chờ xác minh. Không nhận tiền lần nữa. Kiểm tra lại bằng đúng mã và số tiền đã lưu." />
           <Text>Tiền đã ghi nhận: {money(draft.received)}</Text>
           <Button
             title="Kiểm tra lại giao dịch đã gửi"
-            disabled={action.isPending}
+            disabled={action.isPending || payOsNeedsReview || payOsPending}
             onPress={() => void recover()}
           />
         </Card>
       )}
-      {!current && request.data?.status === 'Requested' && (
+      {!current && !paidByPayOs && request.data?.status === 'Requested' && (
         <Button
           title="Tiếp nhận yêu cầu thanh toán"
           disabled={action.isPending}
@@ -202,7 +237,7 @@ export default function CashCollectionScreen() {
           }
         />
       )}
-      {responsible && !current && (
+      {responsible && !current && !paidByPayOs && (
         <>
           {needsSubmission && (
             <Button
@@ -230,42 +265,62 @@ export default function CashCollectionScreen() {
                     void run(() => collectionApi.present(sessionId, requestId))
                   }
                 />
+              ) : !canCollectCash ? (
+                <Card>
+                  {payOs.isError ? (
+                    <QueryStatus query={payOs} />
+                  ) : payOsNeedsReview ? (
+                    <Notice error text="Giao dịch PayOS cần đối soát. Vui lòng liên hệ thu ngân." />
+                  ) : payOsPending ? (
+                    <Notice text="Đang chờ xác nhận chuyển khoản qua PayOS." />
+                  ) : (
+                    <Notice text="Đang kiểm tra trạng thái thanh toán…" />
+                  )}
+                </Card>
               ) : (
                 <Card>
                   <Title
-                    title="Gửi tiền mặt cho thu ngân"
-                    subtitle="Nhập toàn bộ số tiền đã nhận từ khách để báo bàn giao."
+                    title={review ? 'Kiểm tra tiền bàn giao' : 'Thu tiền mặt'}
                   />
-                  <Notice text="Nhận toàn bộ tiền khách đưa và giao cho thu ngân. Thu ngân trả tiền thừa để bạn đưa lại khách." />
-                  <Field
-                    label="Số tiền khách đưa (₫)"
-                    placeholder="Ví dụ: 500000"
-                    keyboardType="number-pad"
-                    maxLength={15}
-                    value={draft ? String(draft.received) : amount}
-                    editable={!review && !draft && !action.isPending}
-                    onChangeText={(v) => setAmount(v.replace(/[^0-9]/g, ''))}
-                  />
-                  <Button
-                    title="Khách đưa vừa đủ tiền hóa đơn"
-                    secondary
-                    disabled={!!review || !!draft || action.isPending}
-                    onPress={() => setAmount(String(preparedBill!.bill.totalAmount))}
-                  />
-                  <Text>Tiền hóa đơn: {money(preparedBill.bill.totalAmount)}</Text>
-                  <Text>
-                    Số tiền giao thu ngân: {money(Number(draft?.received ?? amount))}
-                  </Text>
-                  <Text>
-                    Tiền thừa:{' '}
-                    {money(
-                      Math.max(
-                        0,
-                        Number(draft?.received ?? amount) -
-                          preparedBill.bill.totalAmount,
-                      ),
-                    )}
-                  </Text>
+                  {!review && !draft && (
+                    <>
+                      <Field
+                        label="Số tiền khách đưa (₫)"
+                        placeholder="Nhập số tiền đã nhận"
+                        keyboardType="number-pad"
+                        maxLength={15}
+                        value={amount}
+                        editable={!action.isPending}
+                        onChangeText={(v) => setAmount(v.replace(/[^0-9]/g, ''))}
+                      />
+                      <Button
+                        title="Khách đưa vừa đủ"
+                        secondary
+                        disabled={action.isPending}
+                        onPress={() => setAmount(String(preparedBill.bill.totalAmount))}
+                      />
+                    </>
+                  )}
+                  <View className="gap-2 rounded-xl bg-emerald-50 p-3">
+                    <View className="flex-row justify-between gap-2">
+                      <Text className="text-slate-600">Tiền hóa đơn</Text>
+                      <Text className="font-semibold">{money(preparedBill.bill.totalAmount)}</Text>
+                    </View>
+                    <View className="flex-row justify-between gap-2">
+                      <Text className="text-slate-600">Giao thu ngân</Text>
+                      <Text className="font-semibold">
+                        {amount || draft ? money(Number(draft?.received ?? amount)) : '—'}
+                      </Text>
+                    </View>
+                    <View className="flex-row justify-between gap-2 border-t border-emerald-100 pt-2">
+                      <Text className="font-semibold text-emerald-900">Tiền thừa trả khách</Text>
+                      <Text className="font-semibold text-emerald-900">
+                        {amount || draft
+                          ? money(Math.max(0, Number(draft?.received ?? amount) - preparedBill.bill.totalAmount))
+                          : '—'}
+                      </Text>
+                    </View>
+                  </View>
                   {!!amount && !draft && !validCash(amount, preparedBill.bill.totalAmount) && (
                     <Notice
                       error
@@ -277,14 +332,13 @@ export default function CashCollectionScreen() {
                   )}
                   {review ? (
                     <>
-                      <Notice text="Kiểm tra số tiền bên trên trước khi xác nhận gửi thu ngân." />
                       <Button
                         title={action.isPending ? 'Đang gửi…' : 'Xác nhận và gửi thu ngân'}
                         disabled={action.isPending || preparedBill.bill.totalAmount !== review.total}
                         onPress={() => void collect()}
                       />
                       <Button
-                        title="Quay lại"
+                        title="Sửa số tiền"
                         secondary
                         disabled={action.isPending}
                         onPress={() => setReview(null)}
@@ -297,21 +351,22 @@ export default function CashCollectionScreen() {
                           ? 'Đang ghi nhận…'
                           : draft
                             ? 'Kiểm tra và thử lại giao dịch'
-                            : 'Gửi tiền mặt cho thu ngân'
+                            : 'Kiểm tra số tiền'
                       }
                       disabled={
                         action.isPending ||
-                        !validCash(
-                          String(draft?.received ?? amount),
-                          preparedBill.bill.totalAmount,
-                        )
+                        (!draft && !validCash(amount, preparedBill.bill.totalAmount))
                       }
-                      onPress={() =>
+                      onPress={() => {
+                        if (draft) {
+                          void recover();
+                          return;
+                        }
                         setReview({
                           total: preparedBill!.bill.totalAmount,
-                          received: Number(draft?.received ?? amount),
-                        })
-                      }
+                          received: Number(amount),
+                        });
+                      }}
                     />
                   )}
                 </Card>
@@ -341,7 +396,7 @@ export default function CashCollectionScreen() {
           <QueryStatus query={handover} />
         </Card>
       )}
-      {!current && request.isSuccess && !request.data && (
+      {!current && !paidByPayOs && request.isSuccess && !request.data && (
         <Notice text="Yêu cầu không còn trong danh sách đang xử lý. Hãy kiểm tra với thu ngân trước khi nhận tiền." />
       )}
       {request.data && request.data.handledByRef && !responsible && (
