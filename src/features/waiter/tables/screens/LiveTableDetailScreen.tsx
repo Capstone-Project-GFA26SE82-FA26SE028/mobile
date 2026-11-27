@@ -16,6 +16,7 @@ import { useSessionOrders } from '../../ordering/hooks/useOrders';
 import { OrderCard } from '../../ordering/components/OrderCard';
 import { QueryStatus } from '../../shared/components/QueryStatus';
 import { cartId } from '../../ordering/store/cartSlice';
+import { TableTransferPanel } from '../components/TableTransferPanel';
 
 export default function LiveTableDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -70,7 +71,12 @@ export default function LiveTableDetailScreen() {
           )}
           {sessions.length > 0 && (
             <>
-              <Button title="Yêu cầu thanh toán / Thu hộ tiền mặt" icon="wallet-outline" onPress={() => router.push('/waiter/requests')} />
+              <TableTransferPanel table={table} tables={tables.data ?? []} />
+              <Button
+                title="Yêu cầu thanh toán / Thu hộ tiền mặt"
+                icon="wallet-outline"
+                onPress={() => router.push('/waiter/requests')}
+              />
               <Card>
                 <View className="flex-row items-center justify-between gap-[10px]">
                   <Text className="text-[17px] font-[700] text-[#183B32]">
@@ -122,7 +128,11 @@ export default function LiveTableDetailScreen() {
                 </Text>
               </View>
               {rows.map((order) => (
-                <OrderCard key={order.orderId} order={order} allowCancellation />
+                <OrderCard
+                  key={order.orderId}
+                  order={order}
+                  allowCancellation
+                />
               ))}
               {orders.isSuccess && !rows.length && (
                 <Empty text="Phiên bàn chưa có order." />
