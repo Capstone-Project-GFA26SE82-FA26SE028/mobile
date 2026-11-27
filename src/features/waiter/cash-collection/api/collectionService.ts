@@ -5,6 +5,7 @@ import type {
   PreparedBill,
   Handover,
   CollectionDraft,
+  PayOsPaymentStatus,
 } from '../types';
 import { requestPath } from '../utils/money';
 export function createCollectionService(
@@ -45,6 +46,18 @@ export function createCollectionService(
       get<PreparedBill>(requestPath(session, id) + '/bill', signal),
     present: (session: string, id: string) =>
       post<PreparedBill>(requestPath(session, id) + '/present'),
+    async payOsPayments(session: string, checkout: string, signal: AbortSignal) {
+      const payments: PayOsPaymentStatus[] = [];
+      for (let page = 1; ; page++) {
+        const { data } = await client.get<Envelope<PageResult<PayOsPaymentStatus>>>(
+          `/api/table-sessions/${session}/checkout/${checkout}/payments/payos`,
+          { signal, params: { page, pageSize: 100 } },
+        );
+        const result = unwrap(data);
+        payments.push(...result.items);
+        if (!result.items.length || payments.length >= result.totalCount) return payments;
+      }
+    },
     handover: (id: string, signal?: AbortSignal) =>
       get<Handover>('/api/cash-handovers/' + id, signal),
     async collect(draft: CollectionDraft) {
