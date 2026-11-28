@@ -1,0 +1,27 @@
+{
+  "cli": {
+    "version": ">= 27.11.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.phucgg.online"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.phucgg.online"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
