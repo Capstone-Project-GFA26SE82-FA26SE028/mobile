@@ -36,6 +36,8 @@ export default function StockIssueDetailScreen() {
   const names = new Map(
     ids.map((ingredientId, index) => [ingredientId, ingredients[index]?.data]),
   );
+  const reason = issue.data?.reason.trim();
+  const displayReason = reason?.toLowerCase() === 'het han' ? 'Hết hạn' : reason;
 
   return (
     <InventoryLayout
@@ -65,19 +67,14 @@ export default function StockIssueDetailScreen() {
           <>
             <View className="mb-[14px] gap-[8px] rounded-[16px] border-[1px] border-[#DDE8E0] bg-[#fff] p-[16px]">
               <Text className="text-[18px] font-bold text-[#16382E]">
-                {issue.data.reason}
+                {displayReason}
               </Text>
               <Text className="text-[13px] text-[#53665B]">
                 {formatStockDate(issue.data.createdAt)}
               </Text>
-              <Text selectable className="text-[12px] text-[#53665B]">
-                Mã phiếu {issue.data.stockIssueId}
+              <Text className="text-[12px] text-[#53665B]">
+                Người lập · {issue.data.createdByName?.trim() || 'Chưa có thông tin'}
               </Text>
-              {!!issue.data.createdByRef && (
-                <Text selectable className="text-[12px] text-[#53665B]">
-                  Mã người lập {issue.data.createdByRef}
-                </Text>
-              )}
             </View>
             <Text className="mb-[10px] text-[15px] font-bold text-[#16382E]">
               Các lô đã xuất
@@ -98,15 +95,15 @@ export default function StockIssueDetailScreen() {
                       {ingredient?.baseUnit}
                     </Text>
                   </View>
-                  {!ingredient && (
-                    <Text selectable className="text-[12px] text-[#53665B]">
-                      Mã nguyên liệu {row.ingredientId}
-                    </Text>
-                  )}
                   {!!row.goodsReceiptItemId && (
-                    <Text selectable className="text-[12px] text-[#53665B]">
-                      Mã lô {row.goodsReceiptItemId}
-                    </Text>
+                    <View className="mt-[4px] flex-row flex-wrap gap-x-[16px] gap-y-[4px] border-t border-[#EDF2EE] pt-[8px]">
+                      <Text className="text-[12px] text-[#53665B]">
+                        Ngày nhập · {formatStockDate(row.receivedAt ?? null).split(',')[0]}
+                      </Text>
+                      <Text className="text-[12px] text-[#53665B]">
+                        Hạn sử dụng · {formatStockDate(row.expiryDate ?? null, true)}
+                      </Text>
+                    </View>
                   )}
                 </View>
               );

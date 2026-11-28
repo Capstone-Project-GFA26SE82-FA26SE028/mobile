@@ -5,6 +5,7 @@ import {
   getIngredient,
   getIngredients,
   getStockCounts,
+  getStockAvailability,
   getStockLots,
   getStockMovements,
 } from '../api/stockApi';
@@ -91,6 +92,13 @@ export function useStockDetail(id: string) {
     staleTime: 15000,
     refetchInterval: 30000,
   });
+  const availability = useQuery({
+    queryKey: ['inventory-stock', user?.id, 'issue-availability', id],
+    queryFn: ({ signal }) => getStockAvailability(id, signal),
+    enabled: enabled && !!ingredient.data,
+    retry: false,
+    refetchInterval: 30000,
+  });
   const history = useInfiniteQuery({
     queryKey: [...key, 'history'],
     initialPageParam: 1,
@@ -102,16 +110,26 @@ export function useStockDetail(id: string) {
     staleTime: 15000,
     refetchInterval: 30000,
   });
+  const remainingLots = [
+    ...new Map(
+      lots.data?.pages
+        .flatMap((page) => page.items)
+        .map((lot) => [lot.goodsReceiptItemId, lot]),
+    ).values(),
+  ].filter((lot) => lot.remainingQuantity > 0);
   return {
     validId,
     tab,
     setTab,
     ingredient,
     lots,
+    remainingLots,
+    availability,
     history,
     async refresh() {
       await Promise.all([
         ingredient.refetch(),
+        availability.refetch(),
         tab === 'lots' ? lots.refetch() : history.refetch(),
       ]);
     },
