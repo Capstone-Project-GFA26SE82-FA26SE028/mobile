@@ -17,7 +17,11 @@
         "backgroundImage": "./src/assets/images/android-icon-background.png",
         "monochromeImage": "./src/assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "package": "com.andang0919.sep490mobile"
     },
     "web": {
       "output": "static",
@@ -54,6 +58,15 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {
+        "root": "./src/routes/expo"
+      },
+      "eas": {
+        "projectId": "20132b82-ae09-4ab4-a857-9ceeae7bffb4"
+      }
+    },
+    "owner": "andang0919"
   }
 }
