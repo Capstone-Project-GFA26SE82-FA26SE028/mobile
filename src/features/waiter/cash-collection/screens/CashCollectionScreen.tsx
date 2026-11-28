@@ -113,17 +113,26 @@ export default function CashCollectionScreen() {
       !draft?.handover,
   );
   const paidByPayOs = payOs.data?.find((payment) => payment.paymentConfirmed);
-  const payOsNeedsReview = payOs.data?.some((payment) => payment.requiresReview);
-  const payOsPending = payOs.data?.some(
+  const openPayOsPayments = payOs.data?.filter(
     (payment) => !['Cancelled', 'Expired', 'Failed'].includes(payment.status),
   );
-  const canCollectCash = payOs.isSuccess && !paidByPayOs && !payOsNeedsReview && !payOsPending;
+  const payOsNeedsReview = openPayOsPayments?.some((payment) => payment.requiresReview);
+  const hasMatchingPayment = payOs.data?.some(
+    (payment) => payment.amount === preparedBill?.bill.totalAmount,
+  );
+  const canCollectCash = payOs.isSuccess && hasMatchingPayment && !paidByPayOs && !payOsNeedsReview;
   const handover = useCollectionQuery(
     'handover:' + draft?.handover?.paymentId,
     (signal) => collectionApi.handover(draft!.handover!.paymentId, signal),
     !!draft?.handover,
   );
   const current = handover.data ?? draft?.handover;
+  const billingError = axios.isAxiosError<{ result?: { status?: string; amount?: number } }>(action.error)
+    ? action.error.response?.data.result
+    : undefined;
+  const returnRejectedCash = billingError?.status === 'CashReturnRequired';
+  const cashReturnRequired = current?.status === 'ReturnRequired' ||
+    current?.paymentStatus === 'SupersededByPayOs';
   async function run(work: () => Promise<unknown>) {
     if (lock.current) return;
     lock.current = true;
@@ -162,7 +171,7 @@ export default function CashCollectionScreen() {
     });
   }
   async function recover() {
-    if (!draft || !user || paidByPayOs || payOsNeedsReview || payOsPending) return;
+    if (!draft || !user || paidByPayOs) return;
     const identity = authService.identity();
     await run(async () => {
       const saved = await collectionApi.collect(draft).catch(async (error: unknown) => {
@@ -210,20 +219,26 @@ export default function CashCollectionScreen() {
       />
       <QueryStatus query={tables} />
       {!current && !paidByPayOs && restaurant && <QueryStatus query={request} />}
-      {!paidByPayOs && action.isError && <Notice error text={authError(action.error)} />}
+      {returnRejectedCash ? (
+        <Notice error text={`Khách đã chuyển khoản. Trả lại ${
+          billingError?.amount == null ? 'toàn bộ tiền mặt' : money(billingError.amount)
+        } đã nhận.`} />
+      ) : !paidByPayOs && action.isError ? (
+        <Notice error text={authError(action.error)} />
+      ) : null}
       {paidByPayOs && (
         <Card>
           <Title title="Đã thanh toán qua PayOS" />
           <Text className="text-xl font-bold text-emerald-900">{money(paidByPayOs.amount)}</Text>
         </Card>
       )}
-      {draft && !current && !paidByPayOs && (
+      {draft && !current && !paidByPayOs && !returnRejectedCash && (
         <Card>
           <Notice text="Có giao dịch đang chờ xác minh. Không nhận tiền lần nữa. Kiểm tra lại bằng đúng mã và số tiền đã lưu." />
           <Text>Tiền đã ghi nhận: {money(draft.received)}</Text>
           <Button
             title="Kiểm tra lại giao dịch đã gửi"
-            disabled={action.isPending || payOsNeedsReview || payOsPending}
+            disabled={action.isPending}
             onPress={() => void recover()}
           />
         </Card>
@@ -271,8 +286,8 @@ export default function CashCollectionScreen() {
                     <QueryStatus query={payOs} />
                   ) : payOsNeedsReview ? (
                     <Notice error text="Giao dịch PayOS cần đối soát. Vui lòng liên hệ thu ngân." />
-                  ) : payOsPending ? (
-                    <Notice text="Đang chờ xác nhận chuyển khoản qua PayOS." />
+                  ) : payOs.isSuccess && !hasMatchingPayment ? (
+                    <Notice text="Chờ thu ngân in phiếu có VietQR cho hóa đơn này." />
                   ) : (
                     <Notice text="Đang kiểm tra trạng thái thanh toán…" />
                   )}
@@ -379,16 +394,20 @@ export default function CashCollectionScreen() {
         <Card>
           <Title
             title={
-              current.paymentStatus === 'Paid'
+              cashReturnRequired
+                ? 'Cần trả lại tiền mặt'
+                : current.paymentStatus === 'Paid'
                 ? 'Đã thanh toán'
                 : 'Chờ thu ngân xác nhận'
             }
           />
           <Text>Khách đưa / giao thu ngân: {money(current.cashReceived)}</Text>
-          <Text>Tiền thừa trả khách: {money(current.changeAmount)}</Text>
+          {!cashReturnRequired && <Text>Tiền thừa trả khách: {money(current.changeAmount)}</Text>}
           <Notice
             text={
-              current.paymentStatus === 'Paid'
+              cashReturnRequired
+                ? 'Khách đã chuyển khoản. Phối hợp với thu ngân để trả lại toàn bộ tiền mặt đã nhận.'
+                : current.paymentStatus === 'Paid'
                 ? 'Thu ngân đã xác nhận nhận tiền. Kiểm tra và đưa tiền thừa lại khách.'
                 : 'Giao toàn bộ tiền khách đưa cho thu ngân. Thanh toán chỉ hoàn tất sau khi thu ngân xác nhận.'
             }

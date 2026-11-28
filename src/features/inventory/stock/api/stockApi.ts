@@ -98,6 +98,35 @@ export async function getStockMovements(
     throw new Error('Lịch sử trả về không thuộc nguyên liệu này.');
   return movements;
 }
+export async function getStockAvailability(id: string, signal: AbortSignal) {
+  const ingredient = await getIngredient(id, signal);
+  const lots = new Map<string, StockLot>();
+  for (let page = 1; ; page++) {
+    const result = await getStockLots(id, page, signal);
+    for (const lot of result.items) lots.set(lot.goodsReceiptItemId, lot);
+    if (result.page * result.pageSize >= result.totalCount) {
+      if (lots.size >= result.totalCount) break;
+      throw new Error('Chưa tải đủ danh sách lô hàng.');
+    }
+    if (!result.items.length) throw new Error('Chưa tải đủ danh sách lô hàng.');
+  }
+  let issuable = 0;
+  let expired = 0;
+  let validBalances = true;
+  for (const lot of lots.values()) {
+    if (lot.remainingQuantity < 0) validBalances = false;
+    if (lot.canIssue) issuable += lot.remainingQuantity;
+    if (lot.expiryStatus === 'Expired') expired += Math.max(0, lot.remainingQuantity);
+  }
+  const available = ingredient.isActive && validBalances
+    ? Math.min(ingredient.stockQuantity, issuable)
+    : 0;
+  return {
+    total: ingredient.stockQuantity,
+    available: Math.max(0, Number(available.toFixed(6))),
+    expired: Number(expired.toFixed(6)),
+  };
+}
 export function stockError(error: unknown) {
   if (axios.isAxiosError(error)) {
     if (!error.response)

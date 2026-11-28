@@ -30,16 +30,11 @@ function IngredientDetails({ id }: { id: string }) {
   const [lotToDispose, setLotToDispose] = useState<StockLot | null>(null);
   const [notice, setNotice] = useState('');
   const ingredient = model.ingredient.data;
+  const availability = model.availability.isSuccess ? model.availability.data : undefined;
   const active = model.tab === 'lots' ? model.lots : model.history;
   const data: Row[] =
     model.tab === 'lots'
-      ? [
-          ...new Map(
-            model.lots.data?.pages
-              .flatMap((page) => page.items)
-              .map((item) => [item.goodsReceiptItemId, item]),
-          ).values(),
-        ].map((item) => ({ kind: 'lot', item }))
+      ? model.remainingLots.map((item) => ({ kind: 'lot', item }))
       : [
           ...new Map(
             model.history.data?.pages
@@ -184,6 +179,27 @@ function IngredientDetails({ id }: { id: string }) {
                     </Text>
                   </View>
                 </View>
+                <View className="mt-[8px] flex-row rounded-[15px] border border-[#E4EBE6] px-[16px] py-[12px]">
+                  <View className="min-w-0 flex-1">
+                    <Text className="text-[11px] text-[#53675B]">Còn dùng được</Text>
+                    <Text className="mt-[4px] text-[20px] font-semibold text-[#236347]">
+                      {availability ? `${formatQuantity(availability.available)} ${ingredient.baseUnit}` : '—'}
+                    </Text>
+                  </View>
+                  <View className="min-w-0 flex-1 border-l border-[#E4EBE6] pl-[18px]">
+                    <Text className="text-[11px] text-[#53675B]">Hết hạn</Text>
+                    <Text className={`mt-[4px] text-[20px] font-semibold ${availability?.expired ? 'text-[#B44741]' : 'text-[#23382D]'}`}>
+                      {availability ? `${formatQuantity(availability.expired)} ${ingredient.baseUnit}` : '—'}
+                    </Text>
+                  </View>
+                </View>
+                {model.availability.isError && (
+                  <ErrorState
+                    message={stockError(model.availability.error)}
+                    busy={model.availability.isFetching}
+                    onRetry={() => void model.availability.refetch()}
+                  />
+                )}
                 {ingredient.isActive && ingredient.isLowStock && (
                   <View className="bg-[#FFF5E5] flex-row items-center gap-[8px] rounded-[12px] p-[12px] mt-[14px]">
                     <Ionicons
@@ -192,7 +208,7 @@ function IngredientDetails({ id }: { id: string }) {
                       color={'#A76A1B'}
                     />
                     <Text className="grow-[1] shrink-0 basis-[0px] text-[12px] text-[#A76A1B] leading-[19px]">
-                      Tồn kho đã chạm mức tối thiểu. Cần nhập bổ sung.
+                      Lượng có thể xuất đã chạm hoặc thấp hơn mức tối thiểu.
                     </Text>
                   </View>
                 )}
@@ -226,7 +242,7 @@ function IngredientDetails({ id }: { id: string }) {
                     ? 'Danh sách lô hàng'
                     : 'Biến động tồn kho'}{' '}
                   <Text className="text-[#738078] text-[12px] font-normal">
-                    {active.data
+                    {model.tab === 'history' && active.data
                       ? '(' +
                         formatQuantity(active.data.pages[0].totalCount) +
                         ')'
@@ -263,11 +279,17 @@ function IngredientDetails({ id }: { id: string }) {
             ) : active.isSuccess ? (
               <EmptyState
                 title={
-                  model.tab === 'lots' ? 'Chưa có lô hàng' : 'Chưa có biến động'
+                  model.tab === 'lots'
+                    ? active.hasNextPage
+                      ? 'Chưa thấy lô còn tồn'
+                      : 'Không có lô còn tồn'
+                    : 'Chưa có biến động'
                 }
               >
                 {model.tab === 'lots'
-                  ? 'Lô hàng sẽ xuất hiện sau khi xác nhận phiếu nhập kho.'
+                  ? active.hasNextPage
+                    ? 'Bấm Tải thêm để xem các lô ở trang tiếp theo.'
+                    : 'Xem các lần nhập, xuất hoặc hủy lô trong Lịch sử.'
                   : 'Các lần nhập và sử dụng nguyên liệu sẽ hiển thị tại đây.'}
               </EmptyState>
             ) : null
